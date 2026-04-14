@@ -1,0 +1,49 @@
+{
+	"weapons": [
+		{ "name": "Fist/Punch", "damage": "1D3+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Kick", "damage": "1D4+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Head Butt", "damage": "1D4+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Small Knife", "damage": "1D4+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Large Knife", "damage": "1D6+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Club", "damage": "1D6+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Sword Cane", "damage": "1D6+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Hatchet", "damage": "1D6+DB", "range": "Touch/10 yds", "attacksPerRound": "1", "malfunction": null },
+		{ "name": "Axe", "damage": "1D8+DB", "range": "Touch", "attacksPerRound": "1", "malfunction": null },
+		{ "name": ".22 Short Automatic", "damage": "1D6", "range": "10 yds", "attacksPerRound": "1", "ammo": 6, "malfunction": 100 },
+		{ "name": ".25 Automatic", "damage": "1D6", "range": "10 yds", "attacksPerRound": "1", "ammo": 6, "malfunction": 100 },
+		{ "name": ".32 Revolver", "damage": "1D8", "range": "15 yds", "attacksPerRound": "1", "ammo": 6, "malfunction": 100 },
+		{ "name": ".38 Revolver", "damage": "1D10", "range": "15 yds", "attacksPerRound": "1", "ammo": 6, "malfunction": 100 },
+		{ "name": ".45 Automatic", "damage": "1D10+2", "range": "15 yds", "attacksPerRound": "1", "ammo": 7, "malfunction": 100 },
+		{ "name": ".45 Revolver", "damage": "1D10+2", "range": "15 yds", "attacksPerRound": "1", "ammo": 6, "malfunction": 100 },
+		{ "name": "Shotgun (12g)", "damage": "4D6/2D6/1D6", "range": "10/20/50 yds", "attacksPerRound": "1 or 2", "ammo": 2, "malfunction": 100 },
+		{ "name": "Hunting Rifle (.30-06)", "damage": "2D6+4", "range": "110 yds", "attacksPerRound": "1/2", "ammo": 5, "malfunction": 100 },
+		{ "name": "Dynamite Stick", "damage": "4D6", "range": "Thrown (STR/5 yds)", "attacksPerRound": "1/2", "malfunction": null }
+	],
+	"commonItems": {
+		"1920s": [
+			"Flashlight (electric torch)",
+			"Pocket watch",
+			"Matches / Lighter",
+			"Notebook and pencils",
+			"Magnifying glass",
+			"Rope (50 ft)",
+			"First aid kit",
+			"Lockpicks",
+			"Camera (folding)",
+			"Binoculars",
+			"Compass",
+			"Canteen",
+			"Backpack / Satchel",
+			"Lantern (kerosene)",
+			"Chalk",
+			"Knife (pocket)",
+			"Whistle",
+			"Map (local area)",
+			"Cigarettes / Pipe",
+			"Hip flask",
+			"Umbrella",
+			"Handcuffs",
+			"Disguise kit"
+		]
+	}
+}

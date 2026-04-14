@@ -1,0 +1,28 @@
+/*
+ * Aged Parchment — warm cream background, ink text, dark green accents.
+ * Light mode alternative to Eldritch Dark.
+ */
+
+.parchment {
+	--color-background: oklch(0.93 0.03 85);
+	--color-foreground: oklch(0.15 0.01 90);
+	--color-card: oklch(0.90 0.035 85);
+	--color-card-foreground: oklch(0.15 0.01 90);
+	--color-popover: oklch(0.92 0.03 85);
+	--color-popover-foreground: oklch(0.15 0.01 90);
+	--color-primary: oklch(0.40 0.06 155);
+	--color-primary-foreground: oklch(0.95 0.02 85);
+	--color-secondary: oklch(0.85 0.03 85);
+	--color-secondary-foreground: oklch(0.20 0.01 90);
+	--color-muted: oklch(0.87 0.025 85);
+	--color-muted-foreground: oklch(0.40 0.01 90);
+	--color-accent: oklch(0.85 0.04 85);
+	--color-accent-foreground: oklch(0.20 0.01 90);
+	--color-destructive: oklch(0.40 0.18 25);
+	--color-destructive-foreground: oklch(0.95 0.01 90);
+	--color-border: oklch(0.75 0.04 85);
+	--color-input: oklch(0.75 0.04 85);
+	--color-ring: oklch(0.40 0.06 155);
+	--color-warning: oklch(0.55 0.12 65);
+	--color-warning-foreground: oklch(0.95 0.02 65);
+}

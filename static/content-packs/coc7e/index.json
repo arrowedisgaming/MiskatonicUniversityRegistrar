@@ -1,0 +1,127 @@
+{
+	"id": "coc7e",
+	"name": "Call of Cthulhu 7th Edition",
+	"version": "1.0.0",
+	"description": "Core rules from the CoC 7e Investigator Handbook under Chaosium's Fan Material Policy.",
+	"system": "coc7e",
+	"license": "fan-material-policy",
+	"authors": ["Chaosium Inc. (game design)", "Miskatonic University Registrar (data entry)"],
+	"files": {
+		"skills": "skills.json",
+		"occupations": "occupations.json",
+		"equipment": "equipment.json"
+	},
+	"eras": [
+		{
+			"id": "1920s",
+			"name": "1920s Classic",
+			"description": "The classic Lovecraftian era of Prohibition-era America and interwar Europe.",
+			"currencyUnit": "dollars",
+			"currencySymbol": "$"
+		}
+	],
+	"characteristicMethods": [
+		{
+			"id": "roll",
+			"name": "Roll",
+			"description": "Roll dice for each characteristic: 3D6×5 for STR/CON/DEX/APP/POW, (2D6+6)×5 for SIZ/INT/EDU."
+		},
+		{
+			"id": "quick-fire",
+			"name": "Quick-Fire",
+			"description": "Choose from pre-built stat arrays and assign them to characteristics."
+		}
+	],
+	"characteristicRolls": {
+		"str": "3d6x5",
+		"con": "3d6x5",
+		"dex": "3d6x5",
+		"app": "3d6x5",
+		"pow": "3d6x5",
+		"siz": "2d6+6x5",
+		"int": "2d6+6x5",
+		"edu": "2d6+6x5"
+	},
+	"quickFireArrays": [
+		[40, 50, 50, 50, 60, 60, 70, 80],
+		[40, 50, 50, 50, 60, 70, 70, 70],
+		[40, 50, 50, 60, 60, 60, 70, 80]
+	],
+	"damageBonusBuildTable": [
+		{ "minSum": 2, "maxSum": 64, "damageBonus": "-2", "build": -2 },
+		{ "minSum": 65, "maxSum": 84, "damageBonus": "-1", "build": -1 },
+		{ "minSum": 85, "maxSum": 124, "damageBonus": "0", "build": 0 },
+		{ "minSum": 125, "maxSum": 164, "damageBonus": "+1D4", "build": 1 },
+		{ "minSum": 165, "maxSum": 204, "damageBonus": "+1D6", "build": 2 },
+		{ "minSum": 205, "maxSum": 284, "damageBonus": "+2D6", "build": 3 },
+		{ "minSum": 285, "maxSum": 364, "damageBonus": "+3D6", "build": 4 },
+		{ "minSum": 365, "maxSum": 444, "damageBonus": "+4D6", "build": 5 },
+		{ "minSum": 445, "maxSum": 524, "damageBonus": "+5D6", "build": 6 }
+	],
+	"ageModifiers": [
+		{
+			"minAge": 15, "maxAge": 19,
+			"strConDexDeduction": 5,
+			"note": "Deduct 5 points from STR or SIZ. Luck: roll twice, use higher.",
+			"appDeduction": 0,
+			"eduImprovementChecks": 0,
+			"moveRateDeduction": 0,
+			"special": "deduct-str-or-siz"
+		},
+		{
+			"minAge": 20, "maxAge": 39,
+			"strConDexDeduction": 0,
+			"appDeduction": 0,
+			"eduImprovementChecks": 1,
+			"moveRateDeduction": 0,
+			"special": null
+		},
+		{
+			"minAge": 40, "maxAge": 49,
+			"strConDexDeduction": 5,
+			"appDeduction": 5,
+			"eduImprovementChecks": 2,
+			"moveRateDeduction": 1,
+			"special": null
+		},
+		{
+			"minAge": 50, "maxAge": 59,
+			"strConDexDeduction": 10,
+			"appDeduction": 10,
+			"eduImprovementChecks": 3,
+			"moveRateDeduction": 2,
+			"special": null
+		},
+		{
+			"minAge": 60, "maxAge": 69,
+			"strConDexDeduction": 20,
+			"appDeduction": 15,
+			"eduImprovementChecks": 4,
+			"moveRateDeduction": 3,
+			"special": null
+		},
+		{
+			"minAge": 70, "maxAge": 79,
+			"strConDexDeduction": 40,
+			"appDeduction": 20,
+			"eduImprovementChecks": 4,
+			"moveRateDeduction": 4,
+			"special": null
+		},
+		{
+			"minAge": 80, "maxAge": 89,
+			"strConDexDeduction": 80,
+			"appDeduction": 25,
+			"eduImprovementChecks": 4,
+			"moveRateDeduction": 5,
+			"special": null
+		}
+	],
+	"wealthTable": [
+		{ "minCR": 0, "maxCR": 9, "spendingLevel": "Penniless", "cash": 0.5, "assetsMultiplier": 0 },
+		{ "minCR": 10, "maxCR": 49, "spendingLevel": "Average", "cash": 2, "assetsMultiplier": 10 },
+		{ "minCR": 50, "maxCR": 89, "spendingLevel": "Wealthy", "cash": 5, "assetsMultiplier": 50 },
+		{ "minCR": 90, "maxCR": 98, "spendingLevel": "Rich", "cash": 20, "assetsMultiplier": 500 },
+		{ "minCR": 99, "maxCR": 99, "spendingLevel": "Super Rich", "cash": 50, "assetsMultiplier": 5000 }
+	]
+}

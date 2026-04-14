@@ -1,0 +1,10 @@
+node_modules
+.svelte-kit
+build
+local.db
+*.db
+.env
+.claude
+rulebooks
+:skills-to-add
+chatprd-prompt-coc-character-builder.md

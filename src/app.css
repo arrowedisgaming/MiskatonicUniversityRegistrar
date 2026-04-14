@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+@import './lib/themes/base.css';
+@import './lib/themes/eldritch.css';
+@import './lib/themes/parchment.css';
+
+@custom-variant eldritch (&:is(.eldritch *));
+@custom-variant parchment (&:is(.parchment *));
+
+/* Focus ring utility */
+@utility focus-ring {
+	@apply outline-none ring-2 ring-[var(--color-ring)] ring-offset-2 ring-offset-[var(--color-background)];
+}
+
+/* ─── Accessibility ──────────────────────────── */
+
+/* Reduced motion: disable animations */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Focus visible — keyboard-only focus ring */
+:focus-visible {
+	outline: 2px solid var(--color-ring);
+	outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* ─── Mobile touch targets ───────────────────── */
+
+/* Ensure minimum 44px touch targets on mobile */
+@media (max-width: 768px) {
+	button, a, select, [role="button"] {
+		min-height: 44px;
+		min-width: 44px;
+	}
+
+	/* Stack the header nav vertically on small screens */
+	input[type="number"] {
+		font-size: 16px; /* Prevent iOS zoom on input focus */
+	}
+}
+
+/* ─── Scrollbar styling ──────────────────────── */
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--color-border);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-muted-foreground);
+}

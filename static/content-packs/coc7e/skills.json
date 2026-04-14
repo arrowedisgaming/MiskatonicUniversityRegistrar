@@ -1,0 +1,93 @@
+[
+	{ "id": "accounting", "name": "Accounting", "baseValue": 5, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "anthropology", "name": "Anthropology", "baseValue": 1, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "appraise", "name": "Appraise", "baseValue": 5, "category": "investigation", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "archaeology", "name": "Archaeology", "baseValue": 1, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "art-craft-acting", "name": "Art/Craft (Acting)", "baseValue": 5, "category": "practical", "isSpecialization": true, "specializationGroup": "art-craft", "specializationLabel": "Acting", "eras": ["all"] },
+	{ "id": "art-craft-fine-art", "name": "Art/Craft (Fine Art)", "baseValue": 5, "category": "practical", "isSpecialization": true, "specializationGroup": "art-craft", "specializationLabel": "Fine Art", "eras": ["all"] },
+	{ "id": "art-craft-forgery", "name": "Art/Craft (Forgery)", "baseValue": 5, "category": "practical", "isSpecialization": true, "specializationGroup": "art-craft", "specializationLabel": "Forgery", "eras": ["all"] },
+	{ "id": "art-craft-photography", "name": "Art/Craft (Photography)", "baseValue": 5, "category": "practical", "isSpecialization": true, "specializationGroup": "art-craft", "specializationLabel": "Photography", "eras": ["all"] },
+	{ "id": "art-craft-custom", "name": "Art/Craft (Other)", "baseValue": 5, "category": "practical", "isSpecialization": true, "specializationGroup": "art-craft", "isCustomizable": true, "eras": ["all"] },
+
+	{ "id": "charm", "name": "Charm", "baseValue": 15, "category": "social", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "climb", "name": "Climb", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "credit-rating", "name": "Credit Rating", "baseValue": 0, "category": "other", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "cthulhu-mythos", "name": "Cthulhu Mythos", "baseValue": 0, "category": "academic", "isSpecialization": false, "eras": ["all"], "noPointAllocation": true },
+
+	{ "id": "disguise", "name": "Disguise", "baseValue": 5, "category": "social", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "dodge", "name": "Dodge", "baseValue": 0, "category": "combat", "isSpecialization": false, "eras": ["all"], "derivedBase": "dex/2" },
+	{ "id": "drive-auto", "name": "Drive Auto", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "electrical-repair", "name": "Electrical Repair", "baseValue": 10, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "fast-talk", "name": "Fast Talk", "baseValue": 5, "category": "social", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "fighting-brawl", "name": "Fighting (Brawl)", "baseValue": 25, "category": "combat", "isSpecialization": true, "specializationGroup": "fighting", "specializationLabel": "Brawl", "eras": ["all"] },
+	{ "id": "fighting-sword", "name": "Fighting (Sword)", "baseValue": 20, "category": "combat", "isSpecialization": true, "specializationGroup": "fighting", "specializationLabel": "Sword", "eras": ["all"] },
+	{ "id": "fighting-whip", "name": "Fighting (Whip)", "baseValue": 5, "category": "combat", "isSpecialization": true, "specializationGroup": "fighting", "specializationLabel": "Whip", "eras": ["all"] },
+	{ "id": "fighting-custom", "name": "Fighting (Other)", "baseValue": 5, "category": "combat", "isSpecialization": true, "specializationGroup": "fighting", "isCustomizable": true, "eras": ["all"] },
+
+	{ "id": "firearms-handgun", "name": "Firearms (Handgun)", "baseValue": 20, "category": "combat", "isSpecialization": true, "specializationGroup": "firearms", "specializationLabel": "Handgun", "eras": ["all"] },
+	{ "id": "firearms-rifle-shotgun", "name": "Firearms (Rifle/Shotgun)", "baseValue": 25, "category": "combat", "isSpecialization": true, "specializationGroup": "firearms", "specializationLabel": "Rifle/Shotgun", "eras": ["all"] },
+	{ "id": "firearms-custom", "name": "Firearms (Other)", "baseValue": 5, "category": "combat", "isSpecialization": true, "specializationGroup": "firearms", "isCustomizable": true, "eras": ["all"] },
+
+	{ "id": "first-aid", "name": "First Aid", "baseValue": 30, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "history", "name": "History", "baseValue": 5, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "hypnosis", "name": "Hypnosis", "baseValue": 1, "category": "academic", "isSpecialization": false, "eras": ["all"], "uncommon": true },
+
+	{ "id": "intimidate", "name": "Intimidate", "baseValue": 15, "category": "social", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "jump", "name": "Jump", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "language-other", "name": "Language (Other)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "language", "isCustomizable": true, "eras": ["all"] },
+	{ "id": "language-own", "name": "Language (Own)", "baseValue": 0, "category": "academic", "isSpecialization": false, "eras": ["all"], "derivedBase": "edu" },
+
+	{ "id": "law", "name": "Law", "baseValue": 5, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "library-use", "name": "Library Use", "baseValue": 20, "category": "investigation", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "listen", "name": "Listen", "baseValue": 20, "category": "investigation", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "locksmith", "name": "Locksmith", "baseValue": 1, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "mechanical-repair", "name": "Mechanical Repair", "baseValue": 10, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "medicine", "name": "Medicine", "baseValue": 1, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "natural-world", "name": "Natural World", "baseValue": 10, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "navigate", "name": "Navigate", "baseValue": 10, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "occult", "name": "Occult", "baseValue": 5, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "operate-heavy-machinery", "name": "Operate Heavy Machinery", "baseValue": 1, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "persuade", "name": "Persuade", "baseValue": 10, "category": "social", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "pilot-aircraft", "name": "Pilot (Aircraft)", "baseValue": 1, "category": "practical", "isSpecialization": true, "specializationGroup": "pilot", "specializationLabel": "Aircraft", "eras": ["all"] },
+	{ "id": "pilot-boat", "name": "Pilot (Boat)", "baseValue": 1, "category": "practical", "isSpecialization": true, "specializationGroup": "pilot", "specializationLabel": "Boat", "eras": ["all"] },
+
+	{ "id": "psychoanalysis", "name": "Psychoanalysis", "baseValue": 1, "category": "academic", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "psychology", "name": "Psychology", "baseValue": 10, "category": "social", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "ride", "name": "Ride", "baseValue": 5, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "science-astronomy", "name": "Science (Astronomy)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Astronomy", "eras": ["all"] },
+	{ "id": "science-biology", "name": "Science (Biology)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Biology", "eras": ["all"] },
+	{ "id": "science-botany", "name": "Science (Botany)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Botany", "eras": ["all"] },
+	{ "id": "science-chemistry", "name": "Science (Chemistry)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Chemistry", "eras": ["all"] },
+	{ "id": "science-forensics", "name": "Science (Forensics)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Forensics", "eras": ["all"] },
+	{ "id": "science-geology", "name": "Science (Geology)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Geology", "eras": ["all"] },
+	{ "id": "science-mathematics", "name": "Science (Mathematics)", "baseValue": 10, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Mathematics", "eras": ["all"] },
+	{ "id": "science-meteorology", "name": "Science (Meteorology)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Meteorology", "eras": ["all"] },
+	{ "id": "science-pharmacy", "name": "Science (Pharmacy)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Pharmacy", "eras": ["all"] },
+	{ "id": "science-physics", "name": "Science (Physics)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Physics", "eras": ["all"] },
+	{ "id": "science-zoology", "name": "Science (Zoology)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "specializationLabel": "Zoology", "eras": ["all"] },
+	{ "id": "science-custom", "name": "Science (Other)", "baseValue": 1, "category": "academic", "isSpecialization": true, "specializationGroup": "science", "isCustomizable": true, "eras": ["all"] },
+
+	{ "id": "sleight-of-hand", "name": "Sleight of Hand", "baseValue": 10, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "spot-hidden", "name": "Spot Hidden", "baseValue": 25, "category": "investigation", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "stealth", "name": "Stealth", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "survival-custom", "name": "Survival", "baseValue": 10, "category": "practical", "isSpecialization": true, "specializationGroup": "survival", "isCustomizable": true, "eras": ["all"] },
+	{ "id": "swim", "name": "Swim", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+
+	{ "id": "throw", "name": "Throw", "baseValue": 20, "category": "practical", "isSpecialization": false, "eras": ["all"] },
+	{ "id": "track", "name": "Track", "baseValue": 10, "category": "practical", "isSpecialization": false, "eras": ["all"] }
+]
