@@ -1,10 +1,20 @@
 @import 'tailwindcss';
 @import './lib/themes/base.css';
-@import './lib/themes/eldritch.css';
-@import './lib/themes/parchment.css';
+@import './lib/themes/classic-dark.css';
+@import './lib/themes/classic-light.css';
+@import './lib/themes/modern-dark.css';
+@import './lib/themes/modern-light.css';
+@import './lib/themes/effects.css';
 
-@custom-variant eldritch (&:is(.eldritch *));
-@custom-variant parchment (&:is(.parchment *));
+/* Era variants — for era-wide styling differences */
+@custom-variant classic (&:is(.classic *));
+@custom-variant modern (&:is(.modern *));
+
+/* Theme-specific variants */
+@custom-variant classic-dark (&:is(.classic-dark *));
+@custom-variant classic-light (&:is(.classic-light *));
+@custom-variant modern-dark (&:is(.modern-dark *));
+@custom-variant modern-light (&:is(.modern-light *));
 
 /* Focus ring utility */
 @utility focus-ring {

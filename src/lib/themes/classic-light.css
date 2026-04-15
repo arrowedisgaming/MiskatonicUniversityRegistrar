@@ -1,0 +1,29 @@
+/*
+ * Classic Light — warm cream background, ink-brown text, amber accents.
+ * 1920s aged parchment / newspaper aesthetic.
+ */
+
+.classic-light {
+	--color-background: oklch(0.93 0.04 80);
+	--color-foreground: oklch(0.18 0.02 70);
+	--color-card: oklch(0.90 0.04 80);
+	--color-card-foreground: oklch(0.18 0.02 70);
+	--color-popover: oklch(0.91 0.035 80);
+	--color-popover-foreground: oklch(0.18 0.02 70);
+	--color-primary: oklch(0.38 0.08 155);
+	--color-primary-foreground: oklch(0.95 0.02 80);
+	--color-secondary: oklch(0.86 0.035 80);
+	--color-secondary-foreground: oklch(0.22 0.02 70);
+	--color-muted: oklch(0.87 0.03 80);
+	--color-muted-foreground: oklch(0.42 0.02 70);
+	--color-accent: oklch(0.86 0.05 75);
+	--color-accent-foreground: oklch(0.22 0.02 70);
+	--color-destructive: oklch(0.40 0.18 25);
+	--color-destructive-foreground: oklch(0.95 0.01 90);
+	--color-border: oklch(0.76 0.04 80);
+	--color-input: oklch(0.76 0.04 80);
+	--color-ring: oklch(0.38 0.08 155);
+	--color-warning: oklch(0.55 0.12 65);
+	--color-warning-foreground: oklch(0.95 0.02 65);
+	--color-gold: oklch(0.50 0.10 75);
+}

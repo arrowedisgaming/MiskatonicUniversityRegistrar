@@ -21,14 +21,13 @@
 		occupations: CoCOccupationDefinition[];
 	};
 
-	import { onMount } from 'svelte';
-
 	const char = $wizard.character;
 	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
 
-	onMount(() => {
-		if (!occupation) goto(WIZARD_STEPS[1].path);
-	});
+	// Redirect if no occupation selected (e.g. direct URL access)
+	if (!occupation && typeof window !== 'undefined') {
+		goto(WIZARD_STEPS[1].path);
+	}
 
 	const totalOccPoints = occupation
 		? calculateOccupationSkillPoints(
@@ -65,10 +64,7 @@
 	}
 
 	function getAlloc(skillId: string) {
-		if (!pointAllocations[skillId]) {
-			pointAllocations[skillId] = { occupation: 0, personal: 0 };
-		}
-		return pointAllocations[skillId];
+		return pointAllocations[skillId] ?? { occupation: 0, personal: 0 };
 	}
 
 	function getBase(skill: CoCSkillDefinition): number {

@@ -45,7 +45,7 @@ export interface CoCCharacterData {
 }
 
 export interface CharacteristicsData {
-	method: 'roll' | 'quick-fire';
+	method: 'roll';
 	/** Final values after all modifiers */
 	values: Record<CharacteristicId, number>;
 	/** Values before age modifiers */

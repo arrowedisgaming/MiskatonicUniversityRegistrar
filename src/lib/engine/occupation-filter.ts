@@ -11,7 +11,7 @@ export function filterOccupationsByEra(
 	era: string
 ): CoCOccupationDefinition[] {
 	return occupations.filter(
-		(occ) => occ.eras.includes(era) || occ.eras.includes('all')
+		(occ) => occ.eras.some((e) => e === era || e === 'all')
 	);
 }
 

@@ -1,0 +1,196 @@
+/*
+ * Era-specific atmospheric effects.
+ * Classic: paper grain, old photograph vignette, antique ink shadows, Art Deco decorations.
+ * Modern: CRT scanlines and phosphor glow.
+ */
+
+/* ═══════════════════════════════════════════════
+   CLASSIC ERA
+   ═══════════════════════════════════════════════ */
+
+/* ─── Paper Grain + Sepia Wash ─────────────────── */
+
+.classic-dark body::before,
+.classic-light body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9998;
+	filter: url(#paper-noise);
+	mix-blend-mode: overlay;
+}
+
+.classic-dark body::before {
+	opacity: 0.06;
+	background: oklch(0.50 0.05 75 / 0.08);
+}
+
+.classic-light body::before {
+	opacity: 0.08;
+	background: oklch(0.40 0.06 65 / 0.06);
+}
+
+/* ─── Old Photograph Vignette ──────────────────── */
+
+.classic-dark body::after,
+.classic-light body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9997;
+}
+
+.classic-dark body::after {
+	background: radial-gradient(
+		ellipse at center,
+		transparent 50%,
+		oklch(0.08 0.02 75 / 0.35) 100%
+	);
+}
+
+.classic-light body::after {
+	background: radial-gradient(
+		ellipse at center,
+		transparent 55%,
+		oklch(0.30 0.04 75 / 0.12) 100%
+	);
+}
+
+/* ─── Antique Ink Text Shadows ─────────────────── */
+
+.classic-dark [data-heading] {
+	text-shadow: 1px 1px 0 oklch(0 0 0 / 0.3);
+}
+
+.classic-light [data-heading] {
+	text-shadow: 0.5px 0.5px 0 oklch(0.30 0.03 75 / 0.15);
+}
+
+.classic-dark [data-flavor] {
+	text-shadow: 0.5px 0.5px 0 oklch(0 0 0 / 0.2);
+}
+
+/* ─── Art Deco Horizontal Rules ────────────────── */
+
+.classic-dark hr,
+.classic-light hr {
+	border: none;
+	height: 1px;
+	background: linear-gradient(
+		to right,
+		transparent,
+		var(--color-gold) 20%,
+		var(--color-gold) 80%,
+		transparent
+	);
+	position: relative;
+	margin: 1.5rem 0;
+}
+
+.classic-dark hr::before,
+.classic-light hr::before {
+	content: '◆';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background: var(--color-background);
+	padding: 0 0.75rem;
+	color: var(--color-gold);
+	font-size: 0.75rem;
+}
+
+/* ─── Heading Ornamental Underlines ────────────── */
+
+.classic-dark h2[data-heading],
+.classic-light h2[data-heading] {
+	padding-bottom: 0.35rem;
+	border-bottom: 1px solid var(--color-gold);
+	display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════
+   MODERN ERA
+   ═══════════════════════════════════════════════ */
+
+/* ─── CRT Scanlines ────────────────────────────── */
+
+.modern-dark body::after,
+.modern-light body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9999;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		oklch(0 0 0 / 0.03) 2px,
+		oklch(0 0 0 / 0.03) 4px
+	);
+}
+
+/* Stronger scanlines on dark terminal */
+.modern-dark body::after {
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		oklch(0 0 0 / 0.06) 2px,
+		oklch(0 0 0 / 0.06) 4px
+	);
+}
+
+/* ─── CRT Vignette ─────────────────────────────── */
+
+.modern-dark body::before,
+.modern-light body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9998;
+	background: radial-gradient(
+		ellipse at center,
+		transparent 60%,
+		oklch(0 0 0 / 0.15) 100%
+	);
+}
+
+/* ─── Phosphor Glow ────────────────────────────── */
+
+.modern-dark {
+	text-shadow: 0 0 4px oklch(0.70 0.18 145 / 0.3);
+}
+
+.modern-dark [data-heading] {
+	text-shadow: 0 0 8px oklch(0.70 0.18 145 / 0.5);
+}
+
+/* ═══════════════════════════════════════════════
+   ACCESSIBILITY: Reduced Motion
+   ═══════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+	.classic-dark body::before,
+	.classic-light body::before,
+	.classic-dark body::after,
+	.classic-light body::after,
+	.modern-dark body::after,
+	.modern-light body::after,
+	.modern-dark body::before,
+	.modern-light body::before {
+		display: none;
+	}
+
+	.classic-dark [data-heading],
+	.classic-light [data-heading],
+	.classic-dark [data-flavor],
+	.modern-dark,
+	.modern-dark [data-heading] {
+		text-shadow: none;
+	}
+}

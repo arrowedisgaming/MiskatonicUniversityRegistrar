@@ -17,7 +17,7 @@
 		<ol class="flex flex-wrap items-center gap-1 sm:gap-2">
 			{#each WIZARD_STEPS as step, i}
 				{@const isActive = i === currentStepIndex}
-				{@const isComplete = $wizard.completedSteps.includes(i)}
+				{@const isComplete = $wizard.completedSteps.some((s) => s === i)}
 				{@const isAccessible = i <= $wizard.currentStep || isComplete}
 				<li class="flex items-center">
 					{#if i > 0}

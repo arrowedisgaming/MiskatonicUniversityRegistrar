@@ -1,10 +1,9 @@
 /*
- * Base theme – shared custom properties and defaults.
- * Eldritch Dark is the default (applied when no theme class is set).
+ * Classic Dark — deep green-black with warm amber accents, antique gold decorations.
+ * 1920s candlelit study aesthetic. Also the default in base.css.
  */
 
-:root {
-	/* Classic Dark (default) */
+.classic-dark {
 	--color-background: oklch(0.14 0.015 150);
 	--color-foreground: oklch(0.87 0.025 80);
 	--color-card: oklch(0.17 0.02 130);
@@ -27,30 +26,4 @@
 	--color-warning: oklch(0.65 0.12 65);
 	--color-warning-foreground: oklch(0.15 0.02 65);
 	--color-gold: oklch(0.65 0.12 75);
-
-	--radius: 0.25rem;
-
-	/* Typography */
-	--font-heading: 'Playfair Display', serif;
-	--font-flavor: 'IM Fell English', serif;
-	--font-body: 'Inter', sans-serif;
-}
-
-/* Heading typography */
-h1, h2, h3, h4, h5, h6, [data-heading] {
-	font-family: var(--font-heading);
-	letter-spacing: 0.02em;
-}
-
-/* Flavor/decorative text */
-[data-flavor] {
-	font-family: var(--font-flavor);
-	font-style: italic;
-}
-
-/* Body text */
-body {
-	font-family: var(--font-body);
-	background-color: var(--color-background);
-	color: var(--color-foreground);
 }

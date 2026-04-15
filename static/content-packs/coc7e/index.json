@@ -25,11 +25,6 @@
 			"id": "roll",
 			"name": "Roll",
 			"description": "Roll dice for each characteristic: 3D6×5 for STR/CON/DEX/APP/POW, (2D6+6)×5 for SIZ/INT/EDU."
-		},
-		{
-			"id": "quick-fire",
-			"name": "Quick-Fire",
-			"description": "Choose from pre-built stat arrays and assign them to characteristics."
 		}
 	],
 	"characteristicRolls": {
@@ -42,11 +37,6 @@
 		"int": "2d6+6x5",
 		"edu": "2d6+6x5"
 	},
-	"quickFireArrays": [
-		[40, 50, 50, 50, 60, 60, 70, 80],
-		[40, 50, 50, 50, 60, 70, 70, 70],
-		[40, 50, 50, 60, 60, 60, 70, 80]
-	],
 	"damageBonusBuildTable": [
 		{ "minSum": 2, "maxSum": 64, "damageBonus": "-2", "build": -2 },
 		{ "minSum": 65, "maxSum": 84, "damageBonus": "-1", "build": -1 },

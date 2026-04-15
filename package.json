@@ -1,7 +1,28 @@
 {
-	"name": "miskatonicuniversityregistrar",
+	"name": "miskatonic-university-registrar",
+	"version": "0.1.0",
 	"private": true,
-	"version": "0.0.1",
+	"description": "A Call of Cthulhu 7th Edition investigator creator. SvelteKit monolith, content-pack driven, Fan Material Policy-compliant.",
+	"license": "GPL-3.0-or-later",
+	"author": "Arrowed",
+	"homepage": "https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar.git"
+	},
+	"bugs": {
+		"url": "https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/issues"
+	},
+	"keywords": [
+		"call-of-cthulhu",
+		"coc7e",
+		"character-builder",
+		"ttrpg",
+		"sveltekit",
+		"svelte",
+		"investigator",
+		"chaosium-fan-material"
+	],
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

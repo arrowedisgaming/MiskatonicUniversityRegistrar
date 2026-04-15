@@ -83,7 +83,7 @@ function createWizardStore() {
 		/** Mark the current step as complete and advance */
 		completeStep(stepIndex: number) {
 			update((s) => {
-				const completed = s.completedSteps.includes(stepIndex)
+				const completed = s.completedSteps.some((step) => step === stepIndex)
 					? s.completedSteps
 					: [...s.completedSteps, stepIndex];
 				return {
@@ -102,7 +102,7 @@ function createWizardStore() {
 		/** Check if a step is accessible (completed or current) */
 		isStepAccessible(stepIndex: number): boolean {
 			const state = get({ subscribe });
-			return stepIndex <= state.currentStep || state.completedSteps.includes(stepIndex);
+			return stepIndex <= state.currentStep || state.completedSteps.some((step) => step === stepIndex);
 		},
 
 		/** Clear the wizard and reset */

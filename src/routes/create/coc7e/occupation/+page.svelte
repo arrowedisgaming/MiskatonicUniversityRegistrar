@@ -73,7 +73,7 @@
 		formulaChoices = {};
 	}
 
-	function proceed() {
+	async function proceed() {
 		if (!selectedOccupation) return;
 
 		wizard.updateCharacter((c) => ({
@@ -84,7 +84,7 @@
 			}
 		}));
 		wizard.completeStep(1);
-		goto(WIZARD_STEPS[2].path);
+		await goto(WIZARD_STEPS[2].path);
 	}
 </script>
 
@@ -121,9 +121,6 @@
 							: 'hover:bg-[var(--color-accent)]'}"
 				>
 					<span class="font-medium">{occ.name}</span>
-					<span class="ml-2 text-xs opacity-70">
-						CR {occ.creditRating.min}–{occ.creditRating.max}
-					</span>
 				</button>
 			{/each}
 			{#if filteredOccupations.length === 0}

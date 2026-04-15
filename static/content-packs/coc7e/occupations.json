@@ -2,496 +2,6490 @@
 	{
 		"id": "accountant",
 		"name": "Accountant",
-		"eras": ["1920s"],
-		"creditRating": { "min": 30, "max": 70 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "law", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "persuade", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Business associates, legal professionals, tax officials"
+		"suggestedContacts": "Business associates, legal professions, financial sector (bankers, other accountants)."
+	},
+	{
+		"id": "acrobat",
+		"name": "Acrobat",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Amateur athletic circles, sports writers, circuses, carnivals."
+	},
+	{
+		"id": "actor",
+		"name": "Actor",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Theatre industry, newspaper arts critics, actor's guild or union."
+	},
+	{
+		"id": "actor-film-star",
+		"name": "Actor, Film Star",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 90
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Film industry, media, agents, fans, fame-seekers."
+	},
+	{
+		"id": "actor-stage-radio",
+		"name": "Actor, Stage and Radio",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Theatre industry, newspaper arts critics, actor's guild or union."
+	},
+	{
+		"id": "agency-detective",
+		"name": "Agency Detective",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 45
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Local law enforcement, clients."
+	},
+	{
+		"id": "alienist",
+		"name": "Alienist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychoanalysis",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Others in the field of mental illness, medical doctors, and occasionally detectives in law enforcement."
+	},
+	{
+		"id": "animal-trainer",
+		"name": "Animal Trainer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"pow"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "animal-handling",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "science-zoology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Zoos, circus folk, patrons, actors."
 	},
 	{
 		"id": "antiquarian",
 		"name": "Antiquarian",
-		"eras": ["1920s"],
-		"creditRating": { "min": 30, "max": 70 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "appraise", "required": true },
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Antique dealers, historians, museum curators"
+		"suggestedContacts": "Booksellers, antique collectors, historical societies."
+	},
+	{
+		"id": "antique-dealer",
+		"name": "Antique Dealer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Local historians, other antique dealers, possibly criminal fences."
+	},
+	{
+		"id": "archaeologist",
+		"name": "Archaeologist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "archaeology",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Patrons, museums, universities."
+	},
+	{
+		"id": "architect",
+		"name": "Architect",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-mathematics",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Local building and city engineering departments, construction firms."
 	},
 	{
 		"id": "artist",
 		"name": "Artist",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 50 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 50
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "pow"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"pow"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-fine-art", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "natural-world", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Art galleries, art critics, other artists, patrons"
+		"suggestedContacts": "Art galleries, critics, wealthy patrons, the advertising industry."
+	},
+	{
+		"id": "criminal-assassin",
+		"name": "Assassin",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Few, mostly underworld; people prefer not to know them too well. The best will have earned a formidable reputation on the street."
+	},
+	{
+		"id": "asylum-attendant",
+		"name": "Asylum Attendant",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 8,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Medical staff, patients, and relatives of patients. Access to medical records, as well as drugs and other medical supplies."
+	},
+	{
+		"id": "athlete",
+		"name": "Athlete",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Sports personalities, sports writers, other media stars."
 	},
 	{
 		"id": "author",
 		"name": "Author",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "natural-world", "required": true },
-			{ "skillId": "occult", "required": true },
-			{ "skillId": "language-own", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Publishers, editors, literary critics, other writers"
+		"suggestedContacts": "Publishers, critics, historians, etc."
 	},
 	{
-		"id": "clergy",
-		"name": "Clergy",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 60 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"id": "criminal-bank-robber",
+		"name": "Bank Robber",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 75
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Other gang members (current and retired), criminal freelancers, organized crime."
+	},
+	{
+		"id": "bartender",
+		"name": "Bartender",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 8,
+			"max": 25
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Regular customers, possibly organized crime."
+	},
+	{
+		"id": "big-game-hunter",
+		"name": "Big Game Hunter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Foreign government officials, game wardens, past (usually wealthy) clients, black-market gangs and traders, zoo owners."
+	},
+	{
+		"id": "book-dealer",
+		"name": "Book Dealer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Bibliographers, book dealers, libraries and universities, clients."
+	},
+	{
+		"id": "criminal-bootlegger",
+		"name": "Bootlegger",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Organized crime, street-level law enforcement, local traders."
+	},
+	{
+		"id": "bounty-hunter",
+		"name": "Bounty Hunter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"combatChoiceCount": 1,
+		"suggestedContacts": "Bail bondsmen, local police, criminal informants."
+	},
+	{
+		"id": "boxer",
+		"name": "Boxer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Sports promoters, journalists, organized crime, professional trainers."
+	},
+	{
+		"id": "criminal-burglar",
+		"name": "Burglar",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Fences, other burglars."
+	},
+	{
+		"id": "butler",
+		"name": "Butler",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Waiting staff of other households, local businesses and household suppliers."
+	},
+	{
+		"id": "carpenter",
+		"name": "Carpenter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Local building firms, suppliers, carpenters' union."
+	},
+	{
+		"id": "chauffeur",
+		"name": "Chauffeur",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Wealthy employers, background staff of the wealthy, local businesses."
+	},
+	{
+		"id": "clergy-member-of-the",
+		"name": "Clergy, Member of the",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Church hierarchy, congregations, local community"
+		"suggestedContacts": "Church hierarchy, local congregations, community leaders."
+	},
+	{
+		"id": "clerk",
+		"name": "Clerk",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Other office workers, Masons or other fraternal groups, local and federal government."
+	},
+	{
+		"id": "computer-programmer",
+		"name": "Computer Programmer",
+		"eras": [
+			"modern"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "computer-use",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "science-mathematics",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 3,
+		"suggestedContacts": "IT industry, online communities, hackers, government."
+	},
+	{
+		"id": "computer-technician",
+		"name": "Computer Technician",
+		"eras": [
+			"modern"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "computer-use",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "science-mathematics",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 3,
+		"suggestedContacts": "IT industry, online communities, hackers, government."
+	},
+	{
+		"id": "criminal-conman",
+		"name": "Conman",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 65
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Other confidence artists, freelance criminals."
+	},
+	{
+		"id": "criminal-counterfeiter",
+		"name": "Counterfeiter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-forgery",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Organized crime, businesspeople."
+	},
+	{
+		"id": "cowboy",
+		"name": "Cowboy",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Local businesspeople, state agricultural departments, rodeo promoters, and entertainers."
+	},
+	{
+		"id": "cowgirl",
+		"name": "Cowgirl",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Local businesspeople, state agricultural departments, rodeo promoters, and entertainers."
+	},
+	{
+		"id": "craftsperson",
+		"name": "Craftsperson",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Local business people, other craftspeople and artists."
 	},
 	{
 		"id": "criminal",
 		"name": "Criminal",
-		"eras": ["1920s"],
-		"creditRating": { "min": 5, "max": 65 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 65
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "app"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"app"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "appraise", "required": true },
-			{ "skillId": "disguise", "required": true },
-			{ "skillId": "locksmith", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "spot-hidden", "required": true },
-			{ "skillId": "stealth", "required": true }
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"combatChoiceCount": 1,
-		"suggestedContacts": "Fences, other criminals, corrupt officials, lawyers"
+		"suggestedContacts": "Other petty criminals, street-level law enforcement."
+	},
+	{
+		"id": "cult-leader",
+		"name": "Cult Leader",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "While the majority of followers will be regular people, the more charismatic the leader, the greater the possibility of celebrity followers, such as movie stars and rich widows."
+	},
+	{
+		"id": "deprogrammer",
+		"name": "Deprogrammer",
+		"eras": [
+			"modern"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Cult members and their families, law enforcement, psychologists."
+	},
+	{
+		"id": "designer",
+		"name": "Designer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Advertising, media, furnishings, architectural, other."
 	},
 	{
 		"id": "dilettante",
 		"name": "Dilettante",
-		"eras": ["1920s"],
-		"creditRating": { "min": 50, "max": 99 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 50,
+			"max": 99
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }, { "characteristic": "app", "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "firearms-handgun", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "ride", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 3,
-		"suggestedContacts": "High society, aristocrats, servants, social elite"
+		"suggestedContacts": "Variable, but usually people of a similar background and tastes, fraternal organizations, bohemian circles, high society at large."
+	},
+	{
+		"id": "diver",
+		"name": "Diver",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "diving",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "pilot-boat",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Coast guard, ship captains, military, law enforcement, smugglers."
 	},
 	{
 		"id": "doctor-of-medicine",
 		"name": "Doctor of Medicine",
-		"eras": ["1920s"],
-		"creditRating": { "min": 30, "max": 80 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "first-aid", "required": true },
-			{ "skillId": "medicine", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "science-biology", "required": true },
-			{ "skillId": "science-pharmacy", "required": true }
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Hospitals, medical associations, patients"
+		"suggestedContacts": "Other physicians, medical workers, patients and ex-patients."
 	},
 	{
 		"id": "drifter",
 		"name": "Drifter",
-		"eras": ["1920s"],
-		"creditRating": { "min": 0, "max": 5 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 5
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["app", "dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "climb", "required": true },
-			{ "skillId": "jump", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "navigate", "required": true },
-			{ "skillId": "stealth", "required": true }
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Other hobos, train yard workers, rural folk"
+		"suggestedContacts": "Other hobos, a few friendly railroad guards, soft touches in numerous towns."
+	},
+	{
+		"id": "driver",
+		"name": "Driver",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Customers, businesses, law enforcement and general street level life."
+	},
+	{
+		"id": "editor",
+		"name": "Editor",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "News industry, local government, specialists (e.g. fashion designers, sports, business), publishers."
+	},
+	{
+		"id": "elected-official",
+		"name": "Elected Official",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 50,
+			"max": 90
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "charm",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Political operatives, government, news media, business, foreign governments, possibly organized crime."
 	},
 	{
 		"id": "engineer",
 		"name": "Engineer",
-		"eras": ["1920s"],
-		"creditRating": { "min": 30, "max": 60 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
-		"occupationSkills": [
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "electrical-repair", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "mechanical-repair", "required": true },
-			{ "skillId": "operate-heavy-machinery", "required": true },
-			{ "skillId": "science-physics", "required": true }
+		"eras": [
+			"1920s"
 		],
-		"personalChoiceCount": 2,
-		"suggestedContacts": "Construction firms, academic colleagues, patent attorneys"
+		"creditRating": {
+			"min": 30,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "science-physics",
+				"required": true
+			},
+			{
+				"skillId": "science-custom",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Business or military workers, local government, architects."
 	},
 	{
 		"id": "entertainer",
 		"name": "Entertainer",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 70 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 70
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }, { "characteristic": "app", "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-acting", "required": true },
-			{ "skillId": "disguise", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 2,
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Agents, producers, theater owners, fans"
+		"suggestedContacts": "Vaudeville, theater, film industry, entertainment critics, organized crime, and television (for modern-day)."
+	},
+	{
+		"id": "executive",
+		"name": "Executive",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Other office workers, Masons or other fraternal groups, local and federal government."
+	},
+	{
+		"id": "explorer",
+		"name": "Explorer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 55,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Major libraries, universities, museums, wealthy patrons, other explorers, publishers, foreign government officials, local tribes people."
 	},
 	{
 		"id": "farmer",
 		"name": "Farmer",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "drive-auto", "required": true },
-			{ "skillId": "mechanical-repair", "required": true },
-			{ "skillId": "natural-world", "required": true },
-			{ "skillId": "operate-heavy-machinery", "required": true },
-			{ "skillId": "track", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Local community, agricultural suppliers"
+		"suggestedContacts": "Local bank, local politicians, state agricultural department."
+	},
+	{
+		"id": "federal-agent",
+		"name": "Federal Agent",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Federal agencies, law enforcement, organized crime."
+	},
+	{
+		"id": "criminal-fence",
+		"name": "Fence",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-forgery",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Organized crime, trade contacts, black market and legitimate buyers."
+	},
+	{
+		"id": "firefighter",
+		"name": "Firefighter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Civic workers, medical workers, law enforcement."
+	},
+	{
+		"id": "foreign-correspondent",
+		"name": "Foreign Correspondent",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "National or worldwide news industry, foreign governments, military."
+	},
+	{
+		"id": "forensic-surgeon",
+		"name": "Forensic Surgeon",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 40,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-forensics",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Laboratories, law enforcement, medical profession."
+	},
+	{
+		"id": "criminal-forger",
+		"name": "Forger",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-forgery",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Organized crime, businesspeople."
+	},
+	{
+		"id": "gambler",
+		"name": "Gambler",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 8,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Bookies, organized crime, street scene."
+	},
+	{
+		"id": "gangster",
+		"name": "Gangster",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 60,
+			"max": 95
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Organized crime, police, city government, politicians, judges, lawyers, businesses, and residents of the same ethnic community."
+	},
+	{
+		"id": "gentleman",
+		"name": "Gentleman",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 40,
+			"max": 90
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "firearms-rifle-shotgun",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Upper classes and landed gentry, politics, servants and agricultural workers."
+	},
+	{
+		"id": "criminal-gun-moll",
+		"name": "Gun Moll",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "firearms-handgun",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Gangsters, law enforcement, local businesses."
+	},
+	{
+		"id": "hacker",
+		"name": "Hacker",
+		"eras": [
+			"modern"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "computer-use",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "science-mathematics",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 3,
+		"suggestedContacts": "IT industry, online communities, hackers, government."
+	},
+	{
+		"id": "hobo",
+		"name": "Hobo",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 5
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Other hobos, a few friendly railroad guards, soft touches in numerous towns."
+	},
+	{
+		"id": "hospital-orderly",
+		"name": "Hospital Orderly",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 6,
+			"max": 15
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Hospital and medical workers, patients. Access to drugs, medical records, etc."
+	},
+	{
+		"id": "intern",
+		"name": "Intern",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 10
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 5,
+		"suggestedContacts": "Academics and other students, while interns may also know business people."
+	},
+	{
+		"id": "journalist-investigative",
+		"name": "Investigative Journalist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "News industry, politicians, street-level crime or law enforcement."
 	},
 	{
 		"id": "journalist",
 		"name": "Journalist",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-photography", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "language-own", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 2,
-		"suggestedContacts": "News editors, informants, police, city officials"
+		"suggestedContacts": "News industry, politicians, street-level crime or law enforcement."
+	},
+	{
+		"id": "judge",
+		"name": "Judge",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 50,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Legal connections, possibly organized crime."
+	},
+	{
+		"id": "laboratory-assistant",
+		"name": "Laboratory Assistant",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"scienceChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Universities, scientists, librarians."
+	},
+	{
+		"id": "laborer",
+		"name": "Laborer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Other workers and supervisors within their industry."
+	},
+	{
+		"id": "lady",
+		"name": "Lady",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 40,
+			"max": 90
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "firearms-rifle-shotgun",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Upper classes and landed gentry, politics, servants and agricultural workers."
 	},
 	{
 		"id": "lawyer",
 		"name": "Lawyer",
-		"eras": ["1920s"],
-		"creditRating": { "min": 30, "max": 80 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "law", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 2,
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Judges, lawyers, legal associations, clients"
+		"suggestedContacts": "Organized crime, financiers, district attorneys and judges."
 	},
 	{
 		"id": "librarian",
 		"name": "Librarian",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 35 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 35
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "language-own", "required": true }
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 4,
-		"suggestedContacts": "Library patrons, scholars, other librarians"
+		"suggestedContacts": "Booksellers, community groups, specialist researchers."
+	},
+	{
+		"id": "maid",
+		"name": "Maid",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Waiting staff of other households, local businesses and household suppliers."
+	},
+	{
+		"id": "marine",
+		"name": "Marine",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Military, veterans associations."
 	},
 	{
 		"id": "mechanic",
-		"name": "Mechanic",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 40 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"name": "Mechanic (and Skilled Trades)",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-custom", "required": true },
-			{ "skillId": "climb", "required": true },
-			{ "skillId": "drive-auto", "required": true },
-			{ "skillId": "electrical-repair", "required": true },
-			{ "skillId": "mechanical-repair", "required": true },
-			{ "skillId": "operate-heavy-machinery", "required": true }
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 2,
-		"suggestedContacts": "Local garages, car dealerships, racing drivers"
+		"suggestedContacts": "Union members, trade-relevant specialists."
 	},
 	{
 		"id": "military-officer",
 		"name": "Military Officer",
-		"eras": ["1920s"],
-		"creditRating": { "min": 20, "max": 70 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 70
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "firearms-handgun", "required": true },
-			{ "skillId": "navigate", "required": true },
-			{ "skillId": "first-aid", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 2,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Military, government, intelligence agencies"
+		"suggestedContacts": "Military, federal government."
+	},
+	{
+		"id": "millwright",
+		"name": "Millwright",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Trade unions, factory workers, engineers."
+	},
+	{
+		"id": "miner",
+		"name": "Miner",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "demolitions",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Mining community, union members."
+	},
+	{
+		"id": "missionary",
+		"name": "Missionary",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Church hierarchy, foreign officials."
+	},
+	{
+		"id": "mountain-climber",
+		"name": "Mountain Climber",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Other climbers, environmentalists, patrons, sponsors, local rescue or law enforcement, park rangers, sports clubs."
 	},
 	{
 		"id": "museum-curator",
 		"name": "Museum Curator",
-		"eras": ["1920s"],
-		"creditRating": { "min": 10, "max": 30 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
-		"occupationSkills": [
-			{ "skillId": "accounting", "required": true },
-			{ "skillId": "appraise", "required": true },
-			{ "skillId": "archaeology", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "occult", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+		"eras": [
+			"1920s"
 		],
-		"personalChoiceCount": 0,
-		"suggestedContacts": "Art dealers, historians, archaeologists, collectors"
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "archaeology",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Local universities and scholars, publishers, museum patrons."
+	},
+	{
+		"id": "musician",
+		"name": "Musician",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 4,
+		"suggestedContacts": "Club owners, musicians' union, organized crime, street-level criminals."
 	},
 	{
 		"id": "nurse",
 		"name": "Nurse",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "first-aid", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "medicine", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "science-biology", "required": true },
-			{ "skillId": "science-chemistry", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
-		"personalChoiceCount": 0,
-		"suggestedContacts": "Doctors, patients, hospital staff"
+		"suggestedContacts": "Hospital workers, physicians, community workers."
 	},
 	{
 		"id": "occultist",
 		"name": "Occultist",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 65 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 65
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "anthropology", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "occult", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "science-astronomy", "required": true }
+			{
+				"skillId": "anthropology",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "science-astronomy",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Occult societies, bookshops, other occultists"
+		"suggestedContacts": "Libraries, occult societies or fraternities, other occultists."
+	},
+	{
+		"id": "outdoorsman",
+		"name": "Outdoorsman",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Local people and native folk, traders."
+	},
+	{
+		"id": "outdoorswoman",
+		"name": "Outdoorswoman",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "track",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Local people and native folk, traders."
+	},
+	{
+		"id": "parapsychologist",
+		"name": "Parapsychologist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "anthropology",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Universities, parapsychological publications."
+	},
+	{
+		"id": "pharmacist",
+		"name": "Pharmacist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 35,
+			"max": 75
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Local community, local physicians, hospitals and patients. Access to all manner of chemicals and drugs."
+	},
+	{
+		"id": "photographer",
+		"name": "Photographer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Advertising industry, local clients (including political organizations and newspapers)."
+	},
+	{
+		"id": "photojournalist",
+		"name": "Photojournalist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-custom",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "News industry, photographers, law enforcement."
+	},
+	{
+		"id": "pilot",
+		"name": "Pilot",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "pilot-aircraft",
+				"required": true
+			},
+			{
+				"skillId": "science-astronomy",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Old military contacts, cabin crew, mechanics, airfield staff, carnival entertainers."
 	},
 	{
 		"id": "police-detective",
 		"name": "Police Detective",
-		"eras": ["1920s"],
-		"creditRating": { "min": 20, "max": 50 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 50
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-acting", "required": true },
-			{ "skillId": "firearms-handgun", "required": true },
-			{ "skillId": "law", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
-		"personalChoiceCount": 2,
-		"suggestedContacts": "Police, informants, organized crime, city government"
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Law enforcement, street level crime, coroner's office, judiciary, organized crime."
+	},
+	{
+		"id": "police-officer",
+		"name": "Police Officer",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Law enforcement, street level crime, coroner's office, judiciary, organized crime."
 	},
 	{
 		"id": "private-investigator",
 		"name": "Private Investigator",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-photography", "required": true },
-			{ "skillId": "disguise", "required": true },
-			{ "skillId": "law", "required": true },
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Law enforcement, clients, criminal contacts"
+		"suggestedContacts": "Law enforcement, clients."
 	},
 	{
 		"id": "professor",
 		"name": "Professor",
-		"eras": ["1920s"],
-		"creditRating": { "min": 20, "max": 70 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 70
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "language-own", "required": true },
-			{ "skillId": "psychology", "required": true }
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"personalChoiceCount": 4,
-		"suggestedContacts": "University colleagues, students, academic publishers"
+		"suggestedContacts": "Scholars, universities, libraries."
+	},
+	{
+		"id": "prospector",
+		"name": "Prospector",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 10
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "science-geology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Local businesses and residents."
+	},
+	{
+		"id": "prostitute",
+		"name": "Prostitute",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Street scene, police, possibly organized crime, personal clientele."
+	},
+	{
+		"id": "psychiatrist",
+		"name": "Psychiatrist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 80
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychoanalysis",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Others in the field of mental illness, physicians and possibly legal professions."
+	},
+	{
+		"id": "psychoanalyst",
+		"name": "Psychoanalyst",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychoanalysis",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Psychological community, patients."
+	},
+	{
+		"id": "psychologist",
+		"name": "Psychologist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychoanalysis",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Psychological community, patients."
 	},
 	{
 		"id": "reporter",
 		"name": "Reporter",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
 		"occupationSkills": [
-			{ "skillId": "art-craft-acting", "required": true },
-			{ "skillId": "history", "required": true },
-			{ "skillId": "listen", "required": true },
-			{ "skillId": "language-own", "required": true },
-			{ "skillId": "psychology", "required": true },
-			{ "skillId": "stealth", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+			{
+				"skillId": "art-craft-photography",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
-		"personalChoiceCount": 0,
-		"suggestedContacts": "Newspaper editors, police, city officials"
+		"personalChoiceCount": 2,
+		"suggestedContacts": "News industry, politicians, street-level crime or law enforcement."
+	},
+	{
+		"id": "researcher",
+		"name": "Researcher",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Scholars, and academics, large businesses and corporations, foreign governments and individuals."
 	},
 	{
 		"id": "sailor",
 		"name": "Sailor",
-		"eras": ["1920s"],
-		"creditRating": { "min": 9, "max": 30 },
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }],
-			"choiceTerms": [{ "options": ["dex", "str"], "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "climb", "required": true },
-			{ "skillId": "first-aid", "required": true },
-			{ "skillId": "mechanical-repair", "required": true },
-			{ "skillId": "pilot-boat", "required": true },
-			{ "skillId": "spot-hidden", "required": true },
-			{ "skillId": "swim", "required": true }
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "pilot-boat",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			}
 		],
-		"personalChoiceCount": 2,
-		"suggestedContacts": "Dockworkers, port authorities, other sailors"
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Coast Guard, smugglers, organized crime."
+	},
+	{
+		"id": "salesperson",
+		"name": "Salesperson",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Businesses within the same sector, favored customers."
 	},
 	{
 		"id": "scientist",
 		"name": "Scientist",
-		"eras": ["1920s"],
-		"creditRating": { "min": 10, "max": 60 },
-		"skillPointFormula": { "terms": [{ "characteristic": "edu", "multiplier": 4 }] },
-		"occupationSkills": [
-			{ "skillId": "library-use", "required": true },
-			{ "skillId": "language-other", "required": true },
-			{ "skillId": "language-own", "required": true },
-			{ "skillId": "spot-hidden", "required": true }
+		"eras": [
+			"1920s"
 		],
+		"creditRating": {
+			"min": 9,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
 		"scienceChoiceCount": 3,
+		"suggestedContacts": "Other scientists and academics, universities, their employers and former employers."
+	},
+	{
+		"id": "secretary",
+		"name": "Secretary",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"app"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Other scientists, universities, research foundations"
+		"suggestedContacts": "Other office workers, senior executives in client firms."
+	},
+	{
+		"id": "shopkeeper",
+		"name": "Shopkeeper",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Local residents and businesses, local police, local government, customers."
+	},
+	{
+		"id": "criminal-smuggler",
+		"name": "Smuggler",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Organized crime, Coast Guard, U.S. Customs officials."
 	},
 	{
 		"id": "soldier",
-		"name": "Soldier/Marine",
-		"eras": ["1920s"],
-		"creditRating": { "min": 5, "max": 40 },
+		"name": "Soldier",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
 		"skillPointFormula": {
-			"terms": [{ "characteristic": "edu", "multiplier": 2 }, { "characteristic": "str", "multiplier": 2 }]
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
 		},
 		"occupationSkills": [
-			{ "skillId": "climb", "required": true },
-			{ "skillId": "dodge", "required": true },
-			{ "skillId": "fighting-brawl", "required": true },
-			{ "skillId": "firearms-rifle-shotgun", "required": true },
-			{ "skillId": "first-aid", "required": true },
-			{ "skillId": "stealth", "required": true }
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Military, veterans associations."
+	},
+	{
+		"id": "spy",
+		"name": "Spy",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
 		],
 		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Generally only the person the spy reports to, possibly other connections developed while under cover."
+	},
+	{
+		"id": "stonemason",
+		"name": "Stonemason",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "science-geology",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Local building firms, geological societies, trade unions."
+	},
+	{
+		"id": "criminal-street-punk",
+		"name": "Street Punk",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 3,
+			"max": 10
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "throw",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Petty criminals, the local fence, maybe the local gangster, certainly the local police."
+	},
+	{
+		"id": "student",
+		"name": "Student",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 10
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "language-own",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 5,
+		"suggestedContacts": "Academics and other students, while interns may also know business people."
+	},
+	{
+		"id": "stuntman",
+		"name": "Stuntman",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 50
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"str"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "The film and television industries, various explosive and pyrotechnic firms, actors and directors."
+	},
+	{
+		"id": "criminal-thug",
+		"name": "Thug",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-custom",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Organized crime, street-level law enforcement, local traders."
+	},
+	{
+		"id": "tribe-member",
+		"name": "Tribe Member",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 15
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			}
+		],
 		"personalChoiceCount": 1,
-		"suggestedContacts": "Military contacts, veterans, government officials"
+		"suggestedContacts": "Fellow tribe members."
+	},
+	{
+		"id": "undertaker",
+		"name": "Undertaker",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "drive-auto",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "occult",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"suggestedContacts": "Few."
+	},
+	{
+		"id": "union-activist",
+		"name": "Union Activist",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"suggestedContacts": "Other labor leaders and activists, political friends, possibly organized crime. In the 1920s, also socialists, communists, and subversive anarchists."
+	},
+	{
+		"id": "valet",
+		"name": "Valet",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Waiting staff of other households, local businesses and household suppliers."
+	},
+	{
+		"id": "waiter",
+		"name": "Waiter",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Customers, organized crime."
+	},
+	{
+		"id": "waitress",
+		"name": "Waitress",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Customers, organized crime."
+	},
+	{
+		"id": "wrestler",
+		"name": "Wrestler",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 60
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Sports promoters, journalists, organized crime, professional trainers."
+	},
+	{
+		"id": "zealot",
+		"name": "Zealot",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 30
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"pow"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"interpersonalChoiceCount": 2,
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Religious or fraternal groups, news media."
+	},
+	{
+		"id": "zookeeper",
+		"name": "Zookeeper",
+		"eras": [
+			"1920s"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 4
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "animal-handling",
+				"required": true
+			},
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			},
+			{
+				"skillId": "science-zoology",
+				"required": true
+			}
+		],
+		"suggestedContacts": "Scientists, environmentalists."
 	}
 ]

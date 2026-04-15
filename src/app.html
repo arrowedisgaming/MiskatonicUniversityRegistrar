@@ -6,17 +6,25 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content="Miskatonic University Registrar — A Call of Cthulhu 7th Edition character builder" />
 
-		<!-- Google Fonts: Cinzel (headings), IM Fell English (flavor), Inter (body) -->
+		<!-- Google Fonts: Classic era (Cinzel, IM Fell English, Inter) -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap"
 			rel="stylesheet"
 		/>
+		<!-- Modern era fonts (IBM Plex Mono, VT323) — loaded on demand by theme store -->
 
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<!-- SVG filter for Classic era paper grain texture -->
+		<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+			<filter id="paper-noise">
+				<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
+				<feColorMatrix type="saturate" values="0" />
+			</filter>
+		</svg>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

@@ -16,7 +16,7 @@ async function getPdfMake() {
 	if (pdfMakeInstance) return pdfMakeInstance;
 	const pdfMake = (await import('pdfmake/build/pdfmake')).default;
 	const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
-	pdfMake.vfs = (pdfFonts as any).pdfMake?.vfs ?? pdfFonts;
+	pdfMake.addVirtualFileSystem(pdfFonts);
 	pdfMakeInstance = pdfMake;
 	return pdfMake;
 }
@@ -59,12 +59,8 @@ export async function generatePDF(
 	};
 
 	const pdfMake = await getPdfMake();
-	return new Promise<Uint8Array>((resolve) => {
-		const pdfDoc = pdfMake.createPdf(docDefinition);
-		pdfDoc.getBuffer((buffer: Uint8Array) => {
-			resolve(buffer);
-		});
-	});
+	const pdfDoc = pdfMake.createPdf(docDefinition);
+	return await pdfDoc.getBuffer();
 }
 
 function buildPage1(c: CoCCharacterData, occupationName: string): Content[] {

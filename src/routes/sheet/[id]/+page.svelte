@@ -22,6 +22,8 @@
 	let playMode = $state(false);
 
 	let isDirty = $state(false);
+	let pdfError = $state<string | null>(null);
+	let pdfExporting = $state(false);
 
 	function adjust(stat: 'hp' | 'mp' | 'sanity' | 'luck', delta: number) {
 		if (stat === 'hp') currentHP = Math.max(0, Math.min(char.derivedStats.hp.max, currentHP + delta));
@@ -52,15 +54,24 @@
 	}
 
 	async function exportPDF() {
-		const occName = occupation?.name ?? 'Unknown';
-		const pdfBytes = await generatePDF(char, occName);
-		const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `${(char.name || 'investigator').replace(/\s+/g, '-')}.pdf`;
-		a.click();
-		URL.revokeObjectURL(url);
+		pdfError = null;
+		pdfExporting = true;
+		try {
+			const occName = occupation?.name ?? 'Unknown';
+			const pdfBytes = await generatePDF(char, occName);
+			const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${(char.name || 'investigator').replace(/\s+/g, '-')}.pdf`;
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (e) {
+			pdfError = e instanceof Error ? e.message : 'PDF generation failed';
+			console.error('PDF export error:', e);
+		} finally {
+			pdfExporting = false;
+		}
 	}
 
 	// Skills sorted by total descending
@@ -96,9 +107,9 @@
 					class="rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]">
 					Markdown
 				</a>
-				<button onclick={exportPDF}
-					class="rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]">
-					PDF
+				<button onclick={exportPDF} disabled={pdfExporting}
+					class="rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)] disabled:opacity-50">
+					{pdfExporting ? 'Exporting...' : 'PDF'}
 				</button>
 			</div>
 			<button
@@ -115,6 +126,12 @@
 			</a>
 		</div>
 	</div>
+
+	{#if pdfError}
+		<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
+			PDF export failed: {pdfError}
+		</div>
+	{/if}
 
 	<!-- In-Play Tracking -->
 	{#if playMode}

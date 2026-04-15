@@ -17,7 +17,7 @@ export interface CoCContentPack {
 	eras: EraDefinition[];
 	characteristicMethods: CharacteristicMethod[];
 	characteristicRolls: Record<CharacteristicId, string>;
-	quickFireArrays: number[][];
+	quickFireArrays?: number[][];
 	damageBonusBuildTable: DamageBonusBuildEntry[];
 	ageModifiers: AgeModifierEntry[];
 	wealthTable: WealthEntry[];

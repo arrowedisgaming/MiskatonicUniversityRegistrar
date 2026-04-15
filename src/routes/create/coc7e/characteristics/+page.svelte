@@ -20,15 +20,10 @@
 	};
 
 	// Local state for this step
-	let method = $state<'roll' | 'quick-fire'>($wizard.character.characteristics.method || 'roll');
 	let values = $state<Record<CharacteristicId, number>>({ ...$wizard.character.characteristics.values });
 	let rolls = $state<Record<CharacteristicId, number[]> | null>($wizard.character.characteristics.rolls);
 	let luck = $state<{ max: number; current: number; rolls: number[] | null }>({ ...$wizard.character.derivedStats.luck });
 	let hasValues = $derived(Object.values(values).every((v) => v > 0));
-
-	// Quick-fire state
-	let selectedArrayIndex = $state<number | null>(null);
-	let assignedChars = $state<Record<number, CharacteristicId>>({});
 
 	// Derived stats (auto-calculated)
 	let hp = $derived(hasValues ? calculateHP(values.con, values.siz) : 0);
@@ -49,7 +44,6 @@
 		const results = rollAllCharacteristics();
 		values = rollResultsToValues(results);
 		rolls = rollResultsToRolls(results);
-		method = 'roll';
 	}
 
 	function rerollSingle(char: CharacteristicId) {
@@ -64,37 +58,11 @@
 		luck = { max: result.total, current: result.total, rolls: result.rolls };
 	}
 
-	function selectQuickFireArray(index: number) {
-		selectedArrayIndex = index;
-		assignedChars = {};
-		// Reset values until assignment
-		values = { str: 0, con: 0, dex: 0, int: 0, pow: 0, app: 0, siz: 0, edu: 0 };
-		rolls = null;
-		method = 'quick-fire';
-	}
-
-	function assignQuickFireValue(arrayValue: number, valueIndex: number, char: CharacteristicId) {
-		// Remove previous assignment of this value
-		for (const [key, val] of Object.entries(assignedChars)) {
-			if (val === char) delete assignedChars[Number(key)];
-		}
-		assignedChars[valueIndex] = char;
-		assignedChars = { ...assignedChars }; // trigger reactivity
-
-		// Update values from assignments
-		const array = data.contentPack.quickFireArrays[selectedArrayIndex!];
-		const newValues = { str: 0, con: 0, dex: 0, int: 0, pow: 0, app: 0, siz: 0, edu: 0 } as Record<CharacteristicId, number>;
-		for (const [idx, assignedChar] of Object.entries(assignedChars)) {
-			newValues[assignedChar] = array[Number(idx)];
-		}
-		values = newValues;
-	}
-
 	function proceed() {
 		wizard.updateCharacter((c) => ({
 			...c,
 			characteristics: {
-				method,
+				method: 'roll',
 				values: { ...values },
 				baseValues: { ...values },
 				rolls,
@@ -125,79 +93,16 @@
 		</p>
 	</div>
 
-	<!-- Method selection -->
-	<div class="flex gap-3">
-		<button
-			onclick={rollAll}
-			class="rounded-md border px-4 py-2 text-sm font-medium transition-colors
-				{method === 'roll'
-					? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-					: 'border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-accent)]'}"
-		>
-			Roll Dice
-		</button>
-		<button
-			onclick={() => { method = 'quick-fire'; values = { str: 0, con: 0, dex: 0, int: 0, pow: 0, app: 0, siz: 0, edu: 0 }; selectedArrayIndex = null; rolls = null; }}
-			class="rounded-md border px-4 py-2 text-sm font-medium transition-colors
-				{method === 'quick-fire'
-					? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-					: 'border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-accent)]'}"
-		>
-			Quick-Fire Arrays
-		</button>
-	</div>
+	<!-- Roll button -->
+	<button
+		onclick={rollAll}
+		class="rounded-md border border-[var(--color-primary)] bg-[var(--color-primary)]
+			px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"
+	>
+		{hasValues ? 'Reroll All' : 'Roll Dice'}
+	</button>
 
-	{#if method === 'quick-fire' && !hasValues}
-		<!-- Quick-fire array selection -->
-		<div class="space-y-4">
-			<p class="text-sm text-[var(--color-muted-foreground)]">
-				Choose an array, then assign each value to a characteristic.
-			</p>
-			{#each data.contentPack.quickFireArrays as array, i}
-				<button
-					onclick={() => selectQuickFireArray(i)}
-					class="block w-full rounded-md border p-3 text-left transition-colors
-						{selectedArrayIndex === i
-							? 'border-[var(--color-primary)] bg-[var(--color-accent)]'
-							: 'border-[var(--color-border)] hover:bg-[var(--color-accent)]'}"
-				>
-					<span class="font-mono text-sm">{array.join(' / ')}</span>
-				</button>
-			{/each}
-
-			{#if selectedArrayIndex !== null}
-				<div class="space-y-2">
-					<h3 class="text-sm font-semibold">Assign Values to Characteristics</h3>
-					{#each data.contentPack.quickFireArrays[selectedArrayIndex] as value, vi}
-						<div class="flex items-center gap-3">
-							<span class="w-10 text-right font-mono font-bold">{value}</span>
-							<span class="text-[var(--color-muted-foreground)]">&rarr;</span>
-							<select
-								class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1.5 text-sm"
-								value={assignedChars[vi] ?? ''}
-								onchange={(e) => {
-									const target = e.currentTarget as HTMLSelectElement;
-									if (target.value) assignQuickFireValue(value, vi, target.value as CharacteristicId);
-								}}
-							>
-								<option value="">— Select —</option>
-								{#each ALL_CHARACTERISTICS as char}
-									{@const alreadyAssigned = Object.entries(assignedChars).some(
-										([idx, c]) => c === char && Number(idx) !== vi
-									)}
-									<option value={char} disabled={alreadyAssigned}>
-										{CHARACTERISTIC_LABELS[char]}
-									</option>
-								{/each}
-							</select>
-						</div>
-					{/each}
-				</div>
-			{/if}
-		</div>
-	{/if}
-
-	{#if hasValues || method === 'roll'}
+	{#if hasValues}
 		<!-- Characteristics table -->
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
@@ -207,10 +112,8 @@
 						<th class="pb-2 pr-4 text-center">Value</th>
 						<th class="pb-2 pr-4 text-center">Half</th>
 						<th class="pb-2 pr-4 text-center">Fifth</th>
-						{#if method === 'roll'}
-							<th class="pb-2 text-center">Dice</th>
-							<th class="pb-2"></th>
-						{/if}
+												<th class="pb-2 text-center">Dice</th>
+						<th class="pb-2"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -224,20 +127,18 @@
 							<td class="py-2 pr-4 text-center font-bold text-lg">{v || '—'}</td>
 							<td class="py-2 pr-4 text-center text-[var(--color-muted-foreground)]">{v ? halfValue(v) : '—'}</td>
 							<td class="py-2 pr-4 text-center text-[var(--color-muted-foreground)]">{v ? fifthValue(v) : '—'}</td>
-							{#if method === 'roll'}
-								<td class="py-2 pr-4 text-center font-mono text-xs text-[var(--color-muted-foreground)]">
-									{rolls?.[char]?.join(', ') ?? '—'}
-								</td>
-								<td class="py-2">
-									<button
-										onclick={() => rerollSingle(char)}
-										class="text-xs text-[var(--color-primary)] hover:underline"
-										disabled={!hasValues}
-									>
-										Reroll
-									</button>
-								</td>
-							{/if}
+							<td class="py-2 pr-4 text-center font-mono text-xs text-[var(--color-muted-foreground)]">
+								{rolls?.[char]?.join(', ') ?? '—'}
+							</td>
+							<td class="py-2">
+								<button
+									onclick={() => rerollSingle(char)}
+									class="text-xs text-[var(--color-primary)] hover:underline"
+									disabled={!hasValues}
+								>
+									Reroll
+								</button>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
