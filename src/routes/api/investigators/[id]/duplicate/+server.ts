@@ -11,7 +11,7 @@ import { migrateCharacterData } from '$lib/engine/character-migration';
 /** POST /api/investigators/:id/duplicate — duplicate an investigator */
 export const POST: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const original = await db
 		.select()

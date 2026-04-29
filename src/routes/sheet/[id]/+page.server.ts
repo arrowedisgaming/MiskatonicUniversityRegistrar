@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { getDb } from '$lib/server/db';
 import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
@@ -9,8 +9,13 @@ import { getOccupations } from '$lib/server/content/loader';
 import { migrateCharacterData } from '$lib/engine/character-migration';
 
 export const load: PageServerLoad = async (event) => {
+	const session = await event.locals.auth();
+	if (!session?.user?.id) {
+		throw redirect(303, `/login?callbackUrl=${encodeURIComponent(event.url.pathname)}`);
+	}
+
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const row = await db
 		.select()

@@ -52,6 +52,10 @@
 			});
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					goto(`/login?callbackUrl=${encodeURIComponent('/create/coc7e/review')}`);
+					return;
+				}
 				saveError = 'Failed to save investigator. Please try again.';
 				saving = false;
 				return;

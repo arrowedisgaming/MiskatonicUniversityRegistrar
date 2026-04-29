@@ -1,6 +1,21 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { signOut } from '@auth/sveltekit/client';
 	import { era, mode, theme } from '$lib/stores/theme';
 	import { eras } from '$lib/themes/registry';
+	import { LogIn, LogOut } from '@lucide/svelte';
+
+	const session = $derived(page.data.session);
+
+	function userInitials(name?: string | null): string {
+		if (!name) return '?';
+		return name
+			.split(' ')
+			.map((part) => part[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2);
+	}
 </script>
 
 <header class="border-b border-[var(--color-border)] bg-[var(--color-card)]">
@@ -26,6 +41,44 @@
 			>
 				Investigators
 			</a>
+
+			{#if session?.user}
+				<a
+					href="/investigators"
+					class="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-accent)] text-xs font-semibold text-[var(--color-foreground)]"
+					title={session.user.name ?? 'Signed in'}
+					aria-label={session.user.name ?? 'Signed in'}
+				>
+					{#if session.user.image}
+						<img
+							src={session.user.image}
+							alt=""
+							class="h-full w-full rounded-full object-cover"
+							referrerpolicy="no-referrer"
+						/>
+					{:else}
+						{userInitials(session.user.name)}
+					{/if}
+				</a>
+				<button
+					type="button"
+					onclick={() => signOut({ redirectTo: '/' })}
+					class="rounded-md p-2 text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]"
+					aria-label="Sign out"
+					title="Sign out"
+				>
+					<LogOut size={18} aria-hidden="true" />
+				</button>
+			{:else}
+				<a
+					href="/login"
+					class="rounded-md p-2 text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]"
+					aria-label="Sign in"
+					title="Sign in"
+				>
+					<LogIn size={18} aria-hidden="true" />
+				</a>
+			{/if}
 
 			<!-- Era Toggle -->
 			<div

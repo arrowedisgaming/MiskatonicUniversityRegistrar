@@ -11,7 +11,7 @@ import { migrateCharacterData } from '$lib/engine/character-migration';
 /** GET /api/investigators/:id — get full investigator */
 export const GET: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const row = await db
 		.select()
@@ -30,7 +30,7 @@ export const GET: RequestHandler = async (event) => {
 /** PUT /api/investigators/:id — update investigator */
 export const PUT: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const rawBody = await event.request.json();
 	const parsed = createInvestigatorSchema.safeParse(rawBody);
@@ -66,7 +66,7 @@ export const PUT: RequestHandler = async (event) => {
 /** DELETE /api/investigators/:id — archive (soft delete) */
 export const DELETE: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const existing = await db
 		.select({ id: investigators.id })

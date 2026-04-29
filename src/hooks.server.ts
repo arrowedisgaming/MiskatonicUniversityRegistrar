@@ -1,12 +1,14 @@
 import { json, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { getDb } from '$lib/server/db';
+import { handle as authHandle } from '$lib/server/auth';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_WRITES = 60;
 const writeBuckets = new Map<string, { count: number; resetAt: number }>();
 
-export const handle: Handle = async ({ event, resolve }) => {
+const appHandle: Handle = async ({ event, resolve }) => {
 	event.locals.db = await getDb(event);
 
 	if (isUnsafeRequest(event.request) && !isSameOrigin(event.request)) {
@@ -26,6 +28,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	return response;
 };
+
+export const handle = sequence(appHandle, authHandle);
 
 function isUnsafeRequest(request: Request): boolean {
 	return MUTATING_METHODS.has(request.method);

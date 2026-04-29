@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Auth.js sign-in flow with Google, Discord, and local development credentials.
+- Session-aware header controls with profile display, sign-in, and sign-out actions.
 - Standard investigator age-adjustment engine with audit entries, EDU improvement checks, physical characteristic deductions, and youth Luck handling.
 - Era-aware investigator creation for 1920s and Modern Day, including era selection, era-filtered equipment, and era-specific wealth tables.
 - Optional standard characteristic generation method metadata for roll in place, arrange rolls, point buy, quick fire, low-roll modifier, and human-potential bonus support.
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Character schema v2 migration defaults that preserve existing saved cash and assets values.
 
 ### Changed
+- Investigator dashboard, sheet, save, duplicate, archive, and export flows now require an authenticated user session.
 - Characteristics step now captures era, mode, age, and generation method before occupation and skill allocation.
 - Finances now distinguish living standard, daily spending level, cash, assets, and display labels.
 - Skills allocation now requires explicit occupation choice-slot selections before occupation points can be spent on choice skills.

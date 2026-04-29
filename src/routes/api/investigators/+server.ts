@@ -10,7 +10,7 @@ import { createInvestigatorSchema } from '$lib/schemas/character.schema';
 /** GET /api/investigators — list user's investigators */
 export const GET: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const rows = await db
 		.select({
@@ -34,7 +34,7 @@ export const GET: RequestHandler = async (event) => {
 /** POST /api/investigators — create new investigator */
 export const POST: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 
 	const rawBody = await event.request.json();
 	const parsed = createInvestigatorSchema.safeParse(rawBody);

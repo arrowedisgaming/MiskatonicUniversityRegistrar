@@ -15,7 +15,7 @@ import { migrateCharacterData } from '$lib/engine/character-migration';
  */
 export const GET: RequestHandler = async (event) => {
 	const db = await getDb(event);
-	const userId = await ensureUser(db);
+	const userId = await ensureUser(event);
 	const format = event.url.searchParams.get('format') ?? 'json';
 
 	const row = await db
