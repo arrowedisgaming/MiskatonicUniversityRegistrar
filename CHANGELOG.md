@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-29
+
 ### Added
+- App-wide 3D dice roll overlay for dice rolls in the investigator creation flow.
+- Header dice animation toggle, enabled by default and persisted locally for users who prefer instant rolls.
+- Reduced-motion and disabled-animation fallbacks that reveal roll results without waiting.
 - Auth.js sign-in flow with Google, Discord, and local development credentials.
 - Session-aware header controls with profile display, sign-in, and sign-out actions.
 - Standard investigator age-adjustment engine with audit entries, EDU improvement checks, physical characteristic deductions, and youth Luck handling.
@@ -17,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Character schema v2 migration defaults that preserve existing saved cash and assets values.
 
 ### Changed
+- Dice roll results now reveal after the visual roll settles when animations are enabled.
 - Investigator dashboard, sheet, save, duplicate, archive, and export flows now require an authenticated user session.
 - Characteristics step now captures era, mode, age, and generation method before occupation and skill allocation.
 - Finances now distinguish living standard, daily spending level, cash, assets, and display labels.
@@ -112,5 +118,6 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/releases/tag/v0.1.0
