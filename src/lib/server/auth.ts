@@ -32,8 +32,14 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 	const discordId = getEnv(event, 'AUTH_DISCORD_ID');
 	const discordSecret = getEnv(event, 'AUTH_DISCORD_SECRET');
 	const nodeEnv = getEnv(event, 'NODE_ENV') ?? 'production';
-	const authSecret =
-		getEnv(event, 'AUTH_SECRET') ?? (nodeEnv === 'development' ? DEV_AUTH_SECRET : undefined);
+	const isDev = nodeEnv === 'development';
+	const authSecret = getEnv(event, 'AUTH_SECRET') ?? (isDev ? DEV_AUTH_SECRET : undefined);
+
+	if (!authSecret) {
+		throw new Error(
+			'[auth] AUTH_SECRET is required in production. Set it in your platform env, or run with NODE_ENV=development to use the dev fallback.'
+		);
+	}
 
 	const providers = [];
 
@@ -56,7 +62,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 		);
 	}
 
-	if (nodeEnv === 'development') {
+	if (isDev) {
 		providers.push(
 			Credentials({
 				id: 'credentials',
@@ -71,16 +77,17 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 					if (!email) return null;
 
 					const db = await getDb(event);
-					const existing = await db.select().from(users).where(eq(users.email, email)).get();
-					if (existing) {
-						return { id: existing.id, name: existing.name, email: existing.email };
-					}
-
-					const id = nanoid(21);
-					await db.insert(users).values({ id, name, email });
-					return { id, name, email };
+					const resolved = await findOrCreateUserByEmail(db, { email, name });
+					if (!resolved) return null;
+					return { id: resolved.id, name: resolved.name, email: resolved.email };
 				}
 			})
+		);
+	}
+
+	if (!isDev && providers.length === 0) {
+		console.warn(
+			'[auth] No OAuth providers configured. Set AUTH_GOOGLE_ID/AUTH_GOOGLE_SECRET or AUTH_DISCORD_ID/AUTH_DISCORD_SECRET to enable sign-in.'
 		);
 	}
 
@@ -92,11 +99,30 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 			signIn: '/login'
 		},
 		callbacks: {
-			jwt({ token, user, account }) {
-				if (account?.provider && account.providerAccountId) {
-					token.id = `${account.provider}:${account.providerAccountId}`;
-				} else if (user?.id) {
-					token.id = user.id;
+			async jwt({ token, user, account }) {
+				// Only resolve the DB row id on initial sign-in (when account is present).
+				// On subsequent token refreshes we just keep the id we already stored.
+				if (account && !token.id) {
+					if (account.provider === 'credentials' && user?.id) {
+						token.id = user.id;
+						return token;
+					}
+
+					const email = (user?.email ?? token.email ?? null) as string | null;
+					if (email) {
+						const db = await getDb(event);
+						const resolved = await findOrCreateUserByEmail(db, {
+							email,
+							name: user?.name ?? null,
+							image: user?.image ?? null
+						});
+						if (resolved) {
+							token.id = resolved.id;
+							return token;
+						}
+					}
+
+					if (user?.id) token.id = user.id;
 				}
 				return token;
 			},
@@ -125,27 +151,73 @@ export async function ensureUser(event: RequestEvent): Promise<string> {
 
 	const db = await getDb(event);
 	const existing = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).get();
-	if (existing) {
-		return existing.id;
-	}
+	if (existing) return existing.id;
 
-	if (session.user?.email) {
-		const existingEmailUser = await db
+	// Legacy fallback: JWTs issued before the identity unification stored an id
+	// like `${provider}:${providerAccountId}` (or `credentials:<nanoid>` for the
+	// dev path) that doesn't match the current DB row. Resolve via email so
+	// already-signed-in users keep working until their JWT naturally rotates.
+	const email = session.user?.email;
+	if (email) {
+		const byEmail = await db
 			.select({ id: users.id })
 			.from(users)
-			.where(eq(users.email, session.user.email))
+			.where(eq(users.email, email))
 			.get();
-		if (existingEmailUser) {
-			return existingEmailUser.id;
-		}
+		if (byEmail) return byEmail.id;
 	}
 
-	await db.insert(users).values({
-		id: userId,
-		name: session.user?.name ?? null,
-		email: session.user?.email ?? null,
-		image: session.user?.image ?? null
-	});
+	throw error(401, 'Session is no longer valid');
+}
 
-	return userId;
+type FindOrCreateInput = {
+	email: string;
+	name?: string | null;
+	image?: string | null;
+};
+
+type ResolvedUser = {
+	id: string;
+	name: string | null;
+	email: string;
+	image: string | null;
+};
+
+/**
+ * Resolve a user row by email, creating one if missing. Handles concurrent
+ * first-sign-in races by retrying the lookup after a constraint violation.
+ */
+export async function findOrCreateUserByEmail(
+	db: Awaited<ReturnType<typeof getDb>>,
+	input: FindOrCreateInput
+): Promise<ResolvedUser | null> {
+	const email = input.email;
+
+	const existing = await db
+		.select({ id: users.id, name: users.name, email: users.email, image: users.image })
+		.from(users)
+		.where(eq(users.email, email))
+		.get();
+	if (existing && existing.email) {
+		return existing as ResolvedUser;
+	}
+
+	const id = nanoid(21);
+	try {
+		await db.insert(users).values({
+			id,
+			name: input.name ?? null,
+			email,
+			image: input.image ?? null
+		});
+		return { id, name: input.name ?? null, email, image: input.image ?? null };
+	} catch {
+		const reread = await db
+			.select({ id: users.id, name: users.name, email: users.email, image: users.image })
+			.from(users)
+			.where(eq(users.email, email))
+			.get();
+		if (reread && reread.email) return reread as ResolvedUser;
+		return null;
+	}
 }

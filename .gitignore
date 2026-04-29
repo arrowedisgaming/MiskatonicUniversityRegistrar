@@ -34,6 +34,7 @@ rulebooks/
 .claude/
 CLAUDE.md
 AGENTS.md
+.agents/
 :skills-to-add/
 
 # Personal task list (not documentation)

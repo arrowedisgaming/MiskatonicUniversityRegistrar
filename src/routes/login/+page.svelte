@@ -86,7 +86,7 @@
 		{/if}
 
 		<p class="mt-5 text-center text-xs text-[var(--color-muted-foreground)]">
-			You can create an investigator without signing in.
+			You can build an investigator without signing in — sign-in is required to save.
 		</p>
 	</section>
 </div>

@@ -57,6 +57,14 @@ export function hasDiceToShow(request: DiceRollRequest): boolean {
 	return request.groups.some((group) => group.count > 0);
 }
 
+/**
+ * User-facing results in roll order. d100s stay as 1..100 instead of being
+ * expanded into the renderer's tens/ones pair.
+ */
+export function userFacingResults(request: DiceRollRequest): number[] {
+	return request.groups.flatMap((group) => group.results);
+}
+
 export function makeDiceRollRequest(
 	groups: DiceGroup[],
 	options: Omit<DiceRollRequest, 'groups'> = {}

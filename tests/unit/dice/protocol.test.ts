@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	makeDiceRollRequest,
 	toRendererNotation,
+	userFacingResults,
 	validateDiceGroup
 } from '$lib/dice/protocol';
 
@@ -37,5 +38,17 @@ describe('dice visual protocol', () => {
 		const request = makeDiceRollRequest([{ count: 0, sides: 6, results: [] }]);
 
 		expect(toRendererNotation(request)).toEqual({ notation: '0', results: [] });
+	});
+
+	it('exposes user-facing d100 results without percentile expansion', () => {
+		const request = makeDiceRollRequest([
+			{ count: 3, sides: 100, results: [1, 73, 100] },
+			{ count: 1, sides: 6, results: [4] }
+		]);
+
+		// Renderer notation uses the expanded tens/ones representation (10 numbers)
+		expect(toRendererNotation(request).results).toHaveLength(7);
+		// User-facing results stay in the original 1..100 form (4 numbers)
+		expect(userFacingResults(request)).toEqual([1, 73, 100, 4]);
 	});
 });

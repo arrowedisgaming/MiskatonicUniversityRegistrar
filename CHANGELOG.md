@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-29
+
+### Fixed
+- Reduced-motion and animations-off dice roll fallback now displays the actual user-facing roll values (e.g. a 73 on a d100 shows as `73`, not `70 / 3`).
+- Auth user identity is now a single stable database row id across providers; previously OAuth and dev-credentials sign-ins produced different id schemes that only stayed consistent through an email-fallback lookup.
+- `ensureUser` and the dev credentials provider now survive concurrent first-sign-in races for the same email — backed by a real `users.email` unique index plus a re-read on insert conflict, so two parallel OAuth callbacks can no longer create duplicate user rows.
+- `ensureUser` keeps an email-based fallback so users who already hold a JWT issued before the identity unification do not get logged out until their token rotates.
+- Missing `AUTH_SECRET` in production now throws an explicit configuration error at request time instead of failing silently inside Auth.js.
+- Dice toggle preference no longer writes to `localStorage` on every page boot, only when the user actually changes it.
+
+### Changed
+- Added a unique index on `users.email` (migration `0001_majestic_doctor_spectrum.sql`). Run `npx drizzle-kit push` (local SQLite) or apply the migration to your D1 database before deploying.
+
+### Migration
+- v0.1.0 anonymous investigators were stored under the literal user id `local-dev-user`. After upgrading, sign in with your account and reassign them with `node scripts/migrate-anonymous-investigators.mjs --email you@example.com` (local SQLite) or run the equivalent `UPDATE investigators SET user_id = ? WHERE user_id = 'local-dev-user'` against your D1 database.
+
 ## [0.1.1] - 2026-04-29
 
 ### Added
@@ -118,6 +134,7 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/releases/tag/v0.1.0

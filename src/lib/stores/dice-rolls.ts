@@ -20,6 +20,7 @@ interface QueuedDiceRoll extends ActiveDiceRoll {
 let nextRollId = 1;
 let active: QueuedDiceRoll | null = null;
 let currentDiceRollAnimationsEnabled = true;
+let hasInitialPreferenceFlushed = false;
 const queue: QueuedDiceRoll[] = [];
 
 export const diceRollState = writable<ActiveDiceRoll | null>(null);
@@ -28,6 +29,11 @@ export const diceRollAnimationsEnabled = writable(readInitialPreference());
 diceRollAnimationsEnabled.subscribe((enabled) => {
 	currentDiceRollAnimationsEnabled = enabled;
 	if (!browser) return;
+
+	if (!hasInitialPreferenceFlushed) {
+		hasInitialPreferenceFlushed = true;
+		return;
+	}
 
 	localStorage.setItem(DICE_ANIMATIONS_KEY, enabled ? 'true' : 'false');
 	if (!enabled) cancelPendingDiceRolls();

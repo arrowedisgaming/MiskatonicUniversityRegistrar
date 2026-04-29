@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { completeDiceRoll, diceRollState } from '$lib/stores/dice-rolls';
-	import { toRendererNotation, type DiceScheme } from '$lib/dice/protocol';
+	import { toRendererNotation, userFacingResults, type DiceScheme } from '$lib/dice/protocol';
 
 	type DiceBoxInstance = {
 		initialize(): Promise<void>;
@@ -59,7 +59,7 @@
 			diceBox?.clearDice();
 			return;
 		}
-		if (!active || active.id === runningRollId) return;
+		if (active.id === runningRollId) return;
 		runningRollId = active.id;
 		void runRoll(active.id);
 	});
@@ -70,10 +70,11 @@
 
 		visible = true;
 		const notation = toRendererNotation(active.request);
+		const displayResults = userFacingResults(active.request);
 		const scheme = active.request.scheme ?? resolveCurrentScheme();
 
 		if (prefersReducedMotion() || notation.results.length === 0) {
-			await runReducedMotionRoll(id, notation.results);
+			await runReducedMotionRoll(id, displayResults);
 			return;
 		}
 
@@ -84,7 +85,7 @@
 			await delay(SETTLE_HOLD_DURATION);
 		} catch (error) {
 			console.warn('3D dice roll failed; using reduced-motion fallback.', error);
-			await runReducedMotionRoll(id, notation.results);
+			await runReducedMotionRoll(id, displayResults);
 			return;
 		}
 
@@ -102,6 +103,7 @@
 
 			const module = await import('@3d-dice/dice-box-threejs');
 			const DiceBox = module.default as DiceBoxConstructor;
+			// Tuned for ~1.0–1.3s settle on a 1080p viewport with up to 8d6 in flight.
 			const box = new DiceBox(`#${OVERLAY_ID}`, {
 				assetPath: '/assets/dice-three/',
 				sounds: false,
