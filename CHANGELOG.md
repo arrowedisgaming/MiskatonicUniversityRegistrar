@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Standard investigator age-adjustment engine with audit entries, EDU improvement checks, physical characteristic deductions, and youth Luck handling.
+- Era-aware investigator creation for 1920s and Modern Day, including era selection, era-filtered equipment, and era-specific wealth tables.
+- Optional standard characteristic generation method metadata for roll in place, arrange rolls, point buy, quick fire, low-roll modifier, and human-potential bonus support.
+- Personal description backstory field across the wizard, character sheet, exports, and schema migration.
+- Character schema v2 migration defaults that preserve existing saved cash and assets values.
+
+### Changed
+- Characteristics step now captures era, mode, age, and generation method before occupation and skill allocation.
+- Finances now distinguish living standard, daily spending level, cash, assets, and display labels.
+- Skills allocation now requires explicit occupation choice-slot selections before occupation points can be spent on choice skills.
+- Pulp mode is now clearly gated as unsupported until a complete Pulp rules implementation is added.
+- Character sheet, review screen, Markdown export, JSON export, and PDF export now use corrected finance and backstory fields.
+
+### Fixed
+- Corrected Move Rate so equality with SIZ resolves to MOV 8 rather than MOV 9.
+- Corrected 1920s and Modern Day wealth calculations from Credit Rating.
+- Enforced occupation-point eligibility, Credit Rating ranges, overspending validation, and the standard Cthulhu Mythos personal-interest restriction.
+- Recalculate derived stats and skill budgets from age-adjusted characteristics.
+
 ## [0.1.0] - 2026-04-15
 
 First public release.
