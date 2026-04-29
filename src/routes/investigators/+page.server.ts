@@ -1,11 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
 import { eq, and, desc } from 'drizzle-orm';
 
-export const load: PageServerLoad = async () => {
-	const userId = ensureUser();
+export const load: PageServerLoad = async (event) => {
+	const db = await getDb(event);
+	const userId = await ensureUser(db);
 
 	const rows = await db
 		.select({

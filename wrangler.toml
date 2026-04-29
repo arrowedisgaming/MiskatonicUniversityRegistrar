@@ -1,0 +1,9 @@
+name = "miskatonic-university-registrar"
+compatibility_date = "2026-04-29"
+pages_build_output_dir = ".svelte-kit/cloudflare"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "miskatonic-db"
+database_id = "f68dc16b-5e78-4915-a6f7-5f2878e72b95"
+migrations_dir = "src/lib/server/db/migrations"

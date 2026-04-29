@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
 import { eq, and } from 'drizzle-orm';
@@ -12,14 +12,15 @@ import { exportToMarkdown } from '$lib/export/markdown-export';
 /** GET /api/export/:id?format=json|md
  *  PDF is generated client-side via pdfmake (see sheet page).
  */
-export const GET: RequestHandler = async ({ params, url }) => {
-	const userId = ensureUser();
-	const format = url.searchParams.get('format') ?? 'json';
+export const GET: RequestHandler = async (event) => {
+	const db = await getDb(event);
+	const userId = await ensureUser(db);
+	const format = event.url.searchParams.get('format') ?? 'json';
 
 	const row = await db
 		.select()
 		.from(investigators)
-		.where(and(eq(investigators.id, params.id), eq(investigators.userId, userId)))
+		.where(and(eq(investigators.id, event.params.id), eq(investigators.userId, userId)))
 		.get();
 
 	if (!row) throw error(404, 'Investigator not found');

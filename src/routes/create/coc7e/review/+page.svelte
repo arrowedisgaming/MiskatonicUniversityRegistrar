@@ -57,7 +57,7 @@
 				return;
 			}
 
-			const { id } = await response.json();
+			const { id } = (await response.json()) as { id: string };
 			// Only update wizard state after successful save
 			wizard.completeStep(5);
 			wizard.reset();

@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
 import { eq, and, desc } from 'drizzle-orm';
@@ -8,8 +8,9 @@ import { nanoid } from 'nanoid';
 import { createInvestigatorSchema } from '$lib/schemas/character.schema';
 
 /** GET /api/investigators — list user's investigators */
-export const GET: RequestHandler = async () => {
-	const userId = ensureUser();
+export const GET: RequestHandler = async (event) => {
+	const db = await getDb(event);
+	const userId = await ensureUser(db);
 
 	const rows = await db
 		.select({
@@ -31,10 +32,11 @@ export const GET: RequestHandler = async () => {
 };
 
 /** POST /api/investigators — create new investigator */
-export const POST: RequestHandler = async ({ request }) => {
-	const userId = ensureUser();
+export const POST: RequestHandler = async (event) => {
+	const db = await getDb(event);
+	const userId = await ensureUser(db);
 
-	const rawBody = await request.json();
+	const rawBody = await event.request.json();
 	const parsed = createInvestigatorSchema.safeParse(rawBody);
 	if (!parsed.success) {
 		throw error(400, `Invalid character data: ${parsed.error.issues.map((i) => i.message).join(', ')}`);

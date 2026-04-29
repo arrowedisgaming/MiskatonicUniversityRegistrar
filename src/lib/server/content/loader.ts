@@ -1,13 +1,13 @@
 /**
- * Content pack loader — reads and caches CoC 7e game data from static JSON files.
+ * Content pack loader — exposes bundled CoC 7e game data from static JSON files.
  * Server-side only.
  */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { CoCContentPack, CoCSkillDefinition, CoCOccupationDefinition, CoCEquipmentPack } from '$lib/types/content-pack';
-
-const CONTENT_DIR = 'static/content-packs/coc7e';
+import contentPack from '../../../../static/content-packs/coc7e/index.json';
+import skills from '../../../../static/content-packs/coc7e/skills.json';
+import occupations from '../../../../static/content-packs/coc7e/occupations.json';
+import equipment from '../../../../static/content-packs/coc7e/equipment.json';
 
 // Singleton cache
 let cachedPack: CoCContentPack | null = null;
@@ -15,35 +15,30 @@ let cachedSkills: CoCSkillDefinition[] | null = null;
 let cachedOccupations: CoCOccupationDefinition[] | null = null;
 let cachedEquipment: CoCEquipmentPack | null = null;
 
-function readJson<T>(filename: string): T {
-	const path = join(process.cwd(), CONTENT_DIR, filename);
-	return JSON.parse(readFileSync(path, 'utf-8')) as T;
-}
-
 export function getContentPack(): CoCContentPack {
 	if (!cachedPack) {
-		cachedPack = readJson<CoCContentPack>('index.json');
+		cachedPack = contentPack as CoCContentPack;
 	}
 	return cachedPack;
 }
 
 export function getSkills(): CoCSkillDefinition[] {
 	if (!cachedSkills) {
-		cachedSkills = readJson<CoCSkillDefinition[]>('skills.json');
+		cachedSkills = skills as CoCSkillDefinition[];
 	}
 	return cachedSkills;
 }
 
 export function getOccupations(): CoCOccupationDefinition[] {
 	if (!cachedOccupations) {
-		cachedOccupations = readJson<CoCOccupationDefinition[]>('occupations.json');
+		cachedOccupations = occupations as CoCOccupationDefinition[];
 	}
 	return cachedOccupations;
 }
 
 export function getEquipment(): CoCEquipmentPack {
 	if (!cachedEquipment) {
-		cachedEquipment = readJson<CoCEquipmentPack>('equipment.json');
+		cachedEquipment = equipment as CoCEquipmentPack;
 	}
 	return cachedEquipment;
 }
