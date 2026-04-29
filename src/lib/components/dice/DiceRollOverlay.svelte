@@ -51,6 +51,14 @@
 
 	$effect(() => {
 		const active = $diceRollState;
+		if (!active) {
+			visible = false;
+			fallbackVisible = false;
+			fallbackText = '';
+			runningRollId = null;
+			diceBox?.clearDice();
+			return;
+		}
 		if (!active || active.id === runningRollId) return;
 		runningRollId = active.id;
 		void runRoll(active.id);

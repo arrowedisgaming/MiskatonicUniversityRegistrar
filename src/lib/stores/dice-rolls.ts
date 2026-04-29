@@ -6,6 +6,8 @@ import {
 	type DiceRollRequest
 } from '$lib/dice/protocol';
 
+const DICE_ANIMATIONS_KEY = 'dice-roll-animations-enabled';
+
 export interface ActiveDiceRoll {
 	id: number;
 	request: DiceRollRequest;
@@ -17,14 +19,24 @@ interface QueuedDiceRoll extends ActiveDiceRoll {
 
 let nextRollId = 1;
 let active: QueuedDiceRoll | null = null;
+let currentDiceRollAnimationsEnabled = true;
 const queue: QueuedDiceRoll[] = [];
 
 export const diceRollState = writable<ActiveDiceRoll | null>(null);
+export const diceRollAnimationsEnabled = writable(readInitialPreference());
+
+diceRollAnimationsEnabled.subscribe((enabled) => {
+	currentDiceRollAnimationsEnabled = enabled;
+	if (!browser) return;
+
+	localStorage.setItem(DICE_ANIMATIONS_KEY, enabled ? 'true' : 'false');
+	if (!enabled) cancelPendingDiceRolls();
+});
 
 export function showDiceRoll(request: DiceRollRequest): Promise<void> {
 	validateDiceRollRequest(request);
 
-	if (!browser || !hasDiceToShow(request)) {
+	if (!browser || !hasDiceToShow(request) || !currentDiceRollAnimationsEnabled) {
 		return Promise.resolve();
 	}
 
@@ -54,4 +66,24 @@ export function completeDiceRoll(id: number): void {
 function startRoll(roll: QueuedDiceRoll): void {
 	active = roll;
 	diceRollState.set({ id: roll.id, request: roll.request });
+}
+
+export function toggleDiceRollAnimations(): void {
+	diceRollAnimationsEnabled.update((enabled) => !enabled);
+}
+
+function cancelPendingDiceRolls(): void {
+	const current = active;
+	active = null;
+	diceRollState.set(null);
+	current?.resolve();
+
+	while (queue.length > 0) {
+		queue.shift()?.resolve();
+	}
+}
+
+function readInitialPreference(): boolean {
+	if (!browser) return true;
+	return localStorage.getItem(DICE_ANIMATIONS_KEY) !== 'false';
 }

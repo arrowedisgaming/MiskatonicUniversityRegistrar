@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { signOut } from '@auth/sveltekit/client';
+	import { diceRollAnimationsEnabled, toggleDiceRollAnimations } from '$lib/stores/dice-rolls';
 	import { era, mode, theme } from '$lib/stores/theme';
 	import { eras } from '$lib/themes/registry';
-	import { LogIn, LogOut } from '@lucide/svelte';
+	import { Dices, LogIn, LogOut } from '@lucide/svelte';
 
 	const session = $derived(page.data.session);
 
@@ -79,6 +80,27 @@
 					<LogIn size={18} aria-hidden="true" />
 				</a>
 			{/if}
+
+			<button
+				type="button"
+				onclick={toggleDiceRollAnimations}
+				class="relative rounded-md p-2 transition-colors {$diceRollAnimationsEnabled
+					? 'bg-[var(--color-accent)] text-[var(--color-foreground)]'
+					: 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]'}"
+				aria-pressed={$diceRollAnimationsEnabled}
+				aria-label={$diceRollAnimationsEnabled ? 'Disable 3D dice rolls' : 'Enable 3D dice rolls'}
+				title={$diceRollAnimationsEnabled ? 'Disable 3D dice rolls' : 'Enable 3D dice rolls'}
+			>
+				<Dices size={18} aria-hidden="true" />
+				{#if !$diceRollAnimationsEnabled}
+					<span class="absolute left-1/2 top-1/2 h-0.5 w-6 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-current"></span>
+				{/if}
+				<span
+					class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full {$diceRollAnimationsEnabled
+						? 'bg-[var(--color-primary)]'
+						: 'bg-[var(--color-muted-foreground)]'}"
+				></span>
+			</button>
 
 			<!-- Era Toggle -->
 			<div
