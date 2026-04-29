@@ -167,6 +167,7 @@ function buildPage2(c: CoCCharacterData): Content[] {
 	// Backstory
 	const backstoryFields = [
 		['Ideology/Beliefs', c.backstory.ideologyBeliefs],
+		['Personal Description', c.backstory.personalDescription],
 		['Significant People', c.backstory.significantPeople],
 		['Meaningful Locations', c.backstory.meaningfulLocations],
 		['Treasured Possessions', c.backstory.treasuredPossessions],
@@ -190,7 +191,7 @@ function buildPage2(c: CoCCharacterData): Content[] {
 	if (c.equipment.weapons.length > 0 || c.equipment.items.length > 0) {
 		content.push({ text: 'EQUIPMENT & FINANCES', style: 'sectionHeader' });
 		content.push({
-			text: `Spending Level: ${c.equipment.spendingLevel} · Cash: $${c.equipment.cash.toLocaleString()} · Assets: ${c.equipment.assets}`,
+			text: `Living Standard: ${c.equipment.livingStandard} · Spending Level: $${c.equipment.spendingLevel.toLocaleString()} · Cash: $${c.equipment.cash.toLocaleString()} · Assets: ${c.equipment.assetsLabel}`,
 			margin: [0, 0, 0, 6] as [number, number, number, number]
 		});
 

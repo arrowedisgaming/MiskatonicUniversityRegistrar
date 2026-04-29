@@ -113,7 +113,7 @@ export function exportToMarkdown(character: CoCCharacterData, occupationName: st
 	if (c.equipment.items.length > 0 || c.equipment.weapons.length > 0) {
 		lines.push('## Equipment');
 		lines.push('');
-		lines.push(`**Spending Level:** ${c.equipment.spendingLevel} · **Cash:** $${c.equipment.cash.toLocaleString()} · **Assets:** ${c.equipment.assets}`);
+		lines.push(`**Living Standard:** ${c.equipment.livingStandard} · **Spending Level:** $${c.equipment.spendingLevel.toLocaleString()} · **Cash:** $${c.equipment.cash.toLocaleString()} · **Assets:** ${c.equipment.assetsLabel}`);
 		lines.push('');
 
 		if (c.equipment.weapons.length > 0) {

@@ -6,14 +6,15 @@
 import type { WealthEntry } from '$lib/types/content-pack';
 
 export interface WealthResult {
-	spendingLevel: string;
+	livingStandard: string;
+	spendingLevel: number;
 	cash: number;
 	assets: number;
+	assetsLabel: string;
 }
 
 /**
- * Calculate starting wealth from Credit Rating using the wealth table.
- * Cash and assets are multiplied by Credit Rating value.
+ * Calculate starting wealth from Credit Rating using the era's wealth table.
  */
 export function calculateStartingWealth(
 	creditRating: number,
@@ -24,12 +25,18 @@ export function calculateStartingWealth(
 	);
 
 	if (!entry) {
-		return { spendingLevel: 'Unknown', cash: 0, assets: 0 };
+		return { livingStandard: 'Unknown', spendingLevel: 0, cash: 0, assets: 0, assetsLabel: '$0' };
 	}
 
+	const legacyCashMultiplier = entry.cash ?? 0;
+	const cash = entry.cashFixed ?? Math.round((entry.cashMultiplier ?? legacyCashMultiplier) * creditRating);
+	const assets = entry.assetsFixed ?? Math.round((entry.assetsMultiplier ?? 0) * creditRating);
+
 	return {
+		livingStandard: entry.livingStandard ?? entry.spendingLevelLabel ?? 'Unknown',
 		spendingLevel: entry.spendingLevel,
-		cash: Math.round(entry.cash * creditRating),
-		assets: Math.round(entry.assetsMultiplier * creditRating)
+		cash,
+		assets,
+		assetsLabel: entry.assetsLabel ?? `$${assets.toLocaleString()}`
 	};
 }

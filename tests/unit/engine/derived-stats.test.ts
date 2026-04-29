@@ -20,13 +20,13 @@ const DB_BUILD_TABLE: DamageBonusBuildEntry[] = [
 ];
 
 const AGE_MODIFIERS: AgeModifierEntry[] = [
-	{ minAge: 15, maxAge: 19, strConDexDeduction: 5, appDeduction: 0, eduImprovementChecks: 0, moveRateDeduction: 0, special: 'deduct-str-or-siz' },
-	{ minAge: 20, maxAge: 39, strConDexDeduction: 0, appDeduction: 0, eduImprovementChecks: 1, moveRateDeduction: 0, special: null },
-	{ minAge: 40, maxAge: 49, strConDexDeduction: 5, appDeduction: 5, eduImprovementChecks: 2, moveRateDeduction: 1, special: null },
-	{ minAge: 50, maxAge: 59, strConDexDeduction: 10, appDeduction: 10, eduImprovementChecks: 3, moveRateDeduction: 2, special: null },
-	{ minAge: 60, maxAge: 69, strConDexDeduction: 20, appDeduction: 15, eduImprovementChecks: 4, moveRateDeduction: 3, special: null },
-	{ minAge: 70, maxAge: 79, strConDexDeduction: 40, appDeduction: 20, eduImprovementChecks: 4, moveRateDeduction: 4, special: null },
-	{ minAge: 80, maxAge: 89, strConDexDeduction: 80, appDeduction: 25, eduImprovementChecks: 4, moveRateDeduction: 5, special: null }
+	{ minAge: 15, maxAge: 19, physicalDeduction: 5, physicalDeductionTargets: ['str', 'siz'], strConDexDeduction: 5, appDeduction: 0, eduDeduction: 5, eduImprovementChecks: 0, moveRateDeduction: 0, special: 'youth' },
+	{ minAge: 20, maxAge: 39, physicalDeduction: 0, physicalDeductionTargets: [], strConDexDeduction: 0, appDeduction: 0, eduDeduction: 0, eduImprovementChecks: 1, moveRateDeduction: 0, special: null },
+	{ minAge: 40, maxAge: 49, physicalDeduction: 5, physicalDeductionTargets: ['str', 'con', 'dex'], strConDexDeduction: 5, appDeduction: 5, eduDeduction: 0, eduImprovementChecks: 2, moveRateDeduction: 1, special: null },
+	{ minAge: 50, maxAge: 59, physicalDeduction: 10, physicalDeductionTargets: ['str', 'con', 'dex'], strConDexDeduction: 10, appDeduction: 10, eduDeduction: 0, eduImprovementChecks: 3, moveRateDeduction: 2, special: null },
+	{ minAge: 60, maxAge: 69, physicalDeduction: 20, physicalDeductionTargets: ['str', 'con', 'dex'], strConDexDeduction: 20, appDeduction: 15, eduDeduction: 0, eduImprovementChecks: 4, moveRateDeduction: 3, special: null },
+	{ minAge: 70, maxAge: 79, physicalDeduction: 40, physicalDeductionTargets: ['str', 'con', 'dex'], strConDexDeduction: 40, appDeduction: 20, eduDeduction: 0, eduImprovementChecks: 4, moveRateDeduction: 4, special: null },
+	{ minAge: 80, maxAge: 89, physicalDeduction: 80, physicalDeductionTargets: ['str', 'con', 'dex'], strConDexDeduction: 80, appDeduction: 25, eduDeduction: 0, eduImprovementChecks: 4, moveRateDeduction: 5, special: null }
 ];
 
 describe('calculateHP', () => {
@@ -94,8 +94,12 @@ describe('calculateDamageBonusAndBuild', () => {
 });
 
 describe('calculateMoveRate', () => {
-	it('returns 9 when both DEX and STR >= SIZ', () => {
+	it('returns 9 when both DEX and STR are greater than SIZ', () => {
 		expect(calculateMoveRate(60, 60, 50, null)).toBe(9);
+	});
+
+	it('returns 8 when STR, DEX, and SIZ are equal', () => {
+		expect(calculateMoveRate(60, 60, 60, null)).toBe(8);
 	});
 
 	it('returns 8 when only STR >= SIZ', () => {

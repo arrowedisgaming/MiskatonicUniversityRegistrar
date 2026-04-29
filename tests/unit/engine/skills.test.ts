@@ -187,4 +187,25 @@ describe('validateSkillAllocation', () => {
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((e) => e.includes('exceeds maximum of 99'))).toBe(true);
 	});
+
+	it('rejects occupation points on ineligible skills', () => {
+		const skills: CoCSkillAllocation[] = [
+			createSkillAllocation('credit-rating', 0, [
+				{ points: 40, source: 'occupation', sourceLabel: 'Test' }
+			], true),
+			createSkillAllocation('pilot-aircraft', 1, [
+				{ points: 30, source: 'occupation', sourceLabel: 'Test' }
+			], false)
+		];
+
+		const result = validateSkillAllocation(
+			skills,
+			280,
+			140,
+			{ min: 30, max: 70 },
+			new Set(['credit-rating', 'library-use'])
+		);
+		expect(result.valid).toBe(false);
+		expect(result.errors.some((e) => e.includes('not eligible'))).toBe(true);
+	});
 });

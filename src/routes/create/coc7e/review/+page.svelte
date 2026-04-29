@@ -220,9 +220,10 @@
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h3 class="mb-3 font-semibold" data-heading>Equipment &amp; Finances</h3>
 			<p class="mb-2 text-sm">
-				<span class="text-[var(--color-muted-foreground)]">Spending Level:</span> {char.equipment.spendingLevel}
+				<span class="text-[var(--color-muted-foreground)]">Living Standard:</span> {char.equipment.livingStandard}
+				&middot; <span class="text-[var(--color-muted-foreground)]">Spending Level:</span> ${char.equipment.spendingLevel.toLocaleString()}
 				&middot; <span class="text-[var(--color-muted-foreground)]">Cash:</span> ${char.equipment.cash.toLocaleString()}
-				&middot; <span class="text-[var(--color-muted-foreground)]">Assets:</span> {char.equipment.assets}
+				&middot; <span class="text-[var(--color-muted-foreground)]">Assets:</span> {char.equipment.assetsLabel}
 			</p>
 
 			{#if char.equipment.weapons.length > 0}

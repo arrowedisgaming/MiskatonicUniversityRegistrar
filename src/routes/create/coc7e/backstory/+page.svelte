@@ -1,21 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
-	import { getAgeModifier } from '$lib/engine/derived-stats';
-	import type { CoCContentPack } from '$lib/types/content-pack';
-
-	const data = page.data as { contentPack: CoCContentPack };
 
 	// Identity fields
 	let name = $state($wizard.character.name);
-	let age = $state($wizard.character.age);
 	let gender = $state($wizard.character.gender);
 	let pronouns = $state($wizard.character.pronouns);
 	let residence = $state($wizard.character.residence);
 	let birthplace = $state($wizard.character.birthplace);
 
 	// Backstory fields
+	let personalDescription = $state($wizard.character.backstory.personalDescription);
 	let ideologyBeliefs = $state($wizard.character.backstory.ideologyBeliefs);
 	let significantPeople = $state($wizard.character.backstory.significantPeople);
 	let meaningfulLocations = $state($wizard.character.backstory.meaningfulLocations);
@@ -27,23 +22,8 @@
 	let encountersWithStrangeEntities = $state($wizard.character.backstory.encountersWithStrangeEntities);
 	let keyConnection = $state($wizard.character.backstory.keyConnection);
 
-	// Age modifier display
-	let ageModifier = $derived(getAgeModifier(age, data.contentPack.ageModifiers));
-	let ageWarning = $derived.by(() => {
-		if (!ageModifier) return age < 15 ? 'Age must be at least 15.' : age > 89 ? 'Age cannot exceed 89.' : null;
-		if (ageModifier.strConDexDeduction > 0 && ageModifier.minAge >= 40) {
-			return `Age ${age}: Deduct ${ageModifier.strConDexDeduction} points from STR/CON/DEX (distributed), and ${ageModifier.appDeduction} from APP. ${ageModifier.eduImprovementChecks} EDU improvement check(s).`;
-		}
-		if (ageModifier.special === 'deduct-str-or-siz') {
-			return `Age ${age}: Deduct 5 points from STR or SIZ. Luck: roll twice, use higher.`;
-		}
-		if (ageModifier.eduImprovementChecks > 0 && ageModifier.strConDexDeduction === 0) {
-			return `Age ${age}: ${ageModifier.eduImprovementChecks} EDU improvement check(s). No stat penalties.`;
-		}
-		return null;
-	});
-
 	const backstoryFields = [
+		{ key: 'personalDescription', label: 'Personal Description', placeholder: 'A distinct look, manner, or first impression...' },
 		{ key: 'ideologyBeliefs', label: 'Ideology/Beliefs', placeholder: 'What does your investigator believe in? Religious faith, political stance, philosophical outlook...' },
 		{ key: 'significantPeople', label: 'Significant People', placeholder: 'Who matters most? A parent, lover, childhood friend, mentor...' },
 		{ key: 'meaningfulLocations', label: 'Meaningful Locations', placeholder: 'Places of importance: childhood home, favorite bar, a hidden grove...' },
@@ -58,23 +38,23 @@
 
 	// Bind backstory values to a map for easier access
 	let backstoryValues: Record<string, string> = $state({
-		ideologyBeliefs, significantPeople, meaningfulLocations, treasuredPossessions,
+		personalDescription, ideologyBeliefs, significantPeople, meaningfulLocations, treasuredPossessions,
 		traits, injuriesScars, phobiasManias, arcaneTomesSpellsArtifacts,
 		encountersWithStrangeEntities, keyConnection
 	});
 
-	let canProceed = $derived(name.trim().length > 0 && age >= 15 && age <= 89);
+	let canProceed = $derived(name.trim().length > 0);
 
 	function proceed() {
 		wizard.updateCharacter((c) => ({
-			...c,
-			name: name.trim(),
-			age,
-			gender,
+				...c,
+				name: name.trim(),
+				gender,
 			pronouns,
 			residence,
 			birthplace,
 			backstory: {
+				personalDescription: backstoryValues.personalDescription,
 				ideologyBeliefs: backstoryValues.ideologyBeliefs,
 				significantPeople: backstoryValues.significantPeople,
 				meaningfulLocations: backstoryValues.meaningfulLocations,
@@ -109,15 +89,6 @@
 				<input id="name" type="text" bind:value={name} placeholder="Dr. Henry Armitage"
 					class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm
 						placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]" />
-			</div>
-			<div>
-				<label for="age" class="mb-1 block text-sm font-medium">Age <span class="text-[var(--color-destructive)]">*</span></label>
-				<input id="age" type="number" min="15" max="89" bind:value={age}
-					class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm
-						focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]" />
-				{#if ageWarning}
-					<p class="mt-1 text-xs text-[var(--color-warning)]">{ageWarning}</p>
-				{/if}
 			</div>
 			<div>
 				<label for="gender" class="mb-1 block text-sm font-medium">Gender</label>

@@ -23,7 +23,7 @@ const skillAllocation = z.object({
 });
 
 const characteristicsData = z.object({
-	method: z.enum(['roll', 'quick-fire']),
+	method: z.enum(['roll', 'arrange-rolls', 'point-buy', 'quick-fire', 'low-roll-modifier', 'human-potential']),
 	values: z.record(z.string(), z.number().int().min(0).max(99)),
 	baseValues: z.record(z.string(), z.number().int().min(0).max(99)),
 	rolls: z.record(z.string(), z.array(z.number())).nullable(),
@@ -31,14 +31,32 @@ const characteristicsData = z.object({
 		characteristic: z.string(),
 		amount: z.number(),
 		reason: z.string()
-	}))
+	})),
+	eduImprovementChecks: z.array(z.object({
+		roll: z.number().int().min(1).max(100),
+		success: z.boolean(),
+		improvementRoll: z.number().int().min(1).max(10).nullable(),
+		improvement: z.number().int().min(0),
+		resultingEdu: z.number().int().min(0).max(99)
+	})).default([]),
+	luckAdjustment: z.object({
+		reason: z.string(),
+		rollSets: z.array(z.array(z.number().int().min(1).max(6))),
+		chosenTotal: z.number().int().min(0).max(99)
+	}).nullable().default(null)
 });
 
 const derivedStatsData = z.object({
 	hp: z.object({ max: z.number().int().min(0), current: z.number().int() }),
 	mp: z.object({ max: z.number().int().min(0), current: z.number().int() }),
 	sanity: z.object({ max: z.number().int().min(0), current: z.number().int(), startingValue: z.number().int().min(0) }),
-	luck: z.object({ max: z.number().int().min(0), current: z.number().int(), rolls: z.array(z.number()).nullable() }),
+	luck: z.object({
+		max: z.number().int().min(0),
+		current: z.number().int(),
+		rolls: z.array(z.number()).nullable(),
+		rollSets: z.array(z.array(z.number())).nullable().optional(),
+		reason: z.string().nullable().optional()
+	}),
 	damageBonus: z.string(),
 	build: z.number().int(),
 	moveRate: z.number().int().min(0)
@@ -64,6 +82,7 @@ export const cocCharacterDataSchema = z.object({
 	}).nullable(),
 	skills: z.array(skillAllocation),
 	backstory: z.object({
+		personalDescription: z.string().default(''),
 		ideologyBeliefs: z.string(),
 		significantPeople: z.string(),
 		meaningfulLocations: z.string(),
@@ -86,8 +105,10 @@ export const cocCharacterDataSchema = z.object({
 			malfunction: z.number().nullable()
 		})),
 		cash: z.number().min(0),
-		assets: z.string(),
-		spendingLevel: z.string()
+		assets: z.number().min(0),
+		assetsLabel: z.string(),
+		livingStandard: z.string(),
+		spendingLevel: z.number().min(0)
 	}),
 	isDraft: z.boolean(),
 	wizardStep: z.number().int().min(0)

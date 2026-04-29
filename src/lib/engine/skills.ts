@@ -113,7 +113,8 @@ export function validateSkillAllocation(
 	skills: CoCSkillAllocation[],
 	totalOccupationPoints: number,
 	totalPersonalPoints: number,
-	creditRatingRange: { min: number; max: number }
+	creditRatingRange: { min: number; max: number },
+	eligibleOccupationSkillIds?: Set<string>
 ): {
 	valid: boolean;
 	errors: string[];
@@ -130,8 +131,14 @@ export function validateSkillAllocation(
 		for (const alloc of skill.allocations) {
 			if (alloc.source === 'occupation') {
 				occupationPointsUsed += alloc.points;
+				if (eligibleOccupationSkillIds && !eligibleOccupationSkillIds.has(skill.skillId)) {
+					errors.push(`${skill.skillId} is not eligible for occupation points`);
+				}
 			} else if (alloc.source === 'personal-interest') {
 				personalPointsUsed += alloc.points;
+				if (skill.skillId === 'cthulhu-mythos' && alloc.points > 0) {
+					errors.push('Cthulhu Mythos cannot receive personal interest points at creation');
+				}
 			}
 		}
 
@@ -155,7 +162,9 @@ export function validateSkillAllocation(
 
 	// Validate Credit Rating is within occupation range
 	const creditRating = skills.find((s) => s.skillId === 'credit-rating');
-	if (creditRating) {
+	if (!creditRating || creditRating.total === 0) {
+		errors.push(`Credit Rating must be between ${creditRatingRange.min} and ${creditRatingRange.max}`);
+	} else {
 		if (creditRating.total < creditRatingRange.min) {
 			errors.push(
 				`Credit Rating ${creditRating.total} is below occupation minimum of ${creditRatingRange.min}`

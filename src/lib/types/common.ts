@@ -37,6 +37,6 @@ export type SkillCategory =
 	| 'practical'
 	| 'other';
 
-export type Era = '1920s';
+export type Era = '1920s' | 'modern';
 
-export type Mode = 'standard';
+export type Mode = 'standard' | 'pulp';

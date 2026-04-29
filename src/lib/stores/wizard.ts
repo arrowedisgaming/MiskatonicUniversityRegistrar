@@ -8,7 +8,7 @@ import { browser } from '$app/environment';
 import { createBlankCharacter, type CoCCharacterData } from '$lib/types/character';
 
 const STORAGE_KEY = 'mur-wizard-state';
-const WIZARD_STATE_VERSION = 1;
+const WIZARD_STATE_VERSION = 2;
 
 export interface WizardState {
 	version: number;

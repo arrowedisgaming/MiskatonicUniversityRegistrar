@@ -6,6 +6,7 @@ import { ensureUser } from '$lib/server/auth';
 import { eq, and } from 'drizzle-orm';
 import type { CoCCharacterData } from '$lib/types/character';
 import { createInvestigatorSchema } from '$lib/schemas/character.schema';
+import { migrateCharacterData } from '$lib/engine/character-migration';
 
 /** GET /api/investigators/:id — get full investigator */
 export const GET: RequestHandler = async (event) => {
@@ -22,7 +23,7 @@ export const GET: RequestHandler = async (event) => {
 
 	return json({
 		...row,
-		data: JSON.parse(row.data) as CoCCharacterData
+		data: migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData
 	});
 };
 

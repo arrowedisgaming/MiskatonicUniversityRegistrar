@@ -8,6 +8,7 @@ import type { CoCCharacterData } from '$lib/types/character';
 import { getOccupations } from '$lib/server/content/loader';
 import { exportToJSON } from '$lib/export/json-export';
 import { exportToMarkdown } from '$lib/export/markdown-export';
+import { migrateCharacterData } from '$lib/engine/character-migration';
 
 /** GET /api/export/:id?format=json|md
  *  PDF is generated client-side via pdfmake (see sheet page).
@@ -25,7 +26,7 @@ export const GET: RequestHandler = async (event) => {
 
 	if (!row) throw error(404, 'Investigator not found');
 
-	const character = JSON.parse(row.data) as CoCCharacterData;
+	const character = migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData;
 	const occupations = getOccupations();
 	const occupationName = occupations.find((o) => o.id === character.occupation?.occupationId)?.name ?? 'Unknown';
 	const safeName = (character.name || 'investigator').replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-');

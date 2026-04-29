@@ -262,7 +262,7 @@
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
 			<p class="mb-2 text-sm text-[var(--color-muted-foreground)]">
-				{char.equipment.spendingLevel} &middot; Cash: ${char.equipment.cash.toLocaleString()} &middot; Assets: {char.equipment.assets}
+				{char.equipment.livingStandard} &middot; Spending Level: ${char.equipment.spendingLevel.toLocaleString()} &middot; Cash: ${char.equipment.cash.toLocaleString()} &middot; Assets: {char.equipment.assetsLabel}
 			</p>
 			{#if char.equipment.weapons.length > 0}
 				<div class="mb-2 overflow-x-auto">

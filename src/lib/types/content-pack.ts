@@ -20,7 +20,9 @@ export interface CoCContentPack {
 	quickFireArrays?: number[][];
 	damageBonusBuildTable: DamageBonusBuildEntry[];
 	ageModifiers: AgeModifierEntry[];
-	wealthTable: WealthEntry[];
+	wealthTables: Record<string, WealthEntry[]>;
+	/** @deprecated use wealthTables[era] */
+	wealthTable?: WealthEntry[];
 }
 
 export interface EraDefinition {
@@ -32,10 +34,18 @@ export interface EraDefinition {
 }
 
 export interface CharacteristicMethod {
-	id: string;
+	id: CharacteristicMethodId;
 	name: string;
 	description: string;
 }
+
+export type CharacteristicMethodId =
+	| 'roll'
+	| 'arrange-rolls'
+	| 'point-buy'
+	| 'quick-fire'
+	| 'low-roll-modifier'
+	| 'human-potential';
 
 export interface DamageBonusBuildEntry {
 	minSum: number;
@@ -47,8 +57,12 @@ export interface DamageBonusBuildEntry {
 export interface AgeModifierEntry {
 	minAge: number;
 	maxAge: number;
-	strConDexDeduction: number;
+	physicalDeduction: number;
+	physicalDeductionTargets: CharacteristicId[];
+	/** @deprecated use physicalDeduction */
+	strConDexDeduction?: number;
 	appDeduction: number;
+	eduDeduction: number;
 	eduImprovementChecks: number;
 	moveRateDeduction: number;
 	special: string | null;
@@ -57,9 +71,17 @@ export interface AgeModifierEntry {
 export interface WealthEntry {
 	minCR: number;
 	maxCR: number;
-	spendingLevel: string;
-	cash: number;
-	assetsMultiplier: number;
+	livingStandard: string;
+	spendingLevel: number;
+	cashMultiplier?: number;
+	cashFixed?: number;
+	assetsMultiplier?: number;
+	assetsFixed?: number;
+	assetsLabel?: string;
+	/** @deprecated use livingStandard */
+	spendingLevelLabel?: string;
+	/** @deprecated use cashMultiplier/cashFixed */
+	cash?: number;
 }
 
 /** Skill definition from skills.json */

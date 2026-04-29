@@ -51,7 +51,7 @@ export function calculateDamageBonusAndBuild(
 
 /**
  * Move Rate calculation.
- * - If both DEX and STR >= SIZ: MOV = 9
+ * - If both DEX and STR > SIZ: MOV = 9
  * - If either STR or DEX >= SIZ: MOV = 8
  * - If both STR and DEX < SIZ: MOV = 7
  * Then subtract age-based penalty.
@@ -64,7 +64,7 @@ export function calculateMoveRate(
 ): number {
 	let mov: number;
 
-	if (dex >= siz && str >= siz) {
+	if (dex > siz && str > siz) {
 		mov = 9;
 	} else if (str >= siz || dex >= siz) {
 		mov = 8;

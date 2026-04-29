@@ -1,7 +1,8 @@
 import type { CharacteristicId, Era, Mode } from './common';
+import type { CharacteristicMethodId } from './content-pack';
 
 /** Schema version for character data migration */
-export const CHARACTER_SCHEMA_VERSION = 1;
+export const CHARACTER_SCHEMA_VERSION = 2;
 
 /** Complete investigator data stored as JSON blob */
 export interface CoCCharacterData {
@@ -45,7 +46,7 @@ export interface CoCCharacterData {
 }
 
 export interface CharacteristicsData {
-	method: 'roll';
+	method: CharacteristicMethodId;
 	/** Final values after all modifiers */
 	values: Record<CharacteristicId, number>;
 	/** Values before age modifiers */
@@ -54,19 +55,37 @@ export interface CharacteristicsData {
 	rolls: Record<CharacteristicId, number[]> | null;
 	/** Age adjustments applied */
 	ageAdjustments: AgeAdjustment[];
+	/** EDU improvement checks applied for age */
+	eduImprovementChecks: EduImprovementCheck[];
+	/** Luck change caused by age rules */
+	luckAdjustment: LuckAdjustment | null;
 }
 
 export interface AgeAdjustment {
-	characteristic: CharacteristicId | 'str-or-siz';
+	characteristic: CharacteristicId;
 	amount: number;
 	reason: string;
+}
+
+export interface EduImprovementCheck {
+	roll: number;
+	success: boolean;
+	improvementRoll: number | null;
+	improvement: number;
+	resultingEdu: number;
+}
+
+export interface LuckAdjustment {
+	reason: string;
+	rollSets: number[][];
+	chosenTotal: number;
 }
 
 export interface DerivedStatsData {
 	hp: { max: number; current: number };
 	mp: { max: number; current: number };
 	sanity: { max: number; current: number; startingValue: number };
-	luck: { max: number; current: number; rolls: number[] | null };
+	luck: { max: number; current: number; rolls: number[] | null; rollSets?: number[][] | null; reason?: string | null };
 	damageBonus: string;
 	build: number;
 	moveRate: number;
@@ -97,6 +116,7 @@ export interface SkillPointAllocation {
 }
 
 export interface BackstoryData {
+	personalDescription: string;
 	ideologyBeliefs: string;
 	significantPeople: string;
 	meaningfulLocations: string;
@@ -113,8 +133,10 @@ export interface EquipmentData {
 	items: EquipmentItem[];
 	weapons: CharacterWeapon[];
 	cash: number;
-	assets: string;
-	spendingLevel: string;
+	assets: number;
+	assetsLabel: string;
+	livingStandard: string;
+	spendingLevel: number;
 }
 
 export interface EquipmentItem {
@@ -151,7 +173,9 @@ export function createBlankCharacter(): CoCCharacterData {
 			values: { str: 0, con: 0, dex: 0, int: 0, pow: 0, app: 0, siz: 0, edu: 0 },
 			baseValues: { str: 0, con: 0, dex: 0, int: 0, pow: 0, app: 0, siz: 0, edu: 0 },
 			rolls: null,
-			ageAdjustments: []
+			ageAdjustments: [],
+			eduImprovementChecks: [],
+			luckAdjustment: null
 		},
 		derivedStats: {
 			hp: { max: 0, current: 0 },
@@ -165,6 +189,7 @@ export function createBlankCharacter(): CoCCharacterData {
 		occupation: null,
 		skills: [],
 		backstory: {
+			personalDescription: '',
 			ideologyBeliefs: '',
 			significantPeople: '',
 			meaningfulLocations: '',
@@ -180,8 +205,10 @@ export function createBlankCharacter(): CoCCharacterData {
 			items: [],
 			weapons: [],
 			cash: 0,
-			assets: '',
-			spendingLevel: ''
+			assets: 0,
+			assetsLabel: '',
+			livingStandard: '',
+			spendingLevel: 0
 		},
 		isDraft: true,
 		wizardStep: 0

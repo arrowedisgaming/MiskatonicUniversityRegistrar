@@ -18,6 +18,13 @@
 			"description": "The classic Lovecraftian era of Prohibition-era America and interwar Europe.",
 			"currencyUnit": "dollars",
 			"currencySymbol": "$"
+		},
+		{
+			"id": "modern",
+			"name": "Modern Day",
+			"description": "Contemporary investigations using the modern-day tables and era-limited skills.",
+			"currencyUnit": "dollars",
+			"currencySymbol": "$"
 		}
 	],
 	"characteristicMethods": [
@@ -25,6 +32,31 @@
 			"id": "roll",
 			"name": "Roll",
 			"description": "Roll dice for each characteristic: 3D6×5 for STR/CON/DEX/APP/POW, (2D6+6)×5 for SIZ/INT/EDU."
+		},
+		{
+			"id": "arrange-rolls",
+			"name": "Arrange Rolls",
+			"description": "Roll the same pools as normal, then place the results among compatible characteristics."
+		},
+		{
+			"id": "point-buy",
+			"name": "Point Buy",
+			"description": "Assign 460 points among the eight characteristics within the normal starting ranges."
+		},
+		{
+			"id": "quick-fire",
+			"name": "Quick Fire",
+			"description": "Assign 40, 50, 50, 50, 60, 60, 70, and 80 among the characteristics."
+		},
+		{
+			"id": "low-roll-modifier",
+			"name": "Low Roll Modifier",
+			"description": "After rolling, add an extra 1D6×5 points among low characteristics."
+		},
+		{
+			"id": "human-potential",
+			"name": "Human Potential",
+			"description": "After generation, add 1D10 points among characteristics, capped at 99."
 		}
 	],
 	"characteristicRolls": {
@@ -51,67 +83,99 @@
 	"ageModifiers": [
 		{
 			"minAge": 15, "maxAge": 19,
+			"physicalDeduction": 5,
+			"physicalDeductionTargets": ["str", "siz"],
 			"strConDexDeduction": 5,
-			"note": "Deduct 5 points from STR or SIZ. Luck: roll twice, use higher.",
+			"note": "Deduct 5 points among STR and SIZ. Deduct 5 from EDU. Luck: roll twice, use higher.",
 			"appDeduction": 0,
+			"eduDeduction": 5,
 			"eduImprovementChecks": 0,
 			"moveRateDeduction": 0,
-			"special": "deduct-str-or-siz"
+			"special": "youth"
 		},
 		{
 			"minAge": 20, "maxAge": 39,
+			"physicalDeduction": 0,
+			"physicalDeductionTargets": [],
 			"strConDexDeduction": 0,
 			"appDeduction": 0,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 1,
 			"moveRateDeduction": 0,
 			"special": null
 		},
 		{
 			"minAge": 40, "maxAge": 49,
+			"physicalDeduction": 5,
+			"physicalDeductionTargets": ["str", "con", "dex"],
 			"strConDexDeduction": 5,
 			"appDeduction": 5,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 2,
 			"moveRateDeduction": 1,
 			"special": null
 		},
 		{
 			"minAge": 50, "maxAge": 59,
+			"physicalDeduction": 10,
+			"physicalDeductionTargets": ["str", "con", "dex"],
 			"strConDexDeduction": 10,
 			"appDeduction": 10,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 3,
 			"moveRateDeduction": 2,
 			"special": null
 		},
 		{
 			"minAge": 60, "maxAge": 69,
+			"physicalDeduction": 20,
+			"physicalDeductionTargets": ["str", "con", "dex"],
 			"strConDexDeduction": 20,
 			"appDeduction": 15,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 4,
 			"moveRateDeduction": 3,
 			"special": null
 		},
 		{
 			"minAge": 70, "maxAge": 79,
+			"physicalDeduction": 40,
+			"physicalDeductionTargets": ["str", "con", "dex"],
 			"strConDexDeduction": 40,
 			"appDeduction": 20,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 4,
 			"moveRateDeduction": 4,
 			"special": null
 		},
 		{
 			"minAge": 80, "maxAge": 89,
+			"physicalDeduction": 80,
+			"physicalDeductionTargets": ["str", "con", "dex"],
 			"strConDexDeduction": 80,
 			"appDeduction": 25,
+			"eduDeduction": 0,
 			"eduImprovementChecks": 4,
 			"moveRateDeduction": 5,
 			"special": null
 		}
 	],
-	"wealthTable": [
-		{ "minCR": 0, "maxCR": 9, "spendingLevel": "Penniless", "cash": 0.5, "assetsMultiplier": 0 },
-		{ "minCR": 10, "maxCR": 49, "spendingLevel": "Average", "cash": 2, "assetsMultiplier": 10 },
-		{ "minCR": 50, "maxCR": 89, "spendingLevel": "Wealthy", "cash": 5, "assetsMultiplier": 50 },
-		{ "minCR": 90, "maxCR": 98, "spendingLevel": "Rich", "cash": 20, "assetsMultiplier": 500 },
-		{ "minCR": 99, "maxCR": 99, "spendingLevel": "Super Rich", "cash": 50, "assetsMultiplier": 5000 }
-	]
+	"wealthTables": {
+		"1920s": [
+			{ "minCR": 0, "maxCR": 0, "livingStandard": "Penniless", "spendingLevel": 0.5, "cashFixed": 0.5, "assetsFixed": 0, "assetsLabel": "None" },
+			{ "minCR": 1, "maxCR": 9, "livingStandard": "Poor", "spendingLevel": 2, "cashMultiplier": 1, "assetsMultiplier": 10 },
+			{ "minCR": 10, "maxCR": 49, "livingStandard": "Average", "spendingLevel": 10, "cashMultiplier": 2, "assetsMultiplier": 50 },
+			{ "minCR": 50, "maxCR": 89, "livingStandard": "Wealthy", "spendingLevel": 50, "cashMultiplier": 5, "assetsMultiplier": 500 },
+			{ "minCR": 90, "maxCR": 98, "livingStandard": "Rich", "spendingLevel": 250, "cashMultiplier": 20, "assetsMultiplier": 2000 },
+			{ "minCR": 99, "maxCR": 99, "livingStandard": "Super Rich", "spendingLevel": 5000, "cashFixed": 50000, "assetsFixed": 5000000, "assetsLabel": "$5M+" }
+		],
+		"modern": [
+			{ "minCR": 0, "maxCR": 0, "livingStandard": "Penniless", "spendingLevel": 10, "cashFixed": 10, "assetsFixed": 0, "assetsLabel": "None" },
+			{ "minCR": 1, "maxCR": 9, "livingStandard": "Poor", "spendingLevel": 40, "cashMultiplier": 20, "assetsMultiplier": 200 },
+			{ "minCR": 10, "maxCR": 49, "livingStandard": "Average", "spendingLevel": 200, "cashMultiplier": 40, "assetsMultiplier": 1000 },
+			{ "minCR": 50, "maxCR": 89, "livingStandard": "Wealthy", "spendingLevel": 1000, "cashMultiplier": 100, "assetsMultiplier": 10000 },
+			{ "minCR": 90, "maxCR": 98, "livingStandard": "Rich", "spendingLevel": 5000, "cashMultiplier": 400, "assetsMultiplier": 40000 },
+			{ "minCR": 99, "maxCR": 99, "livingStandard": "Super Rich", "spendingLevel": 100000, "cashFixed": 1000000, "assetsFixed": 100000000, "assetsLabel": "$100M+" }
+		]
+	}
 }

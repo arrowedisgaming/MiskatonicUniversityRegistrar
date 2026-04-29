@@ -44,6 +44,24 @@
 			"Umbrella",
 			"Handcuffs",
 			"Disguise kit"
+		],
+		"modern": [
+			"Flashlight",
+			"Smartphone",
+			"Notebook and pens",
+			"First aid kit",
+			"Camera",
+			"Binoculars",
+			"Compass",
+			"Backpack",
+			"Portable radio",
+			"Laptop computer",
+			"USB drive",
+			"Lockpicks",
+			"Pocket knife",
+			"Map",
+			"Handcuffs",
+			"Disguise kit"
 		]
 	}
 }

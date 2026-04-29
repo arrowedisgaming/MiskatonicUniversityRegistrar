@@ -14,7 +14,8 @@
 	// Find Credit Rating from skills
 	const creditRatingSkill = $wizard.character.skills.find((s) => s.skillId === 'credit-rating');
 	const creditRating = creditRatingSkill?.total ?? 0;
-	const wealth = calculateStartingWealth(creditRating, data.contentPack.wealthTable);
+	const wealthTable = data.contentPack.wealthTables[$wizard.character.era] ?? data.contentPack.wealthTable ?? [];
+	const wealth = calculateStartingWealth(creditRating, wealthTable);
 
 	// Equipment state
 	let items = $state<EquipmentItem[]>(
@@ -67,7 +68,9 @@
 				items: [...items],
 				weapons: [...weapons],
 				cash: wealth.cash,
-				assets: `$${wealth.assets.toLocaleString()}`,
+				assets: wealth.assets,
+				assetsLabel: wealth.assetsLabel,
+				livingStandard: wealth.livingStandard,
 				spendingLevel: wealth.spendingLevel
 			}
 		}));
@@ -85,18 +88,22 @@
 	</div>
 
 	<!-- Finances summary -->
-	<div class="grid grid-cols-3 gap-4">
+	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Spending Level</span>
-			<p class="text-lg font-bold">{wealth.spendingLevel}</p>
+			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Living Standard</span>
+			<p class="text-lg font-bold">{wealth.livingStandard}</p>
 		</div>
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Cash</span>
 			<p class="text-lg font-bold">${wealth.cash.toLocaleString()}</p>
 		</div>
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Spending Level</span>
+			<p class="text-lg font-bold">${wealth.spendingLevel.toLocaleString()}</p>
+		</div>
+		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Assets</span>
-			<p class="text-lg font-bold">${wealth.assets.toLocaleString()}</p>
+			<p class="text-lg font-bold">{wealth.assetsLabel}</p>
 		</div>
 	</div>
 
@@ -190,9 +197,9 @@
 
 		<!-- Common items picker -->
 		<details class="rounded-md border border-[var(--color-border)] p-3">
-			<summary class="cursor-pointer text-sm font-medium">Common 1920s Items</summary>
+			<summary class="cursor-pointer text-sm font-medium">Common {data.contentPack.eras.find((e) => e.id === $wizard.character.era)?.name ?? $wizard.character.era} Items</summary>
 			<div class="mt-2 flex flex-wrap gap-1">
-				{#each data.equipment.commonItems['1920s'] ?? [] as itemName}
+				{#each data.equipment.commonItems[$wizard.character.era] ?? data.equipment.commonItems['1920s'] ?? [] as itemName}
 					{@const alreadyAdded = items.some((i) => i.name === itemName)}
 					<button
 						onclick={() => addCommonItem(itemName)}

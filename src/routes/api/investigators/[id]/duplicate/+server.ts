@@ -6,6 +6,7 @@ import { ensureUser } from '$lib/server/auth';
 import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { CoCCharacterData } from '$lib/types/character';
+import { migrateCharacterData } from '$lib/engine/character-migration';
 
 /** POST /api/investigators/:id/duplicate — duplicate an investigator */
 export const POST: RequestHandler = async (event) => {
@@ -20,7 +21,7 @@ export const POST: RequestHandler = async (event) => {
 
 	if (!original) throw error(404, 'Investigator not found');
 
-	const charData = JSON.parse(original.data) as CoCCharacterData;
+	const charData = migrateCharacterData(JSON.parse(original.data)) as CoCCharacterData;
 	charData.name = `${charData.name} (Copy)`;
 
 	const id = nanoid();
