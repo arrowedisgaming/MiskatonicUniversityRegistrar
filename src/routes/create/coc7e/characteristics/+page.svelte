@@ -13,6 +13,8 @@
 	} from '$lib/engine/characteristics';
 	import { calculateHP, calculateMP, calculateStartingSanity, calculateDamageBonusAndBuild, calculateMoveRate, getAgeModifier } from '$lib/engine/derived-stats';
 	import { roll3d6x5, roll2d6plus6x5, rollLuck } from '$lib/engine/dice';
+	import { showDiceRoll } from '$lib/stores/dice-rolls';
+	import type { DiceGroup } from '$lib/dice/protocol';
 	import {
 		applyAgeAdjustments,
 		physicalDeductionTargets,
@@ -39,6 +41,7 @@
 	let eduChecks = $state<EduImprovementCheck[]>([...($wizard.character.characteristics.eduImprovementChecks ?? [])]);
 	let luckAdjustment = $state<LuckAdjustment | null>($wizard.character.characteristics.luckAdjustment ?? null);
 	let luck = $state<{ max: number; current: number; rolls: number[] | null; rollSets?: number[][] | null; reason?: string | null }>({ ...$wizard.character.derivedStats.luck });
+	let diceRolling = $state(false);
 
 	const quickFireValues = [40, 50, 50, 50, 60, 60, 70, 80];
 	const methodOptions = data.contentPack.characteristicMethods;
@@ -79,17 +82,32 @@
 		}
 	}
 
-	function rollAll() {
-		method = 'roll';
+	async function animateDice(groups: DiceGroup[], label: string): Promise<void> {
+		diceRolling = true;
+		try {
+			await showDiceRoll({ groups, label, reveal: 'after-settle' });
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	function characteristicDiceGroups(results: ReturnType<typeof rollAllCharacteristics>): DiceGroup[] {
+		return [{ count: results.reduce((sum, result) => sum + result.rolls.length, 0), sides: 6, results: results.flatMap((result) => result.rolls) }];
+	}
+
+	async function rollAll() {
 		const results = rollAllCharacteristics();
+		await animateDice(characteristicDiceGroups(results), 'Characteristics');
+		method = 'roll';
 		baseValues = rollResultsToValues(results);
 		rolls = rollResultsToRolls(results);
 		resetAgeState();
 	}
 
-	function rerollSingle(char: CharacteristicId) {
+	async function rerollSingle(char: CharacteristicId) {
 		const is3d6 = ROLL_3D6.includes(char);
 		const result = is3d6 ? roll3d6x5() : roll2d6plus6x5();
+		await animateDice([{ count: result.rolls.length, sides: 6, results: result.rolls }], `${char.toUpperCase()} reroll`);
 		baseValues[char] = result.total;
 		baseValues = { ...baseValues };
 		if (rolls) rolls[char] = result.rolls;
@@ -102,25 +120,31 @@
 		resetAgeState();
 	}
 
-	function setMethod(nextMethod: CharacteristicMethodId) {
+	async function setMethod(nextMethod: CharacteristicMethodId) {
+		let rolledResults: ReturnType<typeof rollAllCharacteristics> | null = null;
+		if (nextMethod === 'arrange-rolls' || nextMethod === 'low-roll-modifier' || nextMethod === 'human-potential') {
+			rolledResults = rollAllCharacteristics();
+			await animateDice(characteristicDiceGroups(rolledResults), 'Method dice');
+		}
+
 		method = nextMethod;
 		rolls = null;
 		if (nextMethod === 'quick-fire') {
 			baseValues = { str: 40, con: 50, dex: 50, int: 50, pow: 60, app: 60, siz: 70, edu: 80 };
 		} else if (nextMethod === 'point-buy') {
 			baseValues = { str: 50, con: 50, dex: 50, int: 60, pow: 50, app: 50, siz: 60, edu: 90 };
-		} else if (nextMethod === 'arrange-rolls' || nextMethod === 'low-roll-modifier' || nextMethod === 'human-potential') {
-			const results = rollAllCharacteristics();
-			baseValues = rollResultsToValues(results);
-			rolls = rollResultsToRolls(results);
+		} else if (rolledResults) {
+			baseValues = rollResultsToValues(rolledResults);
+			rolls = rollResultsToRolls(rolledResults);
 		}
 		resetAgeState();
 	}
 
-	function rollLuckDice() {
+	async function rollLuckDice() {
 		if (age >= 15 && age <= 19) {
 			const first = rollLuck();
 			const second = rollLuck();
+			await animateDice([{ count: 6, sides: 6, results: [...first.rolls, ...second.rolls] }], 'Luck twice');
 			luckAdjustment = makeYouthLuckAdjustment(first.rolls, second.rolls);
 			luck = {
 				max: luckAdjustment.chosenTotal,
@@ -132,16 +156,23 @@
 			return;
 		}
 		const result = rollLuck();
+		await animateDice([{ count: result.rolls.length, sides: 6, results: result.rolls }], 'Luck');
 		luckAdjustment = null;
 		luck = { max: result.total, current: result.total, rolls: result.rolls, rollSets: null, reason: null };
 	}
 
-	function rollNextEduCheck() {
+	async function rollNextEduCheck() {
 		if (eduChecks.length >= requiredEduChecks) return;
 		const currentEdu = eduChecks.length === 0
 			? values.edu
 			: eduChecks[eduChecks.length - 1].resultingEdu;
-		eduChecks = [...eduChecks, rollEduImprovementCheck(currentEdu)];
+		const check = rollEduImprovementCheck(currentEdu);
+		const groups: DiceGroup[] = [{ count: 1, sides: 100, results: [check.roll] }];
+		if (check.improvementRoll !== null) {
+			groups.push({ count: 1, sides: 10, results: [check.improvementRoll] });
+		}
+		await animateDice(groups, 'EDU check');
+		eduChecks = [...eduChecks, check];
 	}
 
 	function clearEduChecks() {
@@ -222,15 +253,15 @@
 	<div>
 		<label for="method" class="mb-1 block text-sm font-medium">Generation Method</label>
 		<div class="flex flex-wrap items-center gap-2">
-			<select id="method" value={method} onchange={(e) => setMethod((e.currentTarget as HTMLSelectElement).value as CharacteristicMethodId)}
+			<select id="method" value={method} disabled={diceRolling} onchange={(e) => setMethod((e.currentTarget as HTMLSelectElement).value as CharacteristicMethodId)}
 				class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm">
 				{#each methodOptions as option}
 					<option value={option.id}>{option.name}</option>
 				{/each}
 			</select>
-			<button onclick={rollAll}
-				class="rounded-md border border-[var(--color-primary)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:opacity-90">
-				{hasValues ? 'Reroll Standard Dice' : 'Roll Dice'}
+			<button onclick={rollAll} disabled={diceRolling}
+				class="rounded-md border border-[var(--color-primary)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-50">
+				{diceRolling ? 'Rolling...' : hasValues ? 'Reroll Standard Dice' : 'Roll Dice'}
 			</button>
 		</div>
 		{#if method === 'point-buy'}
@@ -288,7 +319,7 @@
 								<button
 									onclick={() => rerollSingle(char)}
 									class="text-xs text-[var(--color-primary)] hover:underline"
-									disabled={!hasValues}
+									disabled={!hasValues || diceRolling}
 								>
 									Reroll
 								</button>
@@ -326,9 +357,9 @@
 				{#if requiredEduChecks > 0}
 					<div class="mt-3">
 						<div class="flex items-center gap-2">
-							<button onclick={rollNextEduCheck} disabled={eduChecks.length >= requiredEduChecks}
+							<button onclick={rollNextEduCheck} disabled={eduChecks.length >= requiredEduChecks || diceRolling}
 								class="rounded-md bg-[var(--color-secondary)] px-3 py-1.5 text-sm font-medium text-[var(--color-secondary-foreground)] disabled:opacity-50">
-								Roll EDU Check
+								{diceRolling ? 'Rolling...' : 'Roll EDU Check'}
 							</button>
 							<button onclick={clearEduChecks} class="text-xs text-[var(--color-muted-foreground)] hover:underline">Clear</button>
 							<span class="text-xs text-[var(--color-muted-foreground)]">{eduChecks.length}/{requiredEduChecks}</span>
@@ -369,10 +400,11 @@
 					{/if}
 					<button
 						onclick={rollLuckDice}
+						disabled={diceRolling}
 						class="rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium
-							text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"
+							text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-50"
 					>
-						{age >= 15 && age <= 19 ? 'Roll Luck Twice' : luck.max > 0 ? 'Reroll' : 'Roll Luck'}
+						{diceRolling ? 'Rolling...' : age >= 15 && age <= 19 ? 'Roll Luck Twice' : luck.max > 0 ? 'Reroll' : 'Roll Luck'}
 					</button>
 				</div>
 			</div>
@@ -419,7 +451,7 @@
 		{/if}
 		<button
 			onclick={proceed}
-			disabled={!canProceed}
+			disabled={!canProceed || diceRolling}
 			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors
 				hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
