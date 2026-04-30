@@ -43,6 +43,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E tests
+        # AUTH_SECRET is required by src/lib/server/auth.ts in any non-development
+        # build. The e2e suite never exercises real sign-in, so any non-empty
+        # value satisfies the boot guard inside the preview server.
+        env:
+          AUTH_SECRET: e2e-placeholder-no-real-sessions-issued
         run: npm run test:e2e
 
       - name: Build with Cloudflare adapter
