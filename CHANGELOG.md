@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-30
+
 ### Added
 - Controlling design document at `.stitch/DESIGN.md` codifying the dual-era visual system (Classic 1920s and Modern 1980s, each with light/dark variants), all theme tokens verbatim from `src/lib/themes/*.css`, component patterns, screen surfaces, forward-looking state patterns, and Stitch prompt recipes for generating new screens that honour the existing visual language and Chaosium fan-content constraints.
 - Atmospheric flourishes (Classic era): three irregularly-placed coffee ring stains rendered via `body { background-image }` in both Classic Dark and Classic Light, sized and tinted to read as old coffee on aged paper.
@@ -153,7 +155,8 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/releases/tag/v0.1.0
