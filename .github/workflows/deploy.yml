@@ -42,6 +42,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Initialise local SQLite for e2e
+        # /api/health pings the users table; without a synced local.db the
+        # endpoint returns 503 and the smoke test fails.
+        run: npx drizzle-kit push --force
+
       - name: E2E tests
         # AUTH_SECRET is required by src/lib/server/auth.ts in any non-development
         # build. The e2e suite never exercises real sign-in, so any non-empty
