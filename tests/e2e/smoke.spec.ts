@@ -17,9 +17,10 @@ test('characteristics wizard page loads', async ({ page }) => {
 	await expect(page.locator('h2')).toContainText('Characteristics');
 });
 
-test('investigators dashboard loads', async ({ page }) => {
+test('investigators dashboard redirects unauthenticated visitors to sign in', async ({ page }) => {
 	await page.goto('/investigators');
-	await expect(page.locator('h1')).toContainText('Your Investigators');
+	await expect(page).toHaveURL(/\/login\?callbackUrl=/);
+	await expect(page.locator('h1')).toContainText('Sign In');
 });
 
 test('licensing page loads', async ({ page }) => {
