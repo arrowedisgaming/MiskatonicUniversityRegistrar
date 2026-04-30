@@ -30,10 +30,21 @@
 
 	--radius: 0.25rem;
 
-	/* Typography */
+	/* Typography
+	   Classic stack lives at base + classic-* layers. Modern themes override
+	   --font-heading / --font-flavor / --font-body / --font-typed in their
+	   own files so the entire stack swaps to monospace.
+	   --font-display: engraved-Roman caps for h1 ("Miskatonic University
+	   Registrar" wordmark, page titles) — feels like a brass nameplate.
+	   --font-heading: subtitle/section headings — slightly less formal.
+	   --font-body: book-page serif for sustained reading.
+	   --font-flavor: hand-drawn italic for atmospheric copy.
+	   --font-typed: typewriter face for "values typed onto the paper form". */
+	--font-display: 'Cinzel', serif;
 	--font-heading: 'Playfair Display', serif;
 	--font-flavor: 'IM Fell English', serif;
-	--font-body: 'Inter', sans-serif;
+	--font-body: 'EB Garamond', 'Crimson Text', Georgia, serif;
+	--font-typed: 'Special Elite', 'Courier New', monospace;
 }
 
 /* Heading typography */
@@ -42,15 +53,32 @@ h1, h2, h3, h4, h5, h6, [data-heading] {
 	letter-spacing: 0.02em;
 }
 
+/* Display-rank: h1 and any element opting in via data-display gets the
+   engraved-caps face (Cinzel in Classic). Slightly wider tracking reads as
+   inscribed lettering. */
+h1, [data-display] {
+	font-family: var(--font-display);
+	letter-spacing: 0.04em;
+}
+
 /* Flavor/decorative text */
 [data-flavor] {
 	font-family: var(--font-flavor);
 	font-style: italic;
 }
 
-/* Body text */
+/* Typewritten values — feels like the user has typed onto the paper form (Classic).
+   No-op in Modern (falls back to body monospace). */
+[data-typed] {
+	font-family: var(--font-typed);
+	letter-spacing: 0.01em;
+}
+
+/* Body text — slight line-height bump because EB Garamond (Classic) and the
+   Modern monospace both read more comfortably with extra leading. */
 body {
 	font-family: var(--font-body);
 	background-color: var(--color-background);
 	color: var(--color-foreground);
+	line-height: 1.55;
 }

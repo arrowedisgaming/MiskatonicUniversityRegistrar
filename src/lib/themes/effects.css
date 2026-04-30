@@ -26,9 +26,13 @@
 	background: oklch(0.50 0.05 75 / 0.08);
 }
 
+/* Classic Light: switch the paper-noise blend to multiply so the grain actually
+   darkens the page (overlay barely affects flat-light surfaces) and bump the
+   opacity so paper texture is legibly visible rather than a vague tint. */
 .classic-light body::before {
-	opacity: 0.08;
-	background: oklch(0.40 0.06 65 / 0.06);
+	opacity: 0.14;
+	background: oklch(0.32 0.06 65 / 0.08);
+	mix-blend-mode: multiply;
 }
 
 /* ─── Old Photograph Vignette ──────────────────── */
@@ -111,6 +115,56 @@
 	display: inline-block;
 }
 
+/* ─── Coffee Ring Stains (Classic) ─────────────── */
+/* Three real coffee-ring shapes — circular partial strokes (cup-tilt break),
+   doubled (thick subtle band + thin darker inner edge — the physics of how
+   coffee dries: solute concentration migrates to the perimeter), with a
+   couple of stray droplets. SVG data URL inlined as background-image so the
+   stain is a single image asset that scales with the viewport. */
+
+.classic-light body {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 56' preserveAspectRatio='xMidYMid slice'><g transform='translate(15 14) rotate(35)'><circle r='3.4' fill='none' stroke='rgba(120,80,40,0.18)' stroke-width='0.34' stroke-dasharray='17 100' stroke-linecap='round'/><circle r='3.15' fill='none' stroke='rgba(120,80,40,0.11)' stroke-width='0.14' stroke-dasharray='15.5 100' stroke-linecap='round'/><ellipse cx='4.4' cy='-1' rx='0.20' ry='0.13' fill='rgba(120,80,40,0.14)'/><ellipse cx='-2.7' cy='3.1' rx='0.13' ry='0.08' fill='rgba(120,80,40,0.11)'/></g><g transform='translate(80 9) rotate(-15)'><circle r='2.6' fill='none' stroke='rgba(120,80,40,0.16)' stroke-width='0.28' stroke-dasharray='13 100' stroke-linecap='round'/><circle r='2.4' fill='none' stroke='rgba(120,80,40,0.10)' stroke-width='0.12' stroke-dasharray='12 100' stroke-linecap='round'/><ellipse cx='-1.8' cy='2.3' rx='0.13' ry='0.07' fill='rgba(120,80,40,0.12)'/></g><g transform='translate(47 49) rotate(110)'><circle r='4.2' fill='none' stroke='rgba(120,80,40,0.17)' stroke-width='0.38' stroke-dasharray='21 100' stroke-linecap='round'/><circle r='3.95' fill='none' stroke='rgba(120,80,40,0.11)' stroke-width='0.16' stroke-dasharray='20 100' stroke-linecap='round'/><ellipse cx='4.9' cy='2.8' rx='0.22' ry='0.16' fill='rgba(120,80,40,0.13)'/><ellipse cx='-5.5' cy='-1.7' rx='0.14' ry='0.10' fill='rgba(120,80,40,0.11)'/></g></svg>");
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+}
+
+.classic-dark body {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 56' preserveAspectRatio='xMidYMid slice'><g transform='translate(15 14) rotate(35)'><circle r='3.4' fill='none' stroke='rgba(190,140,75,0.13)' stroke-width='0.34' stroke-dasharray='17 100' stroke-linecap='round'/><circle r='3.15' fill='none' stroke='rgba(190,140,75,0.08)' stroke-width='0.14' stroke-dasharray='15.5 100' stroke-linecap='round'/><ellipse cx='4.4' cy='-1' rx='0.20' ry='0.13' fill='rgba(190,140,75,0.10)'/><ellipse cx='-2.7' cy='3.1' rx='0.13' ry='0.08' fill='rgba(190,140,75,0.08)'/></g><g transform='translate(80 9) rotate(-15)'><circle r='2.6' fill='none' stroke='rgba(190,140,75,0.11)' stroke-width='0.28' stroke-dasharray='13 100' stroke-linecap='round'/><circle r='2.4' fill='none' stroke='rgba(190,140,75,0.07)' stroke-width='0.12' stroke-dasharray='12 100' stroke-linecap='round'/><ellipse cx='-1.8' cy='2.3' rx='0.13' ry='0.07' fill='rgba(190,140,75,0.09)'/></g><g transform='translate(47 49) rotate(110)'><circle r='4.2' fill='none' stroke='rgba(190,140,75,0.12)' stroke-width='0.38' stroke-dasharray='21 100' stroke-linecap='round'/><circle r='3.95' fill='none' stroke='rgba(190,140,75,0.08)' stroke-width='0.16' stroke-dasharray='20 100' stroke-linecap='round'/><ellipse cx='4.9' cy='2.8' rx='0.22' ry='0.16' fill='rgba(190,140,75,0.10)'/><ellipse cx='-5.5' cy='-1.7' rx='0.14' ry='0.10' fill='rgba(190,140,75,0.08)'/></g></svg>");
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+}
+
+/* ─── Paper Fiber Overlay (Classic) ────────────── */
+/* Low-frequency horizontal-biased turbulence — reads as visible paper-grain fibers
+   under the high-frequency paper-noise speckle. Sits on html::before so it doesn't
+   conflict with body::before (paper-noise) or body::after (vignette). */
+
+.classic-dark::before,
+.classic-light::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9996;
+	filter: url(#paper-fiber);
+	mix-blend-mode: multiply;
+}
+
+.classic-light::before {
+	opacity: 0.09;
+	background: oklch(0.32 0.06 65 / 0.06);
+}
+
+.classic-dark::before {
+	opacity: 0.05;
+	background: oklch(0.50 0.05 75 / 0.04);
+	mix-blend-mode: overlay;
+}
+
 /* ═══════════════════════════════════════════════
    MODERN ERA
    ═══════════════════════════════════════════════ */
@@ -170,6 +224,96 @@
 	text-shadow: 0 0 8px oklch(0.70 0.18 145 / 0.5);
 }
 
+/* ─── CRT Degauss Flash (Modern, on era transition) ─ */
+/* Fires once when the user toggles INTO Modern era. theme store sets
+   data-era-transitioning="modern-in" on <html> for ~700ms; this animation
+   plays for the duration. Reads as the moment a CRT powers up — slight
+   chromatic mis-convergence, blur, hue wobble, then settles. */
+
+@keyframes crt-degauss-in {
+	0% {
+		filter: blur(8px) saturate(2.4) hue-rotate(18deg) brightness(1.4);
+		transform: translate3d(0, 0, 0);
+	}
+	18% {
+		filter: blur(4px) saturate(1.9) hue-rotate(10deg) brightness(1.2);
+		transform: translate3d(2px, 0, 0);
+	}
+	38% {
+		filter: blur(1.5px) saturate(1.5) hue-rotate(4deg) brightness(1.1);
+		transform: translate3d(-1px, 1px, 0);
+	}
+	62% {
+		filter: blur(0.5px) saturate(1.2) hue-rotate(0deg) brightness(1.05);
+		transform: translate3d(0, 0, 0);
+	}
+	100% {
+		filter: none;
+		transform: none;
+	}
+}
+
+html[data-era-transitioning='modern-in'] .app-frame {
+	animation: crt-degauss-in 700ms ease-out;
+}
+
+/* ─── Sepia Fade-In (Classic, on era transition) ───── */
+/* Fires once when the user toggles INTO Classic era. Less aggressive than
+   the CRT degauss — reads as a photograph fading into focus. */
+
+@keyframes sepia-fade-in {
+	0% {
+		filter: sepia(0.45) brightness(1.08) contrast(0.92);
+		opacity: 0.85;
+	}
+	100% {
+		filter: none;
+		opacity: 1;
+	}
+}
+
+html[data-era-transitioning='classic-in'] .app-frame {
+	animation: sepia-fade-in 600ms ease-out;
+}
+
+/* ─── Phosphor Flicker (Modern Dark, ambient) ──────── */
+/* Very rare, very brief — twice every 90 seconds the screen dims for ~150ms.
+   Implemented as a 90s animation cycle where 99.0–99.5% is the dip. */
+
+@keyframes phosphor-flicker {
+	0%, 98.9%, 99.6%, 100% {
+		filter: none;
+	}
+	99.0%, 99.4% {
+		filter: brightness(0.93) contrast(1.04);
+	}
+	99.2% {
+		filter: brightness(0.88) contrast(1.06);
+	}
+}
+
+.modern-dark .app-frame {
+	animation: phosphor-flicker 90s linear infinite;
+}
+
+/* ─── Eldritch Glitch (programmatic trigger) ───────── */
+/* Triggered by the atmosphere store's triggerEldritchFlash(). The .eldritch-glitching
+   class is added to <html> for the duration, applying a displacement filter that
+   itself animates internally (see #eldritch-displacement in app.html). The body also
+   gets a chromatic-aberration text-shadow for the duration to amplify the wrongness. */
+
+html.eldritch-glitching .app-frame {
+	filter: url(#eldritch-displacement) hue-rotate(8deg) contrast(1.08);
+	transition: filter 80ms ease-out;
+}
+
+html.eldritch-glitching .app-frame,
+html.eldritch-glitching [data-heading] {
+	text-shadow:
+		1.5px 0 0 oklch(0.55 0.22 25 / 0.55),
+		-1.5px 0 0 oklch(0.65 0.18 200 / 0.55);
+}
+
 /* ═══════════════════════════════════════════════
    ACCESSIBILITY: Reduced Motion
    ═══════════════════════════════════════════════ */
@@ -182,7 +326,9 @@
 	.modern-dark body::after,
 	.modern-light body::after,
 	.modern-dark body::before,
-	.modern-light body::before {
+	.modern-light body::before,
+	.classic-dark::before,
+	.classic-light::before {
 		display: none;
 	}
 
@@ -191,6 +337,20 @@
 	.classic-dark [data-flavor],
 	.modern-dark,
 	.modern-dark [data-heading] {
+		text-shadow: none;
+	}
+
+	/* Disable the animated atmospheric effects entirely. Static decorations
+	   (coffee stains, scanlines as repeating gradients) remain — they're not
+	   motion. The CRT degauss, sepia fade-in, phosphor flicker, and eldritch
+	   glitch are all suppressed; era transitions become instantaneous. */
+	html[data-era-transitioning] .app-frame,
+	.modern-dark .app-frame {
+		animation: none;
+	}
+
+	html.eldritch-glitching .app-frame {
+		filter: none;
 		text-shadow: none;
 	}
 }

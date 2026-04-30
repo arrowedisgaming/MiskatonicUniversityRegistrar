@@ -8,6 +8,7 @@ import {
 	type Era,
 	type Mode
 } from '$lib/themes/registry';
+import { triggerEraTransition } from '$lib/stores/atmosphere';
 
 const ERA_KEY = 'theme-era';
 const MODE_KEY = 'theme-mode';
@@ -113,9 +114,18 @@ function createThemeStores() {
 		// Subscribe to changes
 		let currentEra = initialEra;
 		let currentMode = initialMode;
+		let firstEraEmission = true;
 		era.subscribe((e) => {
+			const previousEra = currentEra;
 			currentEra = e;
 			applyToDOM(currentEra, currentMode);
+			// Fire the atmospheric era-transition flash only on actual user-initiated
+			// changes — not on the synchronous initial subscribe emission.
+			if (firstEraEmission) {
+				firstEraEmission = false;
+			} else if (e !== previousEra) {
+				triggerEraTransition(e === 'modern' ? 'modern-in' : 'classic-in');
+			}
 		});
 		mode.subscribe((m) => {
 			currentMode = m;

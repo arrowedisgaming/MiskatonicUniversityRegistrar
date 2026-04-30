@@ -10,7 +10,7 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Special+Elite&display=swap"
 			rel="stylesheet"
 		/>
 		<!-- Modern era fonts (IBM Plex Mono, VT323) — loaded on demand by theme store -->
@@ -18,11 +18,27 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
-		<!-- SVG filter for Classic era paper grain texture -->
+		<!-- SVG filters for atmospheric flourishes -->
 		<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+			<!-- Classic era: high-frequency paper grain -->
 			<filter id="paper-noise">
 				<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
 				<feColorMatrix type="saturate" values="0" />
+			</filter>
+			<!-- Classic era: low-frequency horizontal paper fiber -->
+			<filter id="paper-fiber">
+				<feTurbulence type="fractalNoise" baseFrequency="0.012 0.18" numOctaves="2" seed="7" />
+				<feColorMatrix type="saturate" values="0" />
+				<feComponentTransfer>
+					<feFuncA type="linear" slope="0.55" intercept="0" />
+				</feComponentTransfer>
+			</filter>
+			<!-- Modern era / eldritch glitch: animated displacement -->
+			<filter id="eldritch-displacement">
+				<feTurbulence type="turbulence" baseFrequency="0.018 0.4" numOctaves="2" seed="3">
+					<animate attributeName="baseFrequency" dur="900ms" values="0.018 0.4;0.05 0.8;0.018 0.4" repeatCount="indefinite" />
+				</feTurbulence>
+				<feDisplacementMap in="SourceGraphic" scale="14" xChannelSelector="R" yChannelSelector="G" />
 			</filter>
 		</svg>
 		<div style="display: contents">%sveltekit.body%</div>

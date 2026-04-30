@@ -29,7 +29,9 @@
 
 	--radius: 0rem;
 
+	--font-display: 'IBM Plex Mono', monospace;
 	--font-heading: 'IBM Plex Mono', monospace;
 	--font-flavor: 'VT323', monospace;
 	--font-body: 'IBM Plex Mono', monospace;
+	--font-typed: 'IBM Plex Mono', monospace;
 }

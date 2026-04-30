@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Controlling design document at `.stitch/DESIGN.md` codifying the dual-era visual system (Classic 1920s and Modern 1980s, each with light/dark variants), all theme tokens verbatim from `src/lib/themes/*.css`, component patterns, screen surfaces, forward-looking state patterns, and Stitch prompt recipes for generating new screens that honour the existing visual language and Chaosium fan-content constraints.
+- Atmospheric flourishes (Classic era): three irregularly-placed coffee ring stains rendered via `body { background-image }` in both Classic Dark and Classic Light, sized and tinted to read as old coffee on aged paper.
+- Atmospheric flourishes (Classic era): low-frequency horizontal-biased paper-fiber overlay layered on `html::before` via a new `#paper-fiber` SVG `feTurbulence` filter, giving Classic themes a visible second-tier paper grain under the existing high-frequency `paper-noise` speckle.
+- Atmospheric flourishes (Classic era): new `[data-typed]` attribute hook backed by a `--font-typed` CSS variable that resolves to `Special Elite` (Google Fonts) on Classic and to the body monospace on Modern, giving "values typed onto the paper form" a typewriter face only in Classic.
+- Atmospheric flourishes (Modern era): CRT degauss flash (700ms) plays once when the user toggles era INTO Modern — blur, saturate, hue-rotate, and horizontal jitter that settle to clean.
+- Atmospheric flourishes (Classic era): sepia fade-in (600ms) plays once when the user toggles era INTO Classic.
+- Atmospheric flourishes (Modern Dark): rare ambient phosphor flicker on a 90-second cycle, briefly dimming `.app-frame` via `filter` for ~360ms.
+- Atmospheric flourishes (eldritch): `triggerEldritchFlash()` API in `src/lib/stores/atmosphere.ts` applies a temporally-animated SVG displacement filter plus chromatic-aberration text-shadow to `.app-frame` for the configured duration. Reserved for narrative moments (Sanity loss, Mythos crits) — no automatic ambient firing.
+- New `.app-frame` wrapper class on the layout body div so atmospheric `filter` effects target an inner container, leaving `DiceRollOverlay`'s `position: fixed` anchored to the viewport (filtered ancestors otherwise establish a containing block for fixed-position descendants).
+- All animated atmospheric effects respect `prefers-reduced-motion: reduce` — era transitions become instantaneous, the phosphor flicker is suppressed, and the eldritch glitch becomes a no-op while static decorations (coffee stains, paper grain, scanlines) remain visible.
+- Cinzel as a new Classic display face (`--font-display`), automatically applied to h1 and any element with `[data-display]` — engraved-Roman caps reads as a 1920s academic nameplate.
+- EB Garamond as the Classic body face (`--font-body`), replacing Inter — period book typography for the highest-volume on-screen text. Inter remains in the Google Fonts request as a fallback.
+- `body { line-height: 1.55 }` for both eras so the new serif body face and the existing Modern monospace both read with comfortable leading.
+
+### Changed
+- Coffee ring stains rewritten from soft `radial-gradient` blobs (which read as out-of-focus smudges) to real partial-circle SVG strokes inlined as a data URL on `body { background-image }`. Each ring is built from a thicker outer band + thinner darker inner band (the physical coffee-ring effect) with `stroke-dasharray` creating a single ~20% gap (the cup-tilt break) plus stray droplet ellipses.
+- Classic Light paper texture made visibly present: `body::before` paper-noise switched from `mix-blend-mode: overlay` (a near no-op on flat-light surfaces) to `multiply`, opacity raised from 0.08 to 0.14, and the `html::before` paper-fiber overlay opacity raised from 0.04 to 0.09 — Light pages now read as printed paper rather than flat sepia.
+
 ## [0.1.2] - 2026-04-29
 
 ### Fixed
