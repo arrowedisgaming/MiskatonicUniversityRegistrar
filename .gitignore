@@ -27,6 +27,11 @@ vite.config.ts.timestamp-*
 *.db-shm
 *.db-wal
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 # Rulebooks (copyrighted)
 rulebooks/
 
