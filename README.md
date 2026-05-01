@@ -115,6 +115,8 @@ Characters are stored as a single JSON blob per row in SQLite, with a `schemaVer
 
 Issues and pull requests welcome. Please check [`CHANGELOG.md`](./CHANGELOG.md) before opening a PR — the project uses [Keep a Changelog](https://keepachangelog.com/) format and [Semantic Versioning](https://semver.org/). Add your change under `[Unreleased]`.
 
+When cutting a release, update `package.json` and `package-lock.json` to the same version as the new changelog entry. The site footer reads its displayed version from `package.json`.
+
 ## Legal
 
 ### Chaosium Fan Material Policy
