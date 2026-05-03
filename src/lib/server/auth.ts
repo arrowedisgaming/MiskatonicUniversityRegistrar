@@ -137,7 +137,10 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 				return session;
 			}
 		},
-		trustHost: isEnvFlagOn(getEnv(event, 'AUTH_TRUST_HOST')) || isDev
+		// trustHost defaults on; deployments running behind an untrusted proxy can
+		// opt out with AUTH_TRUST_HOST=false (or 0/no/off). Cloudflare Pages strips
+		// and rewrites the Host header, so the default is safe for this stack.
+		trustHost: !isEnvFlagOff(getEnv(event, 'AUTH_TRUST_HOST'))
 	};
 });
 
@@ -145,6 +148,12 @@ function isEnvFlagOn(value: string | undefined): boolean {
 	if (!value) return false;
 	const v = value.trim().toLowerCase();
 	return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}
+
+function isEnvFlagOff(value: string | undefined): boolean {
+	if (!value) return false;
+	const v = value.trim().toLowerCase();
+	return v === '0' || v === 'false' || v === 'no' || v === 'off';
 }
 
 function isProfileEmailVerified(provider: string, profile: unknown): boolean {

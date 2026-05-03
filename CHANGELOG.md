@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-03
+
+### Fixed
+- `trustHost` now defaults to **on** unless `AUTH_TRUST_HOST` is explicitly set to `false`/`0`/`no`/`off`. The 0.2.0 opt-in semantic broke OAuth in any environment that didn't set the variable — including the CI E2E gate and the Cloudflare Pages deploy. This restores the 0.1.4 default behavior while preserving an opt-out path for deployments behind untrusted proxies.
+- CI E2E pre-deploy gate (`landing page`, `licensing page`, `characteristics wizard`, etc.) now boots successfully without explicit `AUTH_TRUST_HOST` configuration.
+
+### Changed
+- 0.2.0's CHANGELOG entry under `### Migration` no longer applies — production deploys do **not** need to add `AUTH_TRUST_HOST=true` to the Cloudflare Pages environment. Add it only if you want to explicitly turn trustHost off via `AUTH_TRUST_HOST=false`.
+
 ## [0.2.0] - 2026-05-02
 
 ### Added
