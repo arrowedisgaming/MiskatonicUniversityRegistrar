@@ -11,10 +11,14 @@ test('landing page loads with title', async ({ page }) => {
 	await expect(page.locator('h1')).toContainText('Miskatonic University Registrar');
 });
 
-test('landing page has Chaosium disclaimer', async ({ page }) => {
+test('licensing page carries Chaosium disclaimer linked from every page', async ({ page }) => {
 	await page.goto('/');
-	await expect(page.locator('footer')).toContainText('unofficial Fan Content');
-	await expect(page.locator('footer')).toContainText('Chaosium');
+	await expect(page.locator('footer').getByRole('link', { name: /Licensing/ })).toBeVisible();
+
+	await page.goto('/licensing');
+	const main = page.locator('main');
+	await expect(main).toContainText('unofficial Fan Content');
+	await expect(main).toContainText('Chaosium');
 });
 
 test('landing page footer links to GitHub and shows app version', async ({ page }) => {

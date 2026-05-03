@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-05-03
+
+### Added
+- Persistent eldritch-flavored alpha warning banner (`src/lib/components/layout/AlphaBanner.svelte`) at the top of every route, signaling that the character JSON schema is unstable and data loss may occur during alpha. Sticky positioning keeps it pinned to the viewport while scrolling. Themed with inline tentacle SVG glyphs and the existing oklch palette; uses `role="status"` + `aria-live="polite"` for screen-reader announcement.
+
+### Changed
+- Footer simplified to a single line: meta-line on the left, GitHub + Licensing & Legal links on the right. The Chaosium Fan Material Policy disclaimer was removed from the footer; it remains in full on `/licensing`, which is still linked from every page.
+- E2E smoke test rewritten to verify the disclaimer on `/licensing` and the footer link from every page, replacing the prior every-page-footer assertion.
+
 ## [0.2.1] - 2026-05-03
 
 ### Fixed
