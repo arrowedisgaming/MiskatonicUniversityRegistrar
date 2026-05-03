@@ -107,12 +107,13 @@
 					class="rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]">
 					Markdown
 				</a>
-				<button onclick={exportPDF} disabled={pdfExporting}
+				<button type="button" onclick={exportPDF} disabled={pdfExporting}
 					class="rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)] disabled:opacity-50">
 					{pdfExporting ? 'Exporting...' : 'PDF'}
 				</button>
 			</div>
 			<button
+				type="button"
 				onclick={() => (playMode = !playMode)}
 				class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors
 					{playMode
@@ -135,11 +136,12 @@
 
 	<!-- In-Play Tracking -->
 	{#if playMode}
-		<div class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-4">
+		<section aria-labelledby="in-play-heading" class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-4">
 			<div class="mb-3 flex items-center justify-between">
-				<h2 class="text-sm font-semibold uppercase text-[var(--color-primary)]">In-Play Tracking</h2>
+				<h2 id="in-play-heading" class="text-sm font-semibold uppercase tracking-wider text-[var(--color-primary)]">In-Play Tracking</h2>
 				{#if isDirty}
 					<button
+						type="button"
 						onclick={savePlayState}
 						class="rounded bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-primary-foreground)]"
 					>
@@ -158,11 +160,13 @@
 						<span class="text-xs uppercase text-[var(--color-muted-foreground)]">{tracker.label}</span>
 						<div class="flex items-center justify-center gap-2">
 							<button
+								type="button"
 								onclick={() => adjust(tracker.stat, -1)}
 								class="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] text-lg font-bold hover:bg-[var(--color-accent)]"
 							>−</button>
 							<span class="min-w-[3rem] text-center text-2xl font-bold">{tracker.current}</span>
 							<button
+								type="button"
 								onclick={() => adjust(tracker.stat, 1)}
 								class="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] text-lg font-bold hover:bg-[var(--color-accent)]"
 							>+</button>
@@ -178,7 +182,7 @@
 					</div>
 				{/each}
 			</div>
-		</div>
+		</section>
 	{/if}
 
 	<!-- Characteristics & Derived -->

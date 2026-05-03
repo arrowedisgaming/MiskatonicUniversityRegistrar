@@ -4,6 +4,8 @@
 	 * CSS keyframe animation on dice faces — visually satisfying, simple implementation.
 	 */
 
+	import { announce } from '$lib/stores/announcer';
+
 	let {
 		count = 3,
 		sides = 6,
@@ -53,6 +55,8 @@
 			results = finalResults;
 			animating = false;
 			rolling = false;
+			const total = finalResults.reduce((a, b) => a + b, 0);
+			announce(`Rolled ${finalResults.join(', ')}. Total ${total}.`);
 			onroll?.(finalResults);
 		}, 600);
 	}
@@ -74,6 +78,7 @@
 	</div>
 
 	<button
+		type="button"
 		onclick={roll}
 		disabled={animating}
 		class="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium

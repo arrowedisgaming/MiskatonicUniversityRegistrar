@@ -74,7 +74,7 @@
 
 <div class="space-y-8">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Backstory &amp; Details</h2>
+		<h1 class="text-2xl font-bold" data-heading>Backstory &amp; Details</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Give your investigator a name, age, and backstory. These details bring them to life.
 		</p>
@@ -82,7 +82,7 @@
 
 	<!-- Identity -->
 	<div class="space-y-4">
-		<h3 class="text-lg font-semibold" data-heading>Identity</h3>
+		<h2 class="text-lg font-semibold" data-heading>Identity</h2>
 		<div class="grid gap-4 sm:grid-cols-2">
 			<div>
 				<label for="name" class="mb-1 block text-sm font-medium">Name <span class="text-[var(--color-destructive)]">*</span></label>
@@ -119,7 +119,7 @@
 
 	<!-- Backstory -->
 	<div class="space-y-4">
-		<h3 class="text-lg font-semibold" data-heading>Backstory</h3>
+		<h2 class="text-lg font-semibold" data-heading>Backstory</h2>
 		<p class="text-sm text-[var(--color-muted-foreground)]" data-flavor>
 			&ldquo;The most merciful thing in the world is the inability of the human mind to correlate all its contents.&rdquo;
 		</p>
@@ -150,6 +150,7 @@
 			&larr; Skills
 		</a>
 		<button
+			type="button"
 			onclick={proceed}
 			disabled={!canProceed}
 			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium

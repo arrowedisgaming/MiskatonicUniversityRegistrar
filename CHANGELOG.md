@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-03
+
+### Added
+- `<LiveAnnouncer>` component (`src/lib/components/a11y/LiveAnnouncer.svelte`) and `announcer` store (`src/lib/stores/announcer.ts`) — single source of truth for `aria-live` announcements. Wired into wizard step changes (announces "Step N of 6: Label") and dice rolls ("Rolled X, Y, Z. Total N.").
+- Skills page point-budget panel now exposes itself as `role="status" aria-live="polite"`, so screen-reader users hear remaining occupation/personal interest points update as they're spent.
+- "Reduce theme effects" toggle in the Header (Sparkles icon). Persists to `localStorage` (`theme-reduce-effects`) and applies `data-reduce-effects` on `<html>` to disable grain, scanlines, vignettes, phosphor glow, and chromatic aberration — independent of the OS `prefers-reduced-motion` setting.
+- `A11Y-AUDIT.md` at the project root — comprehensive WCAG 2.1 AA audit report with contrast tables for all four themes and a prioritized fix list.
+
+### Changed
+- **Contrast (WCAG 2.1 AA):** `--color-muted-foreground` darkened/brightened across all four themes so muted-on-muted text passes 4.5:1. `modern-light` `--color-primary` darkened (oklch L 0.55 → 0.42) so off-white CTA labels on amber buttons clear AA. `--color-ring` updated to match.
+- Wizard step pages now use a single `<h1>` per page (e.g. "Characteristics", "Skills"); former `<h3>` sub-headings promoted to `<h2>` to maintain hierarchy. The classic-era gold ornamental underline now applies to both `h1[data-heading]` and `h2[data-heading]` so promoted page titles keep their decoration.
+- All disabled "Proceed"/"Save Investigator" buttons now have a visible hint sibling and `aria-describedby` so SR users hear *why* the button is disabled (e.g., "Spend or refund all occupation points.").
+- PDF export (`src/lib/export/pdf-export.ts`) tokenizes color constants at the top of the file. The previous `#888888` failed AA on white paper (2.85:1); replaced with `#3a3a3a`/`#444444`/`#555555` (all ≥ AA, footer at AAA).
+- Sheet "In-Play Tracking" panel wrapped as `<section aria-labelledby>` so it forms a proper landmark for screen-reader navigation.
+- 33 `<button>` elements across the wizard, sheet, dice, and header now have explicit `type="button"` (latent submit-on-Enter bug if a wrapping `<form>` is ever added).
+- Mobile 44px touch-target rule (`src/app.css`) now excludes inline links inside `<p>`/`<li>`/`<span>`/`[data-flavor]` so prose line-height isn't stretched.
+- Scrollbar styling extended with Firefox `scrollbar-width`/`scrollbar-color` so non-WebKit browsers track theme tokens.
+- Smoke test for the characteristics wizard updated to match the new `<h1>` heading.
+
+### Fixed
+- `announce()` (`src/lib/stores/announcer.ts`) now uses `setTimeout(50)` between the clear and the new value rather than `queueMicrotask`. Svelte may batch microtask-scheduled store updates into a single DOM write, which silently suppresses re-announcements of identical strings in NVDA/JAWS. The 50ms gap guarantees a real render frame between empty and the new value.
+
 ## [0.2.2] - 2026-05-03
 
 ### Added

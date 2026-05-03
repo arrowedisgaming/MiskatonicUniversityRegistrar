@@ -90,7 +90,7 @@
 
 <div class="space-y-6">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Occupation</h2>
+		<h1 class="text-2xl font-bold" data-heading>Occupation</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Choose your investigator's occupation. This determines your occupation skill points
 			({occupationPoints} pts) and which skills you can invest them in.
@@ -114,6 +114,7 @@
 			{#each filteredOccupations as occ}
 				{@const isSelected = selectedOccupation?.id === occ.id}
 				<button
+					type="button"
 					onclick={() => selectOccupation(occ)}
 					class="w-full rounded-md px-3 py-2 text-left text-sm transition-colors
 						{isSelected
@@ -131,7 +132,7 @@
 		<!-- Occupation detail panel -->
 		{#if selectedOccupation}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4 space-y-4">
-				<h3 class="text-xl font-bold" data-heading>{selectedOccupation.name}</h3>
+				<h2 class="text-xl font-bold" data-heading>{selectedOccupation.name}</h2>
 
 				<!-- Credit Rating -->
 				<div>
@@ -151,6 +152,7 @@
 								<span class="text-xs text-[var(--color-muted-foreground)]">Choose:</span>
 								{#each choice.options as option}
 									<button
+										type="button"
 										onclick={() => { formulaChoices[String(i)] = option; formulaChoices = { ...formulaChoices }; }}
 										class="rounded px-2 py-1 text-xs font-medium transition-colors
 											{formulaChoices[String(i)] === option
@@ -236,14 +238,21 @@
 		>
 			&larr; Characteristics
 		</a>
-		<button
-			onclick={proceed}
-			disabled={!selectedOccupation}
-			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
-				text-[var(--color-primary-foreground)] transition-colors
-				hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			Next: Allocate Skills &rarr;
-		</button>
+		<div class="flex items-center gap-3">
+			{#if !selectedOccupation}
+				<p id="proceed-hint" class="text-sm text-[var(--color-muted-foreground)]">Select an occupation to continue.</p>
+			{/if}
+			<button
+				type="button"
+				onclick={proceed}
+				disabled={!selectedOccupation}
+				aria-describedby={!selectedOccupation ? 'proceed-hint' : undefined}
+				class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+					text-[var(--color-primary-foreground)] transition-colors
+					hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				Next: Allocate Skills &rarr;
+			</button>
+		</div>
 	</div>
 </div>

@@ -75,7 +75,7 @@
 
 <div class="space-y-8">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Review Investigator</h2>
+		<h1 class="text-2xl font-bold" data-heading>Review Investigator</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Review your investigator before saving. You can go back to any step to make changes.
 		</p>
@@ -84,7 +84,7 @@
 	<!-- Warnings -->
 	{#if warnings.length > 0}
 		<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-4">
-			<h3 class="mb-2 text-sm font-semibold text-[var(--color-warning)]">Warnings</h3>
+			<h2 class="mb-2 text-sm font-semibold text-[var(--color-warning)]">Warnings</h2>
 			<ul class="space-y-1 text-sm text-[var(--color-warning)]">
 				{#each warnings as warning}
 					<li>&#x26A0; {warning}</li>
@@ -95,7 +95,7 @@
 
 	<!-- Header: Name & Occupation -->
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-		<h3 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h3>
+		<h2 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h2>
 		<p class="text-sm text-[var(--color-muted-foreground)]">
 			{occupation?.name ?? 'No occupation'} &middot;
 			Age {char.age} &middot;
@@ -118,7 +118,7 @@
 	<!-- Characteristics & Derived Stats -->
 	<div class="grid gap-6 lg:grid-cols-2">
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h3 class="mb-3 font-semibold" data-heading>Characteristics</h3>
+			<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
 			<div class="grid grid-cols-4 gap-2 text-center text-sm">
 				{#each ALL_CHARACTERISTICS as charId}
 					{@const v = char.characteristics.values[charId]}
@@ -132,7 +132,7 @@
 		</div>
 
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h3 class="mb-3 font-semibold" data-heading>Derived Attributes</h3>
+			<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
 			<div class="grid grid-cols-2 gap-3 text-sm">
 				<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
 					<span class="text-[var(--color-muted-foreground)]">Hit Points</span>
@@ -169,7 +169,7 @@
 	<!-- Skills -->
 	{#if char.skills.length > 0}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h3 class="mb-3 font-semibold" data-heading>Skills</h3>
+			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
 
 			{#if occSkills.length > 0}
 				<h4 class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Occupation Skills</h4>
@@ -205,7 +205,7 @@
 	{#if Object.values(char.backstory).some((v) => v.trim())}
 		{@const backstoryEntries = Object.entries(char.backstory).filter(([, v]) => v.trim())}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h3 class="mb-3 font-semibold" data-heading>Backstory</h3>
+			<h2 class="mb-3 font-semibold" data-heading>Backstory</h2>
 			<div class="space-y-2 text-sm">
 				{#each backstoryEntries as [key, value]}
 					<div>
@@ -222,7 +222,7 @@
 	<!-- Equipment -->
 	{#if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h3 class="mb-3 font-semibold" data-heading>Equipment &amp; Finances</h3>
+			<h2 class="mb-3 font-semibold" data-heading>Equipment &amp; Finances</h2>
 			<p class="mb-2 text-sm">
 				<span class="text-[var(--color-muted-foreground)]">Living Standard:</span> {char.equipment.livingStandard}
 				&middot; <span class="text-[var(--color-muted-foreground)]">Spending Level:</span> ${char.equipment.spendingLevel.toLocaleString()}
@@ -257,11 +257,13 @@
 		</a>
 		<div class="flex items-center gap-3">
 			{#if saveError}
-				<span class="text-sm text-[var(--color-destructive)]">{saveError}</span>
+				<span id="save-error" role="alert" class="text-sm text-[var(--color-destructive)]">{saveError}</span>
 			{/if}
 			<button
+				type="button"
 				onclick={saveInvestigator}
 				disabled={saving}
+				aria-describedby={saveError ? 'save-error' : undefined}
 				class="rounded-md bg-[var(--color-primary)] px-8 py-2.5 text-sm font-semibold
 					text-[var(--color-primary-foreground)] transition-colors hover:opacity-90
 					disabled:opacity-50"

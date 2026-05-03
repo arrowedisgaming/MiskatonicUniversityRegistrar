@@ -45,20 +45,35 @@
 
 /* ─── Mobile touch targets ───────────────────── */
 
-/* Ensure minimum 44px touch targets on mobile */
+/* Ensure minimum 44px touch targets on mobile.
+   Inline links inside paragraphs/list items are excluded — applying min-height
+   to them stretches text line-height and breaks inline flow. Standalone links
+   (nav items, footer links, action links) are unaffected because they're not
+   inside flowing prose. */
 @media (max-width: 768px) {
-	button, a, select, [role="button"] {
+	button, select, [role="button"] {
 		min-height: 44px;
 		min-width: 44px;
 	}
 
-	/* Stack the header nav vertically on small screens */
+	a:not(:where(p a, li a, span a, [data-flavor] a)) {
+		min-height: 44px;
+		min-width: 44px;
+	}
+
 	input[type="number"] {
 		font-size: 16px; /* Prevent iOS zoom on input focus */
 	}
 }
 
 /* ─── Scrollbar styling ──────────────────────── */
+
+/* Firefox uses scrollbar-color/scrollbar-width; WebKit uses ::-webkit-scrollbar.
+   Both kept in sync so light/dark modes track the theme. */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-border) var(--color-background);
+}
 
 ::-webkit-scrollbar {
 	width: 8px;

@@ -252,21 +252,21 @@
 {#if occupation}
 <div class="space-y-6">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Skills</h2>
+		<h1 class="text-2xl font-bold" data-heading>Skills</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Allocate skill points from your occupation and personal interests.
 		</p>
 	</div>
 
-	<!-- Point budget display -->
-	<div class="grid grid-cols-2 gap-4">
+	<!-- Point budget display: aria-live so SR users hear updates as they spend points -->
+	<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
 			<p class="text-lg font-bold">
 				<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
 					{remainingOcc}
 				</span>
-				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints}</span>
+				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
 			</p>
 		</div>
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
@@ -275,7 +275,7 @@
 				<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
 					{remainingPersonal}
 				</span>
-				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints}</span>
+				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints} personal interest points remaining</span>
 			</p>
 		</div>
 	</div>
@@ -284,6 +284,7 @@
 	<div class="flex flex-wrap items-center gap-2">
 		{#each categories as cat}
 			<button
+				type="button"
 				onclick={() => (showCategory = cat.id)}
 				class="rounded-full px-3 py-1 text-xs font-medium transition-colors
 					{showCategory === cat.id
@@ -306,13 +307,13 @@
 	<!-- Occupation choice slots -->
 	{#if (occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0}
 		<div class="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-			<h3 class="text-sm font-semibold" data-heading>Occupation Skill Choices</h3>
+			<h2 class="text-sm font-semibold" data-heading>Occupation Skill Choices</h2>
 			{#if (occupation.interpersonalChoiceCount ?? 0) > 0}
 				<div>
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Interpersonal ({selectedInterpersonal.length}/{occupation.interpersonalChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each allSkills.filter((s) => INTERPERSONAL_SKILLS.includes(s.id)) as skill}
-							<button onclick={() => setOccChoice('interpersonal', skill.id, occupation.interpersonalChoiceCount ?? 0)}
+							<button type="button" onclick={() => setOccChoice('interpersonal', skill.id, occupation.interpersonalChoiceCount ?? 0)}
 								class="rounded border px-2 py-1 text-xs {selectedInterpersonal.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
@@ -325,7 +326,7 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Combat ({selectedCombat.length}/{occupation.combatChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each combatSkills as skill}
-							<button onclick={() => setOccChoice('combat', skill.id, occupation.combatChoiceCount ?? 0)}
+							<button type="button" onclick={() => setOccChoice('combat', skill.id, occupation.combatChoiceCount ?? 0)}
 								class="rounded border px-2 py-1 text-xs {selectedCombat.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
@@ -338,7 +339,7 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Science ({selectedScience.length}/{occupation.scienceChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each scienceSkills as skill}
-							<button onclick={() => setOccChoice('science', skill.id, occupation.scienceChoiceCount ?? 0)}
+							<button type="button" onclick={() => setOccChoice('science', skill.id, occupation.scienceChoiceCount ?? 0)}
 								class="rounded border px-2 py-1 text-xs {selectedScience.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
@@ -351,7 +352,7 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Additional ({selectedAny.length}/{occupation.personalChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each allSkills.filter((s) => !requiredOccSkillIds.has(s.id) && s.id !== 'credit-rating') as skill}
-							<button onclick={() => setOccChoice('any', skill.id, occupation.personalChoiceCount ?? 0)}
+							<button type="button" onclick={() => setOccChoice('any', skill.id, occupation.personalChoiceCount ?? 0)}
 								class="rounded border px-2 py-1 text-xs {selectedAny.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
@@ -446,14 +447,25 @@
 		>
 			&larr; Occupation
 		</a>
-		<button
-			onclick={proceed}
-			disabled={!canProceed}
-			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
-				text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			Next: Backstory &rarr;
-		</button>
+		<div class="flex items-center gap-3">
+			{#if !canProceed}
+				<p id="skills-proceed-hint" class="text-sm text-[var(--color-muted-foreground)]">
+					{#if remainingOcc !== 0}Spend or refund all occupation points.
+					{:else if remainingPersonal !== 0}Spend or refund all personal interest points.
+					{:else}Resolve the highlighted skill choice errors.{/if}
+				</p>
+			{/if}
+			<button
+				type="button"
+				onclick={proceed}
+				disabled={!canProceed}
+				aria-describedby={!canProceed ? 'skills-proceed-hint' : undefined}
+				class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+					text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				Next: Backstory &rarr;
+			</button>
+		</div>
 	</div>
 </div>
 {:else}

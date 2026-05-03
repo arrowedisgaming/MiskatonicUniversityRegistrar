@@ -215,7 +215,7 @@
 
 <div class="space-y-8">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Characteristics</h2>
+		<h1 class="text-2xl font-bold" data-heading>Characteristics</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Choose an era, age, and generation method. Age adjustments are applied before occupation
 			and skills are calculated.
@@ -259,7 +259,7 @@
 					<option value={option.id}>{option.name}</option>
 				{/each}
 			</select>
-			<button onclick={rollAll} disabled={diceRolling}
+			<button type="button" onclick={rollAll} disabled={diceRolling}
 				class="rounded-md border border-[var(--color-primary)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-50">
 				{diceRolling ? 'Rolling...' : hasValues ? 'Reroll Standard Dice' : 'Roll Dice'}
 			</button>
@@ -317,6 +317,7 @@
 							</td>
 							<td class="py-2">
 								<button
+									type="button"
 									onclick={() => rerollSingle(char)}
 									class="text-xs text-[var(--color-primary)] hover:underline"
 									disabled={!hasValues || diceRolling}
@@ -332,7 +333,7 @@
 
 		{#if requiredDeduction > 0 || requiredEduChecks > 0}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-				<h3 class="mb-2 font-semibold" data-heading>Age Adjustments</h3>
+				<h2 class="mb-2 font-semibold" data-heading>Age Adjustments</h2>
 				{#if requiredDeduction > 0}
 					<p class="mb-2 text-xs text-[var(--color-muted-foreground)]">
 						Distribute {requiredDeduction} point{requiredDeduction === 1 ? '' : 's'} among {deductionTargets.map((target) => target.toUpperCase()).join(', ')}.
@@ -357,11 +358,11 @@
 				{#if requiredEduChecks > 0}
 					<div class="mt-3">
 						<div class="flex items-center gap-2">
-							<button onclick={rollNextEduCheck} disabled={eduChecks.length >= requiredEduChecks || diceRolling}
+							<button type="button" onclick={rollNextEduCheck} disabled={eduChecks.length >= requiredEduChecks || diceRolling}
 								class="rounded-md bg-[var(--color-secondary)] px-3 py-1.5 text-sm font-medium text-[var(--color-secondary-foreground)] disabled:opacity-50">
 								{diceRolling ? 'Rolling...' : 'Roll EDU Check'}
 							</button>
-							<button onclick={clearEduChecks} class="text-xs text-[var(--color-muted-foreground)] hover:underline">Clear</button>
+							<button type="button" onclick={clearEduChecks} class="text-xs text-[var(--color-muted-foreground)] hover:underline">Clear</button>
 							<span class="text-xs text-[var(--color-muted-foreground)]">{eduChecks.length}/{requiredEduChecks}</span>
 						</div>
 						{#if eduChecks.length > 0}
@@ -388,7 +389,7 @@
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<div class="flex items-center justify-between">
 				<div>
-					<h3 class="font-semibold" data-heading>Luck</h3>
+					<h2 class="font-semibold" data-heading>Luck</h2>
 					<p class="text-xs text-[var(--color-muted-foreground)]">Roll 3D6 &times; 5</p>
 				</div>
 				<div class="flex items-center gap-4">
@@ -399,6 +400,7 @@
 						</span>
 					{/if}
 					<button
+						type="button"
 						onclick={rollLuckDice}
 						disabled={diceRolling}
 						class="rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium
@@ -413,7 +415,7 @@
 		<!-- Derived Stats summary -->
 		{#if hasValues}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-				<h3 class="mb-3 font-semibold" data-heading>Derived Attributes</h3>
+				<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
 				<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
 					<div>
 						<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Hit Points</span>
@@ -447,11 +449,23 @@
 	<!-- Navigation -->
 	<div class="flex justify-end pt-4">
 		{#if hasValues && (!pointBuyValid || !quickFireValid)}
-			<p class="mr-3 self-center text-sm text-[var(--color-warning)]">Generation method constraints are not satisfied.</p>
+			<p id="char-proceed-warning" class="mr-3 self-center text-sm text-[var(--color-warning)]">Generation method constraints are not satisfied.</p>
+		{:else if !canProceed}
+			<p id="char-proceed-hint" class="mr-3 self-center text-sm text-[var(--color-muted-foreground)]">
+				{#if !hasValues}Roll or assign all characteristic values.
+				{:else if luck.max <= 0}Roll Luck before continuing.
+				{:else if ageResult.errors.length > 0}Resolve age modifier errors.
+				{:else if mode !== 'standard'}Lock in characteristic mode.
+				{:else}Complete remaining characteristic steps.{/if}
+			</p>
 		{/if}
 		<button
+			type="button"
 			onclick={proceed}
 			disabled={!canProceed || diceRolling}
+			aria-describedby={!canProceed
+				? (hasValues && (!pointBuyValid || !quickFireValid) ? 'char-proceed-warning' : 'char-proceed-hint')
+				: undefined}
 			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors
 				hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"

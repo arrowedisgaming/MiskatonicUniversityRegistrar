@@ -2,9 +2,9 @@
 	import { page } from '$app/state';
 	import { signOut } from '@auth/sveltekit/client';
 	import { diceRollAnimationsEnabled, toggleDiceRollAnimations } from '$lib/stores/dice-rolls';
-	import { era, mode, theme } from '$lib/stores/theme';
+	import { era, mode, theme, reduceEffects } from '$lib/stores/theme';
 	import { eras } from '$lib/themes/registry';
-	import { Dices, LogIn, LogOut } from '@lucide/svelte';
+	import { Dices, LogIn, LogOut, Sparkles } from '@lucide/svelte';
 
 	const session = $derived(page.data.session);
 
@@ -111,6 +111,7 @@
 				{#each eras as eraDef}
 					{@const isActive = $era === eraDef.id}
 					<button
+						type="button"
 						onclick={() => era.set(eraDef.id)}
 						class="rounded-sm p-1.5 transition-colors {isActive
 							? 'bg-[var(--color-accent)] text-[var(--color-foreground)]'
@@ -125,8 +126,26 @@
 				{/each}
 			</div>
 
+			<!-- Reduce theme effects toggle -->
+			<button
+				type="button"
+				onclick={() => reduceEffects.toggle()}
+				class="relative rounded-md p-2 transition-colors {$reduceEffects
+					? 'bg-[var(--color-accent)] text-[var(--color-foreground)]'
+					: 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]'}"
+				aria-pressed={$reduceEffects}
+				aria-label={$reduceEffects ? 'Enable theme effects (grain, scanlines, glow)' : 'Disable theme effects (grain, scanlines, glow)'}
+				title={$reduceEffects ? 'Theme effects off — click to enable' : 'Disable theme effects'}
+			>
+				<Sparkles size={18} aria-hidden="true" />
+				{#if $reduceEffects}
+					<span class="absolute left-1/2 top-1/2 h-0.5 w-6 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-current"></span>
+				{/if}
+			</button>
+
 			<!-- Mode Toggle -->
 			<button
+				type="button"
 				onclick={() => mode.toggle()}
 				class="rounded-md p-2 text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)] transition-colors"
 				aria-label="Switch to {$theme.resolvesDark ? 'light' : 'dark'} mode"

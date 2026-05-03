@@ -12,6 +12,7 @@ import { triggerEraTransition } from '$lib/stores/atmosphere';
 
 const ERA_KEY = 'theme-era';
 const MODE_KEY = 'theme-mode';
+const REDUCE_EFFECTS_KEY = 'theme-reduce-effects';
 const OLD_KEY = 'theme';
 
 /* ─── Migration from v1 single-theme store ──── */
@@ -68,6 +69,16 @@ function applyToDOM(era: Era, mode: Mode): void {
 	}
 }
 
+function applyReduceEffects(reduce: boolean): void {
+	if (!browser) return;
+	const root = document.documentElement;
+	if (reduce) {
+		root.dataset.reduceEffects = 'true';
+	} else {
+		delete root.dataset.reduceEffects;
+	}
+}
+
 /* ─── Store Creation ────────────────────────── */
 
 function createThemeStores() {
@@ -75,12 +86,15 @@ function createThemeStores() {
 
 	const storedEra = browser ? (localStorage.getItem(ERA_KEY) as Era | null) : null;
 	const storedMode = browser ? (localStorage.getItem(MODE_KEY) as Mode | null) : null;
+	const storedReduce = browser ? localStorage.getItem(REDUCE_EFFECTS_KEY) : null;
 
 	const initialEra: Era = storedEra === 'classic' || storedEra === 'modern' ? storedEra : defaultEra;
 	const initialMode: Mode = storedMode === 'light' || storedMode === 'dark' ? storedMode : defaultMode;
+	const initialReduce = storedReduce === 'true';
 
 	const era = writable<Era>(initialEra);
 	const mode = writable<Mode>(initialMode);
+	const reduceEffects = writable<boolean>(initialReduce);
 
 	const theme = derived([era, mode], ([$era, $mode]) => resolveTheme($era, $mode));
 
@@ -104,6 +118,17 @@ function createThemeStores() {
 		let current: Era = defaultEra;
 		era.subscribe((e) => (current = e))();
 		setEra(current === 'classic' ? 'modern' : 'classic');
+	}
+
+	function setReduceEffects(value: boolean) {
+		reduceEffects.set(value);
+		if (browser) localStorage.setItem(REDUCE_EFFECTS_KEY, String(value));
+	}
+
+	function toggleReduceEffects() {
+		let current = false;
+		reduceEffects.subscribe((v) => (current = v))();
+		setReduceEffects(!current);
 	}
 
 	// Reactively apply theme whenever era or mode changes
@@ -131,13 +156,18 @@ function createThemeStores() {
 			currentMode = m;
 			applyToDOM(currentEra, currentMode);
 		});
+
+		// subscribe fires synchronously with the current value, which applies
+		// the initial state; no separate priming call needed.
+		reduceEffects.subscribe((v) => applyReduceEffects(v));
 	}
 
 	return {
 		era: { subscribe: era.subscribe, set: setEra, toggle: toggleEra },
 		mode: { subscribe: mode.subscribe, set: setMode, toggle: toggleMode },
-		theme: { subscribe: theme.subscribe }
+		theme: { subscribe: theme.subscribe },
+		reduceEffects: { subscribe: reduceEffects.subscribe, set: setReduceEffects, toggle: toggleReduceEffects }
 	};
 }
 
-export const { era, mode, theme } = createThemeStores();
+export const { era, mode, theme, reduceEffects } = createThemeStores();

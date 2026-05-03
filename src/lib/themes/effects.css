@@ -108,6 +108,8 @@
 
 /* ─── Heading Ornamental Underlines ────────────── */
 
+.classic-dark h1[data-heading],
+.classic-light h1[data-heading],
 .classic-dark h2[data-heading],
 .classic-light h2[data-heading] {
 	padding-bottom: 0.35rem;
@@ -315,8 +317,12 @@ html.eldritch-glitching [data-heading] {
 }
 
 /* ═══════════════════════════════════════════════
-   ACCESSIBILITY: Reduced Motion
-   ═══════════════════════════════════════════════ */
+   ACCESSIBILITY: Reduced Motion / Reduced Effects
+   ═══════════════════════════════════════════════
+   Two triggers, same suppression: the OS-level prefers-reduced-motion media
+   query, and the explicit user toggle that sets data-reduce-effects on <html>
+   (managed by src/lib/stores/theme.ts). Selectors are duplicated rather than
+   combined so each trigger works independently. */
 
 @media (prefers-reduced-motion: reduce) {
 	.classic-dark body::before,
@@ -340,10 +346,6 @@ html.eldritch-glitching [data-heading] {
 		text-shadow: none;
 	}
 
-	/* Disable the animated atmospheric effects entirely. Static decorations
-	   (coffee stains, scanlines as repeating gradients) remain — they're not
-	   motion. The CRT degauss, sepia fade-in, phosphor flicker, and eldritch
-	   glitch are all suppressed; era transitions become instantaneous. */
 	html[data-era-transitioning] .app-frame,
 	.modern-dark .app-frame {
 		animation: none;
@@ -353,4 +355,39 @@ html.eldritch-glitching [data-heading] {
 		filter: none;
 		text-shadow: none;
 	}
+}
+
+/* User-toggleable equivalent — same suppressions, triggered by the Header
+   "reduce theme effects" button. Lets users opt out of decorative grain,
+   scanlines, vignettes, and chromatic aberration without disabling all OS
+   motion. */
+html[data-reduce-effects] .classic-dark body::before,
+html[data-reduce-effects] .classic-light body::before,
+html[data-reduce-effects] .classic-dark body::after,
+html[data-reduce-effects] .classic-light body::after,
+html[data-reduce-effects] .modern-dark body::after,
+html[data-reduce-effects] .modern-light body::after,
+html[data-reduce-effects] .modern-dark body::before,
+html[data-reduce-effects] .modern-light body::before,
+html[data-reduce-effects].classic-dark::before,
+html[data-reduce-effects].classic-light::before {
+	display: none;
+}
+
+html[data-reduce-effects] .classic-dark [data-heading],
+html[data-reduce-effects] .classic-light [data-heading],
+html[data-reduce-effects] .classic-dark [data-flavor],
+html[data-reduce-effects] .modern-dark,
+html[data-reduce-effects] .modern-dark [data-heading] {
+	text-shadow: none;
+}
+
+html[data-reduce-effects][data-era-transitioning] .app-frame,
+html[data-reduce-effects] .modern-dark .app-frame {
+	animation: none;
+}
+
+html[data-reduce-effects].eldritch-glitching .app-frame {
+	filter: none;
+	text-shadow: none;
 }

@@ -4,6 +4,7 @@
 	import Footer from '$lib/components/layout/Footer.svelte';
 	import AlphaBanner from '$lib/components/layout/AlphaBanner.svelte';
 	import DiceRollOverlay from '$lib/components/dice/DiceRollOverlay.svelte';
+	import LiveAnnouncer from '$lib/components/a11y/LiveAnnouncer.svelte';
 
 	let { children } = $props();
 </script>
@@ -29,3 +30,4 @@
 </div>
 
 <DiceRollOverlay />
+<LiveAnnouncer />

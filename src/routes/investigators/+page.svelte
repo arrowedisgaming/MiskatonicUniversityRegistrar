@@ -75,12 +75,14 @@
 							View
 						</a>
 						<button
+							type="button"
 							onclick={() => duplicateInvestigator(inv.id)}
 							class="rounded border border-[var(--color-border)] px-2 py-1 transition-colors hover:bg-[var(--color-accent)]"
 						>
 							Duplicate
 						</button>
 						<button
+							type="button"
 							onclick={() => archiveInvestigator(inv.id)}
 							class="rounded border border-[var(--color-border)] px-2 py-1 text-[var(--color-destructive)] transition-colors hover:bg-[var(--color-destructive)]/10"
 						>

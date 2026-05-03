@@ -34,7 +34,7 @@ test('landing page footer links to GitHub and shows app version', async ({ page 
 
 test('characteristics wizard page loads', async ({ page }) => {
 	await page.goto('/create/coc7e/characteristics');
-	await expect(page.locator('h2')).toContainText('Characteristics');
+	await expect(page.locator('h1')).toContainText('Characteristics');
 });
 
 test('investigators dashboard redirects unauthenticated visitors to sign in', async ({ page }) => {

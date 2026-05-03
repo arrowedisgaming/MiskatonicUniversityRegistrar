@@ -81,7 +81,7 @@
 
 <div class="space-y-8">
 	<div>
-		<h2 class="text-2xl font-bold" data-heading>Equipment &amp; Finances</h2>
+		<h1 class="text-2xl font-bold" data-heading>Equipment &amp; Finances</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
 			Based on your Credit Rating of {creditRating}, your spending level and starting wealth are calculated below.
 		</p>
@@ -109,7 +109,7 @@
 
 	<!-- Weapons -->
 	<div class="space-y-3">
-		<h3 class="text-lg font-semibold" data-heading>Weapons</h3>
+		<h2 class="text-lg font-semibold" data-heading>Weapons</h2>
 
 		{#if weapons.length > 0}
 			<div class="overflow-x-auto">
@@ -133,7 +133,7 @@
 								<td class="py-1.5 pr-2">{weapon.attacksPerRound}</td>
 								<td class="py-1.5 pr-2">{weapon.ammo ?? '—'}</td>
 								<td class="py-1.5">
-									<button onclick={() => removeWeapon(i)} class="text-xs text-[var(--color-destructive)] hover:underline">Remove</button>
+									<button type="button" onclick={() => removeWeapon(i)} class="text-xs text-[var(--color-destructive)] hover:underline">Remove</button>
 								</td>
 							</tr>
 						{/each}
@@ -148,6 +148,7 @@
 				{#each data.equipment.weapons as weapon}
 					{@const alreadyAdded = weapons.some((w) => w.name === weapon.name)}
 					<button
+						type="button"
 						onclick={() => addWeapon(weapon)}
 						disabled={alreadyAdded}
 						class="rounded px-2 py-1 text-left text-xs transition-colors
@@ -163,14 +164,14 @@
 
 	<!-- General Equipment -->
 	<div class="space-y-3">
-		<h3 class="text-lg font-semibold" data-heading>Equipment</h3>
+		<h2 class="text-lg font-semibold" data-heading>Equipment</h2>
 
 		{#if items.length > 0}
 			<ul class="space-y-1">
 				{#each items as item, i}
 					<li class="flex items-center gap-2 rounded-md border border-[var(--color-border)]/30 px-3 py-1.5 text-sm">
 						<span class="flex-1">{item.name}</span>
-						<button onclick={() => removeItem(i)} class="text-xs text-[var(--color-destructive)] hover:underline">Remove</button>
+						<button type="button" onclick={() => removeItem(i)} class="text-xs text-[var(--color-destructive)] hover:underline">Remove</button>
 					</li>
 				{/each}
 			</ul>
@@ -187,6 +188,7 @@
 					placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
 			/>
 			<button
+				type="button"
 				onclick={() => addItem(newItemName)}
 				class="rounded-md bg-[var(--color-secondary)] px-3 py-2 text-sm font-medium
 					text-[var(--color-secondary-foreground)] transition-colors hover:opacity-90"
@@ -202,6 +204,7 @@
 				{#each data.equipment.commonItems[$wizard.character.era] ?? data.equipment.commonItems['1920s'] ?? [] as itemName}
 					{@const alreadyAdded = items.some((i) => i.name === itemName)}
 					<button
+						type="button"
 						onclick={() => addCommonItem(itemName)}
 						disabled={alreadyAdded}
 						class="rounded-full border px-2 py-0.5 text-xs transition-colors
@@ -226,6 +229,7 @@
 			&larr; Backstory
 		</a>
 		<button
+			type="button"
 			onclick={proceed}
 			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"

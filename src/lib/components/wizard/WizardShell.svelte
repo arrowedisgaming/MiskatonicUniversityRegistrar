@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
+	import { announce } from '$lib/stores/announcer';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
@@ -9,6 +10,15 @@
 	let currentStepIndex = $derived(
 		WIZARD_STEPS.findIndex((s) => currentPath.includes(s.id))
 	);
+
+	let lastAnnouncedStep = -1;
+	$effect(() => {
+		if (currentStepIndex !== -1 && currentStepIndex !== lastAnnouncedStep) {
+			lastAnnouncedStep = currentStepIndex;
+			const step = WIZARD_STEPS[currentStepIndex];
+			announce(`Step ${currentStepIndex + 1} of ${WIZARD_STEPS.length}: ${step.label}.`);
+		}
+	});
 </script>
 
 <div class="mx-auto max-w-5xl px-4 py-6">
