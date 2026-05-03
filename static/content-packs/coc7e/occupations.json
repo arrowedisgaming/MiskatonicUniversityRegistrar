@@ -294,6 +294,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Local law enforcement, clients."
 	},
@@ -349,6 +350,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Others in the field of mental illness, medical doctors, and occasionally detectives in law enforcement."
 	},
 	{
@@ -503,6 +505,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Local historians, other antique dealers, possibly criminal fences."
 	},
@@ -770,6 +773,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Medical staff, patients, and relatives of patients. Access to medical records, as well as drugs and other medical supplies."
 	},
@@ -1093,6 +1097,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Bibliographers, book dealers, libraries and universities, clients."
 	},
@@ -1144,6 +1149,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Organized crime, street-level law enforcement, local traders."
 	},
@@ -1200,6 +1206,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"combatChoiceCount": 1,
 		"suggestedContacts": "Bail bondsmen, local police, criminal informants."
@@ -1691,6 +1698,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Other confidence artists, freelance criminals."
 	},
@@ -1957,6 +1965,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"combatChoiceCount": 1,
 		"suggestedContacts": "Other petty criminals, street-level law enforcement."
@@ -2449,6 +2458,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Political operatives, government, news media, business, foreign governments, possibly organized crime."
 	},
 	{
@@ -2876,6 +2886,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Civic workers, medical workers, law enforcement."
 	},
 	{
@@ -2974,6 +2985,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Laboratories, law enforcement, medical profession."
 	},
 	{
@@ -3080,6 +3092,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Bookies, organized crime, street scene."
 	},
@@ -3131,6 +3144,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Organized crime, police, city government, politicians, judges, lawyers, businesses, and residents of the same ethnic community."
 	},
@@ -3182,6 +3196,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Upper classes and landed gentry, politics, servants and agricultural workers."
 	},
@@ -3388,6 +3403,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Hospital and medical workers, patients. Access to drugs, medical records, etc."
 	},
@@ -3566,6 +3582,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Legal connections, possibly organized crime."
 	},
 	{
@@ -3720,6 +3737,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Upper classes and landed gentry, politics, servants and agricultural workers."
 	},
@@ -4113,6 +4131,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Mining community, union members."
 	},
 	{
@@ -4224,6 +4243,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Other climbers, environmentalists, patrons, sponsors, local rescue or law enforcement, park rangers, sports clubs."
 	},
 	{
@@ -4278,6 +4298,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Local universities and scholars, publishers, museum patrons."
 	},
 	{
@@ -4373,6 +4394,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Hospital workers, physicians, community workers."
 	},
@@ -4485,6 +4507,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Local people and native folk, traders."
 	},
 	{
@@ -4548,6 +4571,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Local people and native folk, traders."
 	},
 	{
@@ -4649,6 +4673,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Local community, local physicians, hospitals and patients. Access to all manner of chemicals and drugs."
 	},
@@ -5165,6 +5190,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Others in the field of mental illness, physicians and possibly legal professions."
 	},
 	{
@@ -5402,6 +5428,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Coast Guard, smugglers, organized crime."
 	},
@@ -5489,6 +5516,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"scienceChoiceCount": 3,
 		"suggestedContacts": "Other scientists and academics, universities, their employers and former employers."
@@ -5599,6 +5627,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Local residents and businesses, local police, local government, customers."
 	},
@@ -5659,6 +5688,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Organized crime, Coast Guard, U.S. Customs officials."
 	},
@@ -5775,6 +5805,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Generally only the person the spy reports to, possibly other connections developed while under cover."
 	},
@@ -5882,6 +5913,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Petty criminals, the local fence, maybe the local gangster, certainly the local police."
 	},
@@ -6024,6 +6056,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Organized crime, street-level law enforcement, local traders."
 	},
@@ -6135,6 +6168,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 1,
 		"suggestedContacts": "Few."
 	},
@@ -6182,6 +6216,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"interpersonalChoiceCount": 2,
 		"suggestedContacts": "Other labor leaders and activists, political friends, possibly organized crime. In the 1920s, also socialists, communists, and subversive anarchists."
 	},
@@ -6486,6 +6521,7 @@
 				"required": true
 			}
 		],
+		"personalChoiceCount": 0,
 		"suggestedContacts": "Scientists, environmentalists."
 	}
 ]

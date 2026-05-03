@@ -4,6 +4,12 @@
  */
 
 import type { CoCContentPack, CoCSkillDefinition, CoCOccupationDefinition, CoCEquipmentPack } from '$lib/types/content-pack';
+import {
+	contentPackSchema,
+	skillsSchema,
+	occupationsSchema,
+	equipmentSchema
+} from '$lib/schemas/content-pack.schema';
 import contentPack from '../../../../static/content-packs/coc7e/index.json';
 import skills from '../../../../static/content-packs/coc7e/skills.json';
 import occupations from '../../../../static/content-packs/coc7e/occupations.json';
@@ -15,30 +21,47 @@ let cachedSkills: CoCSkillDefinition[] | null = null;
 let cachedOccupations: CoCOccupationDefinition[] | null = null;
 let cachedEquipment: CoCEquipmentPack | null = null;
 
+function parseOrThrow<T>(label: string, parsed: { success: true; data: unknown } | { success: false; error: { issues: { path: PropertyKey[]; message: string }[] } }): T {
+	if (!parsed.success) {
+		const issues = parsed.error.issues
+			.slice(0, 5)
+			.map((i) => `${i.path.map(String).join('.') || '<root>'}: ${i.message}`)
+			.join('; ');
+		throw new Error(`[content-pack] ${label} failed validation: ${issues}`);
+	}
+	return parsed.data as T;
+}
+
 export function getContentPack(): CoCContentPack {
 	if (!cachedPack) {
-		cachedPack = contentPack as CoCContentPack;
+		cachedPack = parseOrThrow<CoCContentPack>('index.json', contentPackSchema.safeParse(contentPack));
 	}
 	return cachedPack;
 }
 
 export function getSkills(): CoCSkillDefinition[] {
 	if (!cachedSkills) {
-		cachedSkills = skills as CoCSkillDefinition[];
+		cachedSkills = parseOrThrow<CoCSkillDefinition[]>('skills.json', skillsSchema.safeParse(skills));
 	}
 	return cachedSkills;
 }
 
 export function getOccupations(): CoCOccupationDefinition[] {
 	if (!cachedOccupations) {
-		cachedOccupations = occupations as CoCOccupationDefinition[];
+		cachedOccupations = parseOrThrow<CoCOccupationDefinition[]>(
+			'occupations.json',
+			occupationsSchema.safeParse(occupations)
+		);
 	}
 	return cachedOccupations;
 }
 
 export function getEquipment(): CoCEquipmentPack {
 	if (!cachedEquipment) {
-		cachedEquipment = equipment as CoCEquipmentPack;
+		cachedEquipment = parseOrThrow<CoCEquipmentPack>(
+			'equipment.json',
+			equipmentSchema.safeParse(equipment)
+		);
 	}
 	return cachedEquipment;
 }

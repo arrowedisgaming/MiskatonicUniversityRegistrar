@@ -7,6 +7,7 @@ import { eq, and } from 'drizzle-orm';
 import type { CoCCharacterData } from '$lib/types/character';
 import { createInvestigatorSchema } from '$lib/schemas/character.schema';
 import { migrateCharacterData } from '$lib/engine/character-migration';
+import { validateFinalInvestigator } from '$lib/server/validation/investigator';
 
 /** GET /api/investigators/:id — get full investigator */
 export const GET: RequestHandler = async (event) => {
@@ -32,12 +33,24 @@ export const PUT: RequestHandler = async (event) => {
 	const db = await getDb(event);
 	const userId = await ensureUser(event);
 
-	const rawBody = await event.request.json();
+	let rawBody: unknown;
+	try {
+		rawBody = await event.request.json();
+	} catch {
+		throw error(400, 'Request body is not valid JSON');
+	}
 	const parsed = createInvestigatorSchema.safeParse(rawBody);
 	if (!parsed.success) {
 		throw error(400, `Invalid character data: ${parsed.error.issues.map((i) => i.message).join(', ')}`);
 	}
-	const char = parsed.data.character;
+	const char = parsed.data.character as unknown as CoCCharacterData;
+
+	if (!char.isDraft) {
+		const ruleCheck = validateFinalInvestigator(char);
+		if (!ruleCheck.valid) {
+			throw error(400, `Game-rule violation: ${ruleCheck.errors.join('; ')}`);
+		}
+	}
 
 	const existing = await db
 		.select({ id: investigators.id })

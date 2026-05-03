@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { rollDie, rollDice, rollSum, roll3d6x5, roll2d6plus6x5, rollLuck } from '$lib/engine/dice';
+import {
+	rollDie,
+	rollDice,
+	rollSum,
+	roll3d6x5,
+	roll2d6plus6x5,
+	rollLuck,
+	sequenceRng
+} from '$lib/engine/dice';
 
 describe('rollDie', () => {
 	it('returns a value between 1 and sides (inclusive)', () => {
@@ -77,5 +85,39 @@ describe('rollLuck', () => {
 			expect(total).toBeGreaterThanOrEqual(15);
 			expect(total).toBeLessThanOrEqual(90);
 		}
+	});
+});
+
+describe('injectable RNG (sequenceRng)', () => {
+	it('rollDie returns the next value from the sequence', () => {
+		const rng = sequenceRng([4, 2, 6]);
+		expect(rollDie(6, rng)).toBe(4);
+		expect(rollDie(6, rng)).toBe(2);
+		expect(rollDie(6, rng)).toBe(6);
+	});
+
+	it('rollSum sums deterministic draws', () => {
+		const rng = sequenceRng([3, 5, 1]);
+		const { rolls, total } = rollSum(3, 6, rng);
+		expect(rolls).toEqual([3, 5, 1]);
+		expect(total).toBe(9);
+	});
+
+	it('roll3d6x5 multiplies the deterministic sum by 5', () => {
+		const rng = sequenceRng([6, 6, 6]);
+		const { total } = roll3d6x5(rng);
+		expect(total).toBe(90);
+	});
+
+	it('roll2d6plus6x5 applies the +6 before multiplying', () => {
+		const rng = sequenceRng([1, 1]);
+		const { total } = roll2d6plus6x5(rng);
+		expect(total).toBe(40); // (2 + 6) * 5
+	});
+
+	it('throws when the sequence is exhausted', () => {
+		const rng = sequenceRng([1]);
+		rollDie(6, rng);
+		expect(() => rollDie(6, rng)).toThrow(/exhausted/);
 	});
 });

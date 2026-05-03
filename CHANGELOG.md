@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-02
+
+### Added
+- Zod schemas for content-pack JSON (`src/lib/schemas/content-pack.schema.ts`) — index/skills/occupations/equipment now parsed at server boot rather than `as`-cast.
+- Server-side game-rule validator (`src/lib/server/validation/investigator.ts`) — final saves (`isDraft: false`) must pass occupation skill-point budget, Credit Rating range, and engine-derived HP/MP/Sanity/Build/Move Rate upper bounds before persistence. Eligible-occupation set includes the player's chosen interpersonal/combat/science/any slot picks (skills marked `isOccupation: true` in the submission). Drafts skip these checks so the wizard can save partial state.
+- Injectable RNG in `src/lib/engine/dice.ts` — exposes `Rng` type, `cryptoRng` default, and `sequenceRng` for deterministic tests; all dice helpers accept an optional `rng` parameter.
+- OAuth account binding via the existing `accounts` table — new `findOrLinkOAuthAccount(db, ...)` looks up by `(provider, providerAccountId)` first, only merges into an existing user via email when the provider reports the email verified, and persists the account row for subsequent sign-ins.
+- `+page.server.ts` for `/login` exposing `devLoginEnabled` so the dev credentials form only renders when the Credentials provider is actually registered.
+- Test coverage: content-pack integrity, occupation-filter engine, investigator final-save validation (including chosen-slot eligibility and NaN-bypass guard), OAuth account-takeover prevention, deterministic dice via `sequenceRng`. Unit suite now 105 tests across 12 files.
+
+### Changed
+- `personalChoiceCount` is now present on every occupation in `static/content-packs/coc7e/occupations.json`. The 36 occupations that previously omitted the field default to `0` ("no any-skill picks"); these should be reconciled against the CoC 7e Investigator Handbook on the next content-pack pass.
+- `cocCharacterDataSchema` now uses a strict `z.object` for `characteristics.values` / `baseValues` (all eight characteristics required) and a `characteristicId` enum for `formulaChoices` values, closing a NaN-bypass path through the budget validator.
+- All user-controlled strings and arrays in `cocCharacterDataSchema` are now bounded (names ≤200, backstory fields ≤5000, skills array ≤200, equipment items ≤200, weapons ≤50, etc.) to prevent oversized JSON blob persistence.
+- API routes `POST /api/investigators` and `PUT /api/investigators/:id` wrap `event.request.json()` in try/catch — malformed bodies return controlled 400 instead of unhandled 500.
+- `trustHost` in `src/lib/server/auth.ts` is now opt-in via `AUTH_TRUST_HOST` (accepts `1`/`true`/`yes`/`on`, case-insensitive; still on automatically when `NODE_ENV=development`), removing the unconditional always-on behaviour behind untrusted proxies.
+- Dev credentials provider is now opt-in via `AUTH_DEV_LOGIN` in addition to `NODE_ENV=development`, preventing accidental dev-login exposure if a deployment leaks `NODE_ENV=development`. The login page UI is gated on the same flag.
+- `graphify-out/` (local analysis output with machine-specific paths) is gitignored.
+
+### Security
+- OAuth identity linking no longer merges by email alone. An attacker controlling a different provider's account that happens to share an email with an existing user can no longer be auto-linked unless the new provider reports `email_verified: true` (Google) / `verified: true` (Discord). Unverified-email signups are persisted with `email: null` to prevent UNIQUE-index-driven silent merges. Covered by an explicit takeover-prevention test.
+- Server-side game-rule validator runs on every non-draft `POST`/`PUT /api/investigators`, rejecting payloads that overspend the occupation skill-point budget, exceed the credit-rating range, or claim derived stats above engine-computed upper bounds.
+
+### Migration
+- **Production deploy requires `AUTH_TRUST_HOST=true`** in the Cloudflare Pages environment. Previously the value was hard-coded; now it must be set explicitly or OAuth callbacks behind the Cloudflare proxy will fail. Existing local `.env` files already set this value; production env vars need to be reviewed before this version is deployed.
+- Local dev workflows that relied on the implicit dev-credentials login should add `AUTH_DEV_LOGIN=true` to `.env`. The committed example file documents the new convention.
+
 ## [0.1.4] - 2026-05-01
 
 ### Added

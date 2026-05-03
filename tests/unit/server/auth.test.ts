@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { eq } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { findOrCreateUserByEmail } from '$lib/server/auth';
+import { findOrCreateUserByEmail, findOrLinkOAuthAccount } from '$lib/server/auth';
 
 type TestDb = BetterSQLite3Database<typeof schema>;
 
@@ -18,6 +18,22 @@ function freshDb(): TestDb {
 			image text
 		);
 		CREATE UNIQUE INDEX users_email_unique ON users (email);
+		CREATE TABLE accounts (
+			id text PRIMARY KEY NOT NULL,
+			user_id text NOT NULL,
+			type text NOT NULL,
+			provider text NOT NULL,
+			provider_account_id text NOT NULL,
+			refresh_token text,
+			access_token text,
+			expires_at integer,
+			token_type text,
+			scope text,
+			id_token text,
+			session_state text
+		);
+		CREATE UNIQUE INDEX accounts_provider_idx
+			ON accounts (provider, provider_account_id);
 	`);
 	return drizzle(sqlite, { schema });
 }
@@ -92,5 +108,105 @@ describe('findOrCreateUserByEmail', () => {
 				.values({ id: 'second-user-id-aaaaa', email: 'unique@example.com', name: 'Second' })
 				.run()
 		).toThrow();
+	});
+});
+
+describe('findOrLinkOAuthAccount', () => {
+	let db: TestDb;
+
+	beforeEach(() => {
+		db = freshDb();
+	});
+
+	it('creates a new user and links the OAuth account on first sign-in', async () => {
+		const resolved = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-uid-1',
+			email: 'new@example.com',
+			emailVerified: true,
+			name: 'New User',
+			image: null
+		});
+		expect(resolved).not.toBeNull();
+		expect(resolved!.email).toBe('new@example.com');
+
+		const accountRow = await db
+			.select()
+			.from(schema.accounts)
+			.where(eq(schema.accounts.providerAccountId, 'google-uid-1'))
+			.get();
+		expect(accountRow?.userId).toBe(resolved!.id);
+	});
+
+	it('reuses the same user when the same provider account signs in twice', async () => {
+		const first = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-uid-2',
+			email: 'returning@example.com',
+			emailVerified: true,
+			name: null,
+			image: null
+		});
+		const second = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-uid-2',
+			email: 'returning@example.com',
+			emailVerified: true,
+			name: null,
+			image: null
+		});
+		expect(second!.id).toBe(first!.id);
+		const rows = await db.select().from(schema.users).all();
+		expect(rows).toHaveLength(1);
+	});
+
+	it('merges into an existing email-bearing user only when the new provider reports the email verified', async () => {
+		await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-uid-3',
+			email: 'shared@example.com',
+			emailVerified: true,
+			name: 'Original',
+			image: null
+		});
+
+		const merged = await findOrLinkOAuthAccount(db, {
+			provider: 'discord',
+			providerAccountId: 'discord-uid-3',
+			email: 'shared@example.com',
+			emailVerified: true,
+			name: 'Discord Self',
+			image: null
+		});
+
+		const users = await db.select().from(schema.users).all();
+		expect(users).toHaveLength(1);
+		expect(merged!.id).toBe(users[0].id);
+
+		const accountsRows = await db.select().from(schema.accounts).all();
+		expect(accountsRows.map((a) => a.provider).sort()).toEqual(['discord', 'google']);
+	});
+
+	it('does NOT merge when the new provider reports the email unverified — prevents account takeover', async () => {
+		const original = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-uid-4',
+			email: 'victim@example.com',
+			emailVerified: true,
+			name: 'Victim',
+			image: null
+		});
+
+		const attacker = await findOrLinkOAuthAccount(db, {
+			provider: 'discord',
+			providerAccountId: 'attacker-discord-uid',
+			email: 'victim@example.com',
+			emailVerified: false,
+			name: 'Attacker',
+			image: null
+		});
+
+		// Attacker must not have been merged into victim's user row.
+		expect(attacker!.id).not.toBe(original!.id);
 	});
 });

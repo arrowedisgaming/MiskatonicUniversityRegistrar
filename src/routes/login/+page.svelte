@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
 	import { page } from '$app/state';
 	import { signIn } from '@auth/sveltekit/client';
 	import { LogIn } from '@lucide/svelte';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 
 	let devEmail = $state('dev@example.com');
 	let devName = $state('Dev User');
@@ -53,7 +55,7 @@
 			</button>
 		</div>
 
-		{#if dev}
+		{#if data.devLoginEnabled}
 			<div class="my-5 flex items-center gap-3">
 				<div class="h-px flex-1 bg-[var(--color-border)]"></div>
 				<span class="text-xs text-[var(--color-muted-foreground)]">dev only</span>

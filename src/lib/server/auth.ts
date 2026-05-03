@@ -3,10 +3,10 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/sveltekit/providers/google';
 import Discord from '@auth/sveltekit/providers/discord';
 import Credentials from '@auth/sveltekit/providers/credentials';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { getDb } from './db';
-import { users } from './db/schema';
+import { accounts, users } from './db/schema';
 
 type EnvPlatform = {
 	env?: Record<string, string | D1Database | undefined>;
@@ -62,7 +62,8 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 		);
 	}
 
-	if (isDev) {
+	const devLoginEnabled = isDev && isEnvFlagOn(getEnv(event, 'AUTH_DEV_LOGIN'));
+	if (devLoginEnabled) {
 		providers.push(
 			Credentials({
 				id: 'credentials',
@@ -99,7 +100,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 			signIn: '/login'
 		},
 		callbacks: {
-			async jwt({ token, user, account }) {
+			async jwt({ token, user, account, profile }) {
 				// Only resolve the DB row id on initial sign-in (when account is present).
 				// On subsequent token refreshes we just keep the id we already stored.
 				if (account && !token.id) {
@@ -108,18 +109,21 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 						return token;
 					}
 
+					const db = await getDb(event);
 					const email = (user?.email ?? token.email ?? null) as string | null;
-					if (email) {
-						const db = await getDb(event);
-						const resolved = await findOrCreateUserByEmail(db, {
-							email,
-							name: user?.name ?? null,
-							image: user?.image ?? null
-						});
-						if (resolved) {
-							token.id = resolved.id;
-							return token;
-						}
+					const emailVerified = isProfileEmailVerified(account.provider, profile);
+
+					const resolved = await findOrLinkOAuthAccount(db, {
+						provider: account.provider,
+						providerAccountId: account.providerAccountId,
+						email,
+						emailVerified,
+						name: user?.name ?? null,
+						image: user?.image ?? null
+					});
+					if (resolved) {
+						token.id = resolved.id;
+						return token;
 					}
 
 					if (user?.id) token.id = user.id;
@@ -133,9 +137,23 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 				return session;
 			}
 		},
-		trustHost: true
+		trustHost: isEnvFlagOn(getEnv(event, 'AUTH_TRUST_HOST')) || isDev
 	};
 });
+
+function isEnvFlagOn(value: string | undefined): boolean {
+	if (!value) return false;
+	const v = value.trim().toLowerCase();
+	return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}
+
+function isProfileEmailVerified(provider: string, profile: unknown): boolean {
+	if (!profile || typeof profile !== 'object') return false;
+	const p = profile as Record<string, unknown>;
+	if (provider === 'google') return p.email_verified === true;
+	if (provider === 'discord') return p.verified === true;
+	return false;
+}
 
 export async function getUserId(event: RequestEvent): Promise<string | null> {
 	const session = await event.locals.auth();
@@ -182,6 +200,124 @@ type ResolvedUser = {
 	email: string;
 	image: string | null;
 };
+
+type LinkOAuthInput = {
+	provider: string;
+	providerAccountId: string;
+	email: string | null;
+	emailVerified: boolean;
+	name: string | null;
+	image: string | null;
+};
+
+/**
+ * Resolve a user for an OAuth sign-in.
+ *
+ * Lookup order:
+ *  1. Existing accounts row matching (provider, providerAccountId) — same identity, just return it.
+ *  2. If the provider reports the email as verified, fall back to email-merge so users
+ *     with a pre-existing row don't get duplicated on first OAuth link.
+ *  3. Otherwise create a fresh user with no email merge (avoids account takeover via
+ *     unverified-email providers).
+ *
+ * In all OAuth paths, the accounts row is upserted so future sign-ins hit step 1.
+ */
+export async function findOrLinkOAuthAccount(
+	db: Awaited<ReturnType<typeof getDb>>,
+	input: LinkOAuthInput
+): Promise<ResolvedUser | null> {
+	const existingAccount = await db
+		.select({ userId: accounts.userId })
+		.from(accounts)
+		.where(
+			and(
+				eq(accounts.provider, input.provider),
+				eq(accounts.providerAccountId, input.providerAccountId)
+			)
+		)
+		.get();
+
+	if (existingAccount) {
+		const user = await db
+			.select({ id: users.id, name: users.name, email: users.email, image: users.image })
+			.from(users)
+			.where(eq(users.id, existingAccount.userId))
+			.get();
+		if (user) {
+			return {
+				id: user.id,
+				name: user.name ?? null,
+				email: user.email ?? '',
+				image: user.image ?? null
+			};
+		}
+	}
+
+	let userId: string | null = null;
+
+	if (input.email && input.emailVerified) {
+		const byEmail = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(eq(users.email, input.email))
+			.get();
+		if (byEmail) userId = byEmail.id;
+	}
+
+	if (!userId) {
+		// Only persist the email on the user row if the provider verified it.
+		// An unverified email could collide with an existing verified user via
+		// the users.email UNIQUE index, which would silently merge the two —
+		// the exact takeover path we're guarding against.
+		const persistEmail = input.email && input.emailVerified ? input.email : null;
+		userId = nanoid(21);
+		try {
+			await db.insert(users).values({
+				id: userId,
+				name: input.name ?? null,
+				email: persistEmail,
+				image: input.image ?? null
+			});
+		} catch {
+			if (persistEmail) {
+				const reread = await db
+					.select({ id: users.id })
+					.from(users)
+					.where(eq(users.email, persistEmail))
+					.get();
+				if (reread) userId = reread.id;
+				else return null;
+			} else {
+				return null;
+			}
+		}
+	}
+
+	try {
+		await db.insert(accounts).values({
+			id: nanoid(21),
+			userId,
+			type: 'oauth',
+			provider: input.provider,
+			providerAccountId: input.providerAccountId
+		});
+	} catch {
+		// Race or pre-existing identical row — safe to ignore.
+	}
+
+	const finalUser = await db
+		.select({ id: users.id, name: users.name, email: users.email, image: users.image })
+		.from(users)
+		.where(eq(users.id, userId))
+		.get();
+	if (!finalUser) return null;
+	return {
+		id: finalUser.id,
+		name: finalUser.name ?? null,
+		email: finalUser.email ?? '',
+		image: finalUser.image ?? null
+	};
+}
 
 /**
  * Resolve a user row by email, creating one if missing. Handles concurrent

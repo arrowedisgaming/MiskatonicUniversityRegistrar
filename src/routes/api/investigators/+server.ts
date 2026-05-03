@@ -6,6 +6,7 @@ import { ensureUser } from '$lib/server/auth';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { createInvestigatorSchema } from '$lib/schemas/character.schema';
+import { validateFinalInvestigator } from '$lib/server/validation/investigator';
 
 /** GET /api/investigators — list user's investigators */
 export const GET: RequestHandler = async (event) => {
@@ -36,12 +37,24 @@ export const POST: RequestHandler = async (event) => {
 	const db = await getDb(event);
 	const userId = await ensureUser(event);
 
-	const rawBody = await event.request.json();
+	let rawBody: unknown;
+	try {
+		rawBody = await event.request.json();
+	} catch {
+		throw error(400, 'Request body is not valid JSON');
+	}
 	const parsed = createInvestigatorSchema.safeParse(rawBody);
 	if (!parsed.success) {
 		throw error(400, `Invalid character data: ${parsed.error.issues.map((i) => i.message).join(', ')}`);
 	}
-	const char = parsed.data.character;
+	const char = parsed.data.character as unknown as import('$lib/types/character').CoCCharacterData;
+
+	if (!char.isDraft) {
+		const ruleCheck = validateFinalInvestigator(char);
+		if (!ruleCheck.valid) {
+			throw error(400, `Game-rule violation: ${ruleCheck.errors.join('; ')}`);
+		}
+	}
 
 	const id = nanoid();
 	const now = new Date();
