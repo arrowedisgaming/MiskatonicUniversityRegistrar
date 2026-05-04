@@ -351,7 +351,8 @@ html.eldritch-glitching [data-heading] {
 		animation: none;
 	}
 
-	html.eldritch-glitching .app-frame {
+	html.eldritch-glitching .app-frame,
+	html.eldritch-glitching [data-heading] {
 		filter: none;
 		text-shadow: none;
 	}
@@ -387,7 +388,8 @@ html[data-reduce-effects] .modern-dark .app-frame {
 	animation: none;
 }
 
-html[data-reduce-effects].eldritch-glitching .app-frame {
+html[data-reduce-effects].eldritch-glitching .app-frame,
+html[data-reduce-effects].eldritch-glitching [data-heading] {
 	filter: none;
 	text-shadow: none;
 }

@@ -151,19 +151,23 @@
 
 	function setOccPoints(skillId: string, value: number) {
 		if (!eligibleOccupationSkillIds.has(skillId)) return;
-		const alloc = getAlloc(skillId);
-		const diff = value - alloc.occupation;
-		if (diff > remainingOcc) return; // can't overspend
-		alloc.occupation = Math.max(0, value);
-		pointAllocations = { ...pointAllocations };
+		const next = Math.max(0, value);
+		const current = pointAllocations[skillId] ?? { occupation: 0, personal: 0 };
+		if (next - current.occupation > remainingOcc) return; // can't overspend
+		pointAllocations = {
+			...pointAllocations,
+			[skillId]: { ...current, occupation: next }
+		};
 	}
 
 	function setPersonalPoints(skillId: string, value: number) {
-		const alloc = getAlloc(skillId);
-		const diff = value - alloc.personal;
-		if (diff > remainingPersonal) return;
-		alloc.personal = Math.max(0, value);
-		pointAllocations = { ...pointAllocations };
+		const next = Math.max(0, value);
+		const current = pointAllocations[skillId] ?? { occupation: 0, personal: 0 };
+		if (next - current.personal > remainingPersonal) return;
+		pointAllocations = {
+			...pointAllocations,
+			[skillId]: { ...current, personal: next }
+		};
 	}
 
 	function buildSkillAllocations(): CoCSkillAllocation[] {
@@ -236,7 +240,57 @@
 		return errors;
 	});
 
-	let canProceed = $derived(Boolean(validation?.valid && choiceErrors.length === 0));
+	// Split validation errors into hard blockers (data-invalid) and soft warnings
+	// (incomplete but proceedable — e.g. Credit Rating outside occupation range,
+	// or unspent points). Hard blockers keep the button disabled; soft warnings
+	// turn the button amber and let the player advance after acknowledging them.
+	const HARD_ERROR_PATTERNS = /overspent|exceeds maximum of 99|not eligible|cannot receive personal/i;
+	let validationErrors = $derived(validation?.errors ?? []);
+	let hardValidationErrors = $derived(validationErrors.filter((e) => HARD_ERROR_PATTERNS.test(e)));
+	let softValidationErrors = $derived(validationErrors.filter((e) => !HARD_ERROR_PATTERNS.test(e)));
+	let hasUnspentOcc = $derived(remainingOcc > 0);
+	let hasUnspentPersonal = $derived(remainingPersonal > 0);
+	let hasUnspent = $derived(hasUnspentOcc || hasUnspentPersonal);
+
+	let canProceed = $derived(hardValidationErrors.length === 0 && choiceErrors.length === 0);
+	let proceedWithWarning = $derived(canProceed && (hasUnspent || softValidationErrors.length > 0));
+
+	// Sticky offset chain: alpha banner (top:0) → totals+filters block → table thead.
+	// Both downstream offsets are measured, not hardcoded — the alpha banner can wrap
+	// taller than its desktop default on narrow viewports / large text settings, and
+	// the budget+filters block has variable height depending on how the filter pills
+	// reflow. ResizeObserver keeps both values current.
+	let stickyHeaderEl = $state<HTMLElement | null>(null);
+	let stickyHeaderHeight = $state(155); // initial estimate; replaced once measured
+	let alphaBannerHeight = $state(61); // initial estimate; replaced once measured
+
+	let stickyHeaderTopPx = $derived(alphaBannerHeight);
+	let theadTopPx = $derived(alphaBannerHeight + stickyHeaderHeight);
+
+	$effect(() => {
+		const el = stickyHeaderEl;
+		if (!el || typeof ResizeObserver === 'undefined') return;
+		const update = () => {
+			stickyHeaderHeight = el.offsetHeight;
+		};
+		update();
+		const ro = new ResizeObserver(update);
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
+
+	$effect(() => {
+		if (typeof document === 'undefined' || typeof ResizeObserver === 'undefined') return;
+		const banner = document.querySelector<HTMLElement>('.alpha-banner');
+		if (!banner) return;
+		const update = () => {
+			alphaBannerHeight = banner.offsetHeight;
+		};
+		update();
+		const ro = new ResizeObserver(update);
+		ro.observe(banner);
+		return () => ro.disconnect();
+	});
 
 	function proceed() {
 		if (!canProceed) return;
@@ -258,50 +312,59 @@
 		</p>
 	</div>
 
-	<!-- Point budget display: aria-live so SR users hear updates as they spend points -->
-	<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
-			<p class="text-lg font-bold">
-				<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
-					{remainingOcc}
-				</span>
-				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
-			</p>
+	<!-- Sticky budget + filters block. Stays pinned just below the alpha banner
+	     (whose height is measured at runtime) while the skill list scrolls. The
+	     bind:this lets us measure this block's height so the table thead can
+	     stick directly below it. aria-live on the totals so SR users hear
+	     updates as they spend points. -->
+	<div
+		bind:this={stickyHeaderEl}
+		style="top: {stickyHeaderTopPx}px"
+		class="sticky z-20 -mx-4 space-y-3 border-b border-[var(--color-border)]/60 bg-[var(--color-background)]/92 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/80"
+	>
+		<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
+				<p class="text-lg font-bold">
+					<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
+						{remainingOcc}
+					</span>
+					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
+				</p>
+			</div>
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Personal Interest Points</span>
+				<p class="text-lg font-bold">
+					<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
+						{remainingPersonal}
+					</span>
+					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints} personal interest points remaining</span>
+				</p>
+			</div>
 		</div>
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-			<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Personal Interest Points</span>
-			<p class="text-lg font-bold">
-				<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
-					{remainingPersonal}
-				</span>
-				<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints} personal interest points remaining</span>
-			</p>
-		</div>
-	</div>
 
-	<!-- Filters -->
-	<div class="flex flex-wrap items-center gap-2">
-		{#each categories as cat}
-			<button
-				type="button"
-				onclick={() => (showCategory = cat.id)}
-				class="rounded-full px-3 py-1 text-xs font-medium transition-colors
-					{showCategory === cat.id
-						? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-						: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
-			>
-				{cat.label}
-			</button>
-		{/each}
-		<input
-			type="text"
-			placeholder="Search..."
-			bind:value={searchQuery}
-			class="ml-auto rounded-md border border-[var(--color-border)] bg-[var(--color-card)]
-				px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
-				focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
-		/>
+		<div class="flex flex-wrap items-center gap-2">
+			{#each categories as cat}
+				<button
+					type="button"
+					onclick={() => (showCategory = cat.id)}
+					class="rounded-full px-3 py-1 text-xs font-medium transition-colors
+						{showCategory === cat.id
+							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
+							: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
+				>
+					{cat.label}
+				</button>
+			{/each}
+			<input
+				type="text"
+				placeholder="Search..."
+				bind:value={searchQuery}
+				class="ml-auto rounded-md border border-[var(--color-border)] bg-[var(--color-card)]
+					px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
+					focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+			/>
+		</div>
 	</div>
 
 	<!-- Occupation choice slots -->
@@ -363,31 +426,59 @@
 		</div>
 	{/if}
 
-	{#if choiceErrors.length > 0 || validation?.errors.length}
-		<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
+	{#if choiceErrors.length > 0 || hardValidationErrors.length > 0}
+		<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
+			<p class="mb-1 font-semibold">Resolve before continuing</p>
 			<ul class="space-y-1">
 				{#each choiceErrors as error}
 					<li>{error}</li>
 				{/each}
-				{#each validation?.errors ?? [] as error}
+				{#each hardValidationErrors as error}
 					<li>{error}</li>
 				{/each}
 			</ul>
 		</div>
 	{/if}
 
-	<!-- Skills table -->
-	<div class="overflow-x-auto">
+	{#if softValidationErrors.length > 0 || hasUnspent}
+		<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
+			<p class="mb-1 font-semibold">You can continue, but&hellip;</p>
+			<ul class="space-y-1">
+				{#if hasUnspentOcc}
+					<li>{remainingOcc} occupation point{remainingOcc === 1 ? '' : 's'} unspent.</li>
+				{/if}
+				{#if hasUnspentPersonal}
+					<li>{remainingPersonal} personal interest point{remainingPersonal === 1 ? '' : 's'} unspent.</li>
+				{/if}
+				{#each softValidationErrors as error}
+					<li>{error}</li>
+				{/each}
+			</ul>
+			<p class="mt-2 text-xs opacity-80">Skill points cannot be added later — only earned through play.</p>
+		</div>
+	{/if}
+
+	<!-- Skills table. The thead sticks just below the budget+filters block so the
+	     column labels stay visible while scrolling. `theadTopPx` is the measured
+	     bottom-edge of that block (alpha banner + budget + filters), recomputed on
+	     resize via ResizeObserver in the script.
+
+	     NOTE: do NOT wrap this in `overflow-x-auto`. Any ancestor with
+	     `overflow: auto/scroll/hidden` becomes the containing block for
+	     `position: sticky`, which breaks the thead pinning. If horizontal
+	     overflow handling is needed on narrow viewports, do it on a wrapper
+	     that doesn't contain a sticky descendant. -->
+	<div>
 		<table class="w-full text-sm">
-			<thead>
+			<thead class="sticky z-10 bg-[var(--color-background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/85" style="top: {theadTopPx}px">
 				<tr class="border-b border-[var(--color-border)] text-left text-xs uppercase text-[var(--color-muted-foreground)]">
-					<th class="pb-2 pr-2">Skill</th>
-					<th class="pb-2 pr-2 text-center w-14">Base</th>
-					<th class="pb-2 pr-2 text-center w-20">Occ. Pts</th>
-					<th class="pb-2 pr-2 text-center w-20">Pers. Pts</th>
-					<th class="pb-2 pr-2 text-center w-14">Total</th>
-					<th class="pb-2 pr-2 text-center w-14">Half</th>
-					<th class="pb-2 text-center w-14">Fifth</th>
+					<th class="py-2 pr-2">Skill</th>
+					<th class="py-2 pr-2 text-center w-14">Base</th>
+					<th class="py-2 pr-2 text-center w-20">Occ. Pts</th>
+					<th class="py-2 pr-2 text-center w-20">Pers. Pts</th>
+					<th class="py-2 pr-2 text-center w-14">Total</th>
+					<th class="py-2 pr-2 text-center w-14">Half</th>
+					<th class="py-2 text-center w-14">Fifth</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -396,6 +487,8 @@
 					{@const alloc = getAlloc(skill.id)}
 					{@const total = base + alloc.occupation + alloc.personal}
 					{@const isOcc = eligibleOccupationSkillIds.has(skill.id)}
+					{@const occColumnLocked = !isOcc || (alloc.occupation === 0 && remainingOcc <= 0)}
+					{@const personalColumnLocked = alloc.personal === 0 && remainingPersonal <= 0}
 					<tr class="border-b border-[var(--color-border)]/30 {isOcc ? 'bg-[var(--color-accent)]/30' : ''}">
 						<td class="py-1.5 pr-2">
 							<span class="font-medium">{skill.name}</span>
@@ -408,25 +501,40 @@
 							<input
 								type="number"
 								min="0"
-								max="99"
+								max={isOcc ? Math.min(99, alloc.occupation + Math.max(0, remainingOcc)) : 0}
 								value={alloc.occupation}
-								disabled={!isOcc}
-								oninput={(e) => setOccPoints(skill.id, parseInt((e.currentTarget as HTMLInputElement).value) || 0)}
+								disabled={occColumnLocked}
+								title={occColumnLocked && isOcc ? 'No occupation points remaining — reduce another skill to free points' : undefined}
+								oninput={(e) => {
+									const input = e.currentTarget as HTMLInputElement;
+									setOccPoints(skill.id, parseInt(input.value) || 0);
+									// Snap-back: if the requested value was rejected (over budget),
+									// the state didn't change, so we force the input to reflect the
+									// authoritative state. Without this, the typed value would linger
+									// visually until something else triggers a re-render.
+									input.value = String((pointAllocations[skill.id] ?? { occupation: 0, personal: 0 }).occupation);
+								}}
 								class="w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)]
 									px-1.5 py-0.5 text-center text-sm
-									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:opacity-30"
+									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:opacity-30 disabled:cursor-not-allowed"
 							/>
 						</td>
 						<td class="py-1.5 pr-2 text-center">
 							<input
 								type="number"
 								min="0"
-								max="99"
+								max={Math.min(99, alloc.personal + Math.max(0, remainingPersonal))}
 								value={alloc.personal}
-								oninput={(e) => setPersonalPoints(skill.id, parseInt((e.currentTarget as HTMLInputElement).value) || 0)}
+								disabled={personalColumnLocked}
+								title={personalColumnLocked ? 'No personal interest points remaining — reduce another skill to free points' : undefined}
+								oninput={(e) => {
+									const input = e.currentTarget as HTMLInputElement;
+									setPersonalPoints(skill.id, parseInt(input.value) || 0);
+									input.value = String((pointAllocations[skill.id] ?? { occupation: 0, personal: 0 }).personal);
+								}}
 								class="w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)]
 									px-1.5 py-0.5 text-center text-sm
-									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:opacity-30 disabled:cursor-not-allowed"
 							/>
 						</td>
 						<td class="py-1.5 pr-2 text-center font-bold {total > 89 ? 'text-[var(--color-warning)]' : ''}">{total}</td>
@@ -450,9 +558,10 @@
 		<div class="flex items-center gap-3">
 			{#if !canProceed}
 				<p id="skills-proceed-hint" class="text-sm text-[var(--color-muted-foreground)]">
-					{#if remainingOcc !== 0}Spend or refund all occupation points.
-					{:else if remainingPersonal !== 0}Spend or refund all personal interest points.
-					{:else}Resolve the highlighted skill choice errors.{/if}
+					{#if remainingOcc < 0}Refund {Math.abs(remainingOcc)} occupation point{Math.abs(remainingOcc) === 1 ? '' : 's'}.
+					{:else if remainingPersonal < 0}Refund {Math.abs(remainingPersonal)} personal interest point{Math.abs(remainingPersonal) === 1 ? '' : 's'}.
+					{:else if choiceErrors.length > 0}Resolve the highlighted skill choice errors.
+					{:else}Resolve the highlighted skill allocation errors.{/if}
 				</p>
 			{/if}
 			<button
@@ -460,10 +569,12 @@
 				onclick={proceed}
 				disabled={!canProceed}
 				aria-describedby={!canProceed ? 'skills-proceed-hint' : undefined}
-				class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
-					text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+				class="rounded-md px-6 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50
+					{proceedWithWarning
+						? 'border border-[var(--color-warning)] bg-[var(--color-warning)]/15 text-[var(--color-warning)] hover:bg-[var(--color-warning)]/25'
+						: 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:opacity-90'}"
 			>
-				Next: Backstory &rarr;
+				{proceedWithWarning ? 'Continue anyway' : 'Next: Backstory'} &rarr;
 			</button>
 		</div>
 	</div>

@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { announce } from '$lib/stores/announcer';
+	import { ledgerPage } from '$lib/transitions/eerie';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
@@ -66,5 +67,9 @@
 	</nav>
 
 	<!-- Step content -->
-	{@render children()}
+	{#key currentPath}
+		<div in:ledgerPage|global>
+			{@render children()}
+		</div>
+	{/key}
 </div>

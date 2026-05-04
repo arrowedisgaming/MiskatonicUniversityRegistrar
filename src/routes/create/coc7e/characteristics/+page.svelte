@@ -25,6 +25,7 @@
 	} from '$lib/engine/age-adjustments';
 	import type { CharacteristicMethodId } from '$lib/types/content-pack';
 	import type { EduImprovementCheck, LuckAdjustment } from '$lib/types/character';
+	import { inkBleed, dossierFiling } from '$lib/transitions/eerie';
 
 	const data = page.data as {
 		contentPack: import('$lib/types/content-pack').CoCContentPack;
@@ -290,9 +291,9 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each ALL_CHARACTERISTICS as char}
+					{#each ALL_CHARACTERISTICS as char, i}
 						{@const v = values[char]}
-						<tr class="border-b border-[var(--color-border)]/50">
+						<tr in:inkBleed|global={{ delay: i * 60 }} class="border-b border-[var(--color-border)]/50">
 							<td class="py-2 pr-4 font-medium">
 								{CHARACTERISTIC_LABELS[char]}
 								<span class="ml-1 text-xs text-[var(--color-muted-foreground)] uppercase">({char})</span>
@@ -386,7 +387,7 @@
 		{/if}
 
 		<!-- Luck -->
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 540 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="font-semibold" data-heading>Luck</h2>
@@ -414,7 +415,7 @@
 
 		<!-- Derived Stats summary -->
 		{#if hasValues}
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+			<div in:dossierFiling|global={{ delay: 620 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 				<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
 				<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
 					<div>

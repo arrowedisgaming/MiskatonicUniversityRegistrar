@@ -5,6 +5,9 @@
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
 	import type { CoCOccupationDefinition } from '$lib/types/content-pack';
+	import { onMount } from 'svelte';
+	import { dossierFiling } from '$lib/transitions/eerie';
+	import { triggerEldritchFlash } from '$lib/stores/atmosphere';
 
 	const data = page.data as {
 		occupations: CoCOccupationDefinition[];
@@ -36,6 +39,14 @@
 
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
+
+	// Sanity arrives late and wrong: brief eldritch flash timed to coincide with the
+	// Derived Attributes card settling in. The atmosphere store no-ops under reduced
+	// motion at the CSS layer, so the call is safe to make unconditionally.
+	onMount(() => {
+		const t = setTimeout(() => triggerEldritchFlash(450), 700);
+		return () => clearTimeout(t);
+	});
 
 	async function saveInvestigator() {
 		saving = true;
@@ -83,7 +94,7 @@
 
 	<!-- Warnings -->
 	{#if warnings.length > 0}
-		<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-4">
+		<div in:dossierFiling|global class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-4">
 			<h2 class="mb-2 text-sm font-semibold text-[var(--color-warning)]">Warnings</h2>
 			<ul class="space-y-1 text-sm text-[var(--color-warning)]">
 				{#each warnings as warning}
@@ -94,7 +105,7 @@
 	{/if}
 
 	<!-- Header: Name & Occupation -->
-	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+	<div in:dossierFiling|global={{ delay: 120 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<h2 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h2>
 		<p class="text-sm text-[var(--color-muted-foreground)]">
 			{occupation?.name ?? 'No occupation'} &middot;
@@ -117,7 +128,7 @@
 
 	<!-- Characteristics & Derived Stats -->
 	<div class="grid gap-6 lg:grid-cols-2">
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 240 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
 			<div class="grid grid-cols-4 gap-2 text-center text-sm">
 				{#each ALL_CHARACTERISTICS as charId}
@@ -131,7 +142,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 360 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
 			<div class="grid grid-cols-2 gap-3 text-sm">
 				<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
@@ -168,7 +179,7 @@
 
 	<!-- Skills -->
 	{#if char.skills.length > 0}
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 480 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
 
 			{#if occSkills.length > 0}
@@ -204,7 +215,7 @@
 	<!-- Backstory -->
 	{#if Object.values(char.backstory).some((v) => v.trim())}
 		{@const backstoryEntries = Object.entries(char.backstory).filter(([, v]) => v.trim())}
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 600 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Backstory</h2>
 			<div class="space-y-2 text-sm">
 				{#each backstoryEntries as [key, value]}
@@ -221,7 +232,7 @@
 
 	<!-- Equipment -->
 	{#if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+		<div in:dossierFiling|global={{ delay: 720 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Equipment &amp; Finances</h2>
 			<p class="mb-2 text-sm">
 				<span class="text-[var(--color-muted-foreground)]">Living Standard:</span> {char.equipment.livingStandard}
