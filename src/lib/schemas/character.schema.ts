@@ -81,6 +81,24 @@ const derivedStatsData = z.object({
 
 const BACKSTORY_FIELD_MAX = 5000;
 
+const PLAY_ROLL_HISTORY_MAX = 10_000;
+
+const playRollHistoryEntry = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.enum(['characteristic', 'skill']),
+	characteristicId: characteristicId.optional(),
+	skillId: z.string().max(100).optional(),
+	skillDisplayLabel: z.string().max(200).nullable().optional(),
+	target: z.number().int().min(0).max(99),
+	half: z.number().int().min(0).max(99),
+	fifth: z.number().int().min(0).max(99),
+	rawRoll: z.number().int().min(1).max(100),
+	effectiveRoll: z.number().int().min(1).max(100),
+	outcome: z.enum(['critical', 'extreme', 'hard', 'regular', 'failure']),
+	isFumble: z.boolean()
+});
+
 export const cocCharacterDataSchema = z.object({
 	schemaVersion: z.number().int().positive(),
 	era: z.string().min(1).max(100),
@@ -136,6 +154,7 @@ export const cocCharacterDataSchema = z.object({
 		livingStandard: z.string().max(100),
 		spendingLevel: z.number().min(0).max(1_000_000)
 	}),
+	playRollHistory: z.array(playRollHistoryEntry).max(PLAY_ROLL_HISTORY_MAX).default([]),
 	isDraft: z.boolean(),
 	wizardStep: z.number().int().min(0).max(20)
 });

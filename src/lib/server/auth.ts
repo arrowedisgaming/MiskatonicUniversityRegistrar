@@ -12,7 +12,7 @@ type EnvPlatform = {
 	env?: Record<string, string | D1Database | undefined>;
 };
 
-const DEV_AUTH_SECRET = 'miskatonic-university-registrar-local-development-secret';
+export const DEV_AUTH_SECRET = 'miskatonic-university-registrar-local-development-secret';
 
 function getEnv(event: RequestEvent, key: string): string | undefined {
 	const platform = event.platform as EnvPlatform | undefined;

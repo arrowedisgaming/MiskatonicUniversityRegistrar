@@ -1,8 +1,28 @@
 import type { CharacteristicId, Era, Mode } from './common';
 import type { CharacteristicMethodId } from './content-pack';
+import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 
 /** Schema version for character data migration */
-export const CHARACTER_SCHEMA_VERSION = 2;
+export const CHARACTER_SCHEMA_VERSION = 3;
+
+/** Single entry from play-mode percentile rolls (append-only log). */
+export interface PlayRollHistoryEntry {
+	id: string;
+	at: string;
+	targetKind: 'characteristic' | 'skill';
+	characteristicId?: CharacteristicId;
+	skillId?: string;
+	skillDisplayLabel?: string | null;
+	target: number;
+	half: number;
+	fifth: number;
+	rawRoll: number;
+	effectiveRoll: number;
+	outcome: CoCPercentileOutcome;
+	isFumble: boolean;
+}
+
+export type { CoCPercentileOutcome };
 
 /** Complete investigator data stored as JSON blob */
 export interface CoCCharacterData {
@@ -39,6 +59,9 @@ export interface CoCCharacterData {
 
 	// Equipment & Finances
 	equipment: EquipmentData;
+
+	/** Play mode d100 checks — newest entries appended by the client */
+	playRollHistory: PlayRollHistoryEntry[];
 
 	// Wizard state
 	isDraft: boolean;
@@ -210,6 +233,7 @@ export function createBlankCharacter(): CoCCharacterData {
 			livingStandard: '',
 			spendingLevel: 0
 		},
+		playRollHistory: [],
 		isDraft: true,
 		wizardStep: 0
 	};

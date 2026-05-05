@@ -42,6 +42,9 @@ AGENTS.md
 .agents/
 :skills-to-add/
 
+# Codex (machine-local tooling state, mirrors .claude/)
+.codex/
+
 # Personal task list (not documentation)
 TODO.md
 
@@ -50,3 +53,6 @@ chatprd-prompt-coc-character-builder.md
 
 # Graphify analysis output (local, machine-specific paths)
 graphify-out/
+
+# Dev-only auth bypass (local machines only — never committed)
+src/lib/server/dev-auto-login.ts

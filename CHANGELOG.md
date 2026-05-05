@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-05
+
+### Added
+- Play-mode dice rolling on the investigator sheet. Tap any characteristic or skill in the sheet's play mode to roll a d100, evaluate the result against CoC 7e thresholds (critical / extreme / hard / regular / failure, plus fumble detection), and append the outcome to a per-character roll log. Each entry records the raw roll, the target / half / fifth values rolled against, the resolved outcome, and the timestamp. Bumps `CHARACTER_SCHEMA_VERSION` to 3; `migrateCharacterData` defaults the new `playRollHistory` field to `[]` for existing characters so they continue to load.
+- New pure engine `src/lib/engine/coc-percentile-check.ts` (`evaluateCoC7ePercentileCheck`) with full unit-test coverage of the rule edges: critical on 01, extreme/hard/regular boundaries, fumble band 96–99 (skill < 50) vs no-fumble at skill ≥ 50, fumble on 100, and 100-always-fails even when skill ≥ 100.
+- Dev-only auto-login pass-through. Local dev sessions can skip the `/login` screen entirely and load any page already authenticated as a fixed `dev@local` / `Dev User` row in SQLite. Activated by copying `src/lib/server/dev-auto-login.example.ts` to `src/lib/server/dev-auto-login.ts` (gitignored — never reaches GitHub) and setting `AUTH_DEV_AUTOLOGIN=true` in `.env`. Requires `NODE_ENV=development`. Off by default. Defense-in-depth: the live bypass file is gitignored so it can't accidentally ship to Cloudflare; even if it did, the env-flag, `NODE_ENV`, and loopback-hostname checks short-circuit it; `hooks.server.ts` discovers the module via `import.meta.glob` so production builds simply produce an empty loader map and no-op. Implementation mints an Auth.js-compatible JWT signed with the *same secret resolution chain* the production `authHandle` uses (`getEnv('AUTH_SECRET') ?? DEV_AUTH_SECRET`) and injects it into both the response cookie and the in-flight request headers, so the downstream `authHandle` reads it as a normal session — no divergent auth code path.
+
+### Fixed
+- CoC 7e rule: a roll of 100 is now correctly classified as `failure` (and a fumble) at every skill rating, including pulp / boosted skills with `target ≥ 100`. Previously `outcomeFromRoll` would short-circuit to `regular` when `roll <= target`, missing the "100 always fails" rule for high-skill characters.
+- `playRollHistory` is now capped at 500 entries client-side before persistence. Without the cap, a heavily-rolled character would eventually hit the schema's 10,000-entry maximum and `persistInvestigator` would silently fail saves.
+- HP/MP/Sanity/Luck progress bars in play mode no longer render `Infinity%` widths when a tracker `max` is 0 (e.g. before characteristics are filled in). Output is clamped to `[0, 100]`.
+
+### Changed
+- Investigator sheet `+page.svelte` now uses the canonical Svelte 5 runes pattern: typed `$props()` from `./$types`, `$derived` for `char`, `occupation`, and `sortedSkills`, and `untrack()` around the in-play tracker initializers to mark them as deliberate one-shot snapshots. Removes the previous `page.data as { ... }` cast that bypassed the generated types.
+
 ## [0.4.0] - 2026-05-03
 
 ### Added

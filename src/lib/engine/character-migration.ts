@@ -44,6 +44,8 @@ export function migrateCharacterData(raw: unknown): CoCCharacterData {
 		}
 	}
 
+	character.playRollHistory ??= [];
+
 	character.schemaVersion = CHARACTER_SCHEMA_VERSION;
 	return character as CoCCharacterData;
 }

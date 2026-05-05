@@ -1,29 +1,87 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { untrack } from 'svelte';
+	import type { PageProps } from './$types';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
+	import type { CharacteristicId } from '$lib/types/common';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
-	import type { CoCCharacterData } from '$lib/types/character';
-	import type { CoCOccupationDefinition } from '$lib/types/content-pack';
+	import {
+		CHARACTER_SCHEMA_VERSION,
+		type CoCCharacterData,
+		type CoCSkillAllocation,
+		type PlayRollHistoryEntry
+	} from '$lib/types/character';
 	import { generatePDF } from '$lib/export/pdf-export';
+	import { rollDie } from '$lib/engine/dice';
+	import { showDiceRoll } from '$lib/stores/dice-rolls';
+	import { makeDiceRollRequest } from '$lib/dice/protocol';
+	import {
+		evaluateCoC7ePercentileCheck,
+		type CoCPercentileCheckResult
+	} from '$lib/engine/coc-percentile-check';
 
-	const data = page.data as {
-		investigator: { id: string; character: CoCCharacterData };
-		occupations: CoCOccupationDefinition[];
-	};
+	// Keep the in-memory roll log bounded well under the schema's 10,000 cap so
+	// API saves never hit the Zod max and silently fail.
+	const PLAY_ROLL_HISTORY_KEEP = 500;
 
-	const char = data.investigator.character;
-	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
+	let { data }: PageProps = $props();
 
-	// In-play tracking state
-	let currentHP = $state(char.derivedStats.hp.current);
-	let currentMP = $state(char.derivedStats.mp.current);
-	let currentSanity = $state(char.derivedStats.sanity.current);
-	let currentLuck = $state(char.derivedStats.luck.current);
+	const char = $derived(data.investigator.character);
+	const occupation = $derived(
+		data.occupations.find((o) => o.id === char.occupation?.occupationId)
+	);
+
+	// In-play trackers — intentionally one-shot snapshots. `untrack()` makes
+	// the non-reactive read explicit so the player's adjustments persist across
+	// navigation jitter rather than auto-resetting when `data` re-emits.
+	let currentHP = $state(untrack(() => data.investigator.character.derivedStats.hp.current));
+	let currentMP = $state(untrack(() => data.investigator.character.derivedStats.mp.current));
+	let currentSanity = $state(
+		untrack(() => data.investigator.character.derivedStats.sanity.current)
+	);
+	let currentLuck = $state(untrack(() => data.investigator.character.derivedStats.luck.current));
 	let playMode = $state(false);
+
+	let playRollHistory = $state<PlayRollHistoryEntry[]>(
+		untrack(() => [...(data.investigator.character.playRollHistory ?? [])])
+	);
+	let diceRolling = $state(false);
+	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
 
 	let isDirty = $state(false);
 	let pdfError = $state<string | null>(null);
 	let pdfExporting = $state(false);
+
+	function buildCharacterPayload(): CoCCharacterData {
+		return {
+			...char,
+			schemaVersion: CHARACTER_SCHEMA_VERSION,
+			derivedStats: {
+				...char.derivedStats,
+				hp: { ...char.derivedStats.hp, current: currentHP },
+				mp: { ...char.derivedStats.mp, current: currentMP },
+				sanity: { ...char.derivedStats.sanity, current: currentSanity },
+				luck: { ...char.derivedStats.luck, current: currentLuck }
+			},
+			playRollHistory
+		};
+	}
+
+	async function persistInvestigator(): Promise<boolean> {
+		const res = await fetch(`/api/investigators/${data.investigator.id}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ character: buildCharacterPayload() })
+		});
+		if (res.ok) {
+			isDirty = false;
+			return true;
+		}
+		return false;
+	}
+
+	async function savePlayState() {
+		await persistInvestigator();
+	}
 
 	function adjust(stat: 'hp' | 'mp' | 'sanity' | 'luck', delta: number) {
 		if (stat === 'hp') currentHP = Math.max(0, Math.min(char.derivedStats.hp.max, currentHP + delta));
@@ -33,24 +91,136 @@
 		isDirty = true;
 	}
 
-	async function savePlayState() {
-		const updated = {
-			...char,
-			derivedStats: {
-				...char.derivedStats,
-				hp: { ...char.derivedStats.hp, current: currentHP },
-				mp: { ...char.derivedStats.mp, current: currentMP },
-				sanity: { ...char.derivedStats.sanity, current: currentSanity },
-				luck: { ...char.derivedStats.luck, current: currentLuck }
-			}
-		};
+	function skillDisplayName(skillId: string): string {
+		return skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+	}
 
-		await fetch(`/api/investigators/${data.investigator.id}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ character: updated })
-		});
-		isDirty = false;
+	function skillRowLabel(skill: CoCSkillAllocation): string {
+		const base = skillDisplayName(skill.skillId);
+		return skill.customName?.trim() ? `${base} (${skill.customName})` : base;
+	}
+
+	function outcomeDescription(result: CoCPercentileCheckResult): string {
+		if (result.isFumble) return 'Fumble';
+		switch (result.outcome) {
+			case 'critical':
+				return 'Critical success';
+			case 'extreme':
+				return 'Extreme success';
+			case 'hard':
+				return 'Hard success';
+			case 'regular':
+				return 'Regular success';
+			case 'failure':
+				return 'Failure';
+		}
+	}
+
+	async function rollCharacteristic(statId: CharacteristicId) {
+		if (diceRolling) return;
+		const target = char.characteristics.values[statId];
+		const half = halfValue(target);
+		const fifth = fifthValue(target);
+		const rawRoll = rollDie(100);
+		const labelShort = CHARACTERISTIC_LABELS[statId];
+		diceRolling = true;
+		try {
+			await showDiceRoll(
+				makeDiceRollRequest([{ count: 1, sides: 100, results: [rawRoll] }], {
+					label: labelShort,
+					reveal: 'after-settle'
+				})
+			);
+			const checked = evaluateCoC7ePercentileCheck({
+				rawRoll,
+				target,
+				half,
+				fifth
+			});
+			const entry: PlayRollHistoryEntry = {
+				id: crypto.randomUUID(),
+				at: new Date().toISOString(),
+				targetKind: 'characteristic',
+				characteristicId: statId,
+				target,
+				half,
+				fifth,
+				rawRoll,
+				effectiveRoll: checked.effectiveRoll,
+				outcome: checked.outcome,
+				isFumble: checked.isFumble
+			};
+			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			lastRollBanner = {
+				title: `${labelShort}: ${outcomeDescription(checked)}`,
+				detail: `Rolled ${rawRoll}`
+			};
+			await persistInvestigator();
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	async function rollSkill(skill: CoCSkillAllocation) {
+		if (diceRolling) return;
+		const target = skill.total;
+		const half = skill.half;
+		const fifth = skill.fifth;
+		const rawRoll = rollDie(100);
+		const labelShort = skillRowLabel(skill);
+		diceRolling = true;
+		try {
+			await showDiceRoll(
+				makeDiceRollRequest([{ count: 1, sides: 100, results: [rawRoll] }], {
+					label: labelShort,
+					reveal: 'after-settle'
+				})
+			);
+			const checked = evaluateCoC7ePercentileCheck({
+				rawRoll,
+				target,
+				half,
+				fifth
+			});
+			const entry: PlayRollHistoryEntry = {
+				id: crypto.randomUUID(),
+				at: new Date().toISOString(),
+				targetKind: 'skill',
+				skillId: skill.skillId,
+				skillDisplayLabel: labelShort,
+				target,
+				half,
+				fifth,
+				rawRoll,
+				effectiveRoll: checked.effectiveRoll,
+				outcome: checked.outcome,
+				isFumble: checked.isFumble
+			};
+			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			lastRollBanner = {
+				title: `${labelShort}: ${outcomeDescription(checked)}`,
+				detail: `Rolled ${rawRoll}`
+			};
+			await persistInvestigator();
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	function formatLogTime(iso: string): string {
+		try {
+			const d = new Date(iso);
+			return d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+		} catch {
+			return iso;
+		}
+	}
+
+	function logEntryTitle(entry: PlayRollHistoryEntry): string {
+		if (entry.targetKind === 'characteristic' && entry.characteristicId) {
+			return CHARACTERISTIC_LABELS[entry.characteristicId];
+		}
+		return entry.skillDisplayLabel ?? entry.skillId ?? 'Skill';
 	}
 
 	async function exportPDF() {
@@ -75,9 +245,16 @@
 	}
 
 	// Skills sorted by total descending
-	let sortedSkills = char.skills
-		.filter((s) => s.total > s.baseValue || s.isOccupation)
-		.sort((a, b) => b.total - a.total);
+	const sortedSkills = $derived(
+		char.skills
+			.filter((s) => s.total > s.baseValue || s.isOccupation)
+			.sort((a, b) => b.total - a.total)
+	);
+
+	function trackerWidthPct(current: number, max: number): number {
+		if (!Number.isFinite(max) || max <= 0) return 0;
+		return Math.max(0, Math.min(100, (current / max) * 100));
+	}
 </script>
 
 <svelte:head>
@@ -136,8 +313,8 @@
 
 	<!-- In-Play Tracking -->
 	{#if playMode}
-		<section aria-labelledby="in-play-heading" class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-4">
-			<div class="mb-3 flex items-center justify-between">
+		<section aria-labelledby="in-play-heading" class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-4 space-y-4">
+			<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
 				<h2 id="in-play-heading" class="text-sm font-semibold uppercase tracking-wider text-[var(--color-primary)]">In-Play Tracking</h2>
 				{#if isDirty}
 					<button
@@ -149,6 +326,20 @@
 					</button>
 				{/if}
 			</div>
+
+			{#if diceRolling}
+				<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">
+					Rolling…
+				</div>
+			{/if}
+
+			{#if lastRollBanner}
+				<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]/30 px-3 py-2 text-sm">
+					<p class="font-semibold">{lastRollBanner.title}</p>
+					<p class="text-xs text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</p>
+				</div>
+			{/if}
+
 			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
 				{#each [
 					{ label: 'HP', stat: 'hp' as const, current: currentHP, max: char.derivedStats.hp.max, color: 'var(--color-destructive)' },
@@ -176,11 +367,45 @@
 						<div class="mx-auto mt-1 h-1.5 w-full max-w-[80px] rounded-full bg-[var(--color-muted)]">
 							<div
 								class="h-1.5 rounded-full transition-all"
-								style="width: {(tracker.current / tracker.max) * 100}%; background-color: {tracker.color}"
+								style="width: {trackerWidthPct(tracker.current, tracker.max)}%; background-color: {tracker.color}"
 							></div>
 						</div>
 					</div>
 				{/each}
+			</div>
+
+			<div class="border-t border-[var(--color-border)] pt-3">
+				<h3 class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">Roll log</h3>
+				{#if playRollHistory.length === 0}
+					<p class="text-xs text-[var(--color-muted-foreground)]">No rolls yet. Tap a characteristic or skill below.</p>
+				{:else}
+					<ul class="max-h-48 space-y-2 overflow-y-auto text-xs">
+						{#each playRollHistory as entry}
+							<li class="rounded border border-[var(--color-border)]/50 bg-[var(--color-background)]/50 px-2 py-1.5">
+								<div class="flex flex-wrap justify-between gap-1">
+									<span class="font-medium">{logEntryTitle(entry)}</span>
+									<span class="tabular-nums text-[var(--color-muted-foreground)]">{formatLogTime(entry.at)}</span>
+								</div>
+								<div class="mt-0.5 flex flex-wrap gap-x-2 text-[var(--color-muted-foreground)]">
+									<span>Target {entry.target}% (½ {entry.half} / ⅕ {entry.fifth})</span>
+								</div>
+								<div class="mt-0.5">
+									<span class="font-mono tabular-nums">{entry.rawRoll}</span>
+									{#if entry.effectiveRoll !== entry.rawRoll}
+										<span class="text-[var(--color-muted-foreground)]"> → effective {entry.effectiveRoll}</span>
+									{/if}
+									<span class="ml-2 font-medium">
+										{outcomeDescription({
+											effectiveRoll: entry.effectiveRoll,
+											outcome: entry.outcome,
+											isFumble: entry.isFumble
+										})}
+									</span>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</div>
 		</section>
 	{/if}
@@ -190,13 +415,27 @@
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
 			<div class="grid grid-cols-4 gap-2 text-center text-sm">
-				{#each ALL_CHARACTERISTICS as charId}
-					{@const v = char.characteristics.values[charId]}
-					<div class="rounded-md border border-[var(--color-border)]/50 p-2">
-						<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{charId}</span>
-						<span class="block text-xl font-bold">{v}</span>
-						<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
-					</div>
+				{#each ALL_CHARACTERISTICS as statId}
+					{@const v = char.characteristics.values[statId]}
+					{#if playMode}
+						<button
+							type="button"
+							class="rounded-md border border-[var(--color-border)]/50 p-2 transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-accent)] disabled:opacity-50"
+							disabled={diceRolling}
+							onclick={() => rollCharacteristic(statId)}
+							aria-label="Roll {CHARACTERISTIC_LABELS[statId]} check"
+						>
+							<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
+							<span class="block text-xl font-bold">{v}</span>
+							<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
+						</button>
+					{:else}
+						<div class="rounded-md border border-[var(--color-border)]/50 p-2">
+							<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
+							<span class="block text-xl font-bold">{v}</span>
+							<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
+						</div>
+					{/if}
 				{/each}
 			</div>
 		</div>
@@ -228,17 +467,43 @@
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
 			<div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
 				{#each sortedSkills as skill}
-					<div class="flex justify-between text-sm">
-						<span>
-							{skill.skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-							{#if skill.isOccupation}
-								<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
-							{/if}
-						</span>
-						<span class="font-bold tabular-nums">{skill.total}%
-							<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
-						</span>
-					</div>
+					{#if playMode}
+						<button
+							type="button"
+							class="flex w-full justify-between rounded-md border border-transparent px-1 py-0.5 text-left text-sm hover:border-[var(--color-border)] hover:bg-[var(--color-accent)] disabled:opacity-50"
+							disabled={diceRolling}
+							onclick={() => rollSkill(skill)}
+							aria-label="Roll {skillRowLabel(skill)}"
+						>
+							<span>
+								{skillDisplayName(skill.skillId)}
+								{#if skill.customName?.trim()}
+									<span class="text-[var(--color-muted-foreground)]"> ({skill.customName})</span>
+								{/if}
+								{#if skill.isOccupation}
+									<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
+								{/if}
+							</span>
+							<span class="shrink-0 font-bold tabular-nums">{skill.total}%
+								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
+							</span>
+						</button>
+					{:else}
+						<div class="flex justify-between text-sm">
+							<span>
+								{skillDisplayName(skill.skillId)}
+								{#if skill.customName?.trim()}
+									<span class="text-[var(--color-muted-foreground)]"> ({skill.customName})</span>
+								{/if}
+								{#if skill.isOccupation}
+									<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
+								{/if}
+							</span>
+							<span class="font-bold tabular-nums">{skill.total}%
+								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
+							</span>
+						</div>
+					{/if}
 				{/each}
 			</div>
 		</div>

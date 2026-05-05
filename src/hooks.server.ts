@@ -3,6 +3,27 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { getDb } from '$lib/server/db';
 import { handle as authHandle } from '$lib/server/auth';
 
+// Optional dev-only auto-login bypass. The implementation file is gitignored
+// (see src/lib/server/dev-auto-login.example.ts). When absent — production,
+// fresh clones, CI — the dynamic import fails and we fall back to a no-op.
+// `import.meta.glob` resolves the live path at dev-server start. When the file
+// is absent (production, fresh clones, CI), the map is empty and we no-op. When
+// it is present (a local dev who copied dev-auto-login.example.ts), the loader
+// is included and we activate the bypass.
+const devAutoLoginModules = import.meta.glob<{ devAutoLoginHandle?: Handle }>(
+	'./lib/server/dev-auto-login.ts'
+);
+const devAutoLoginLoader = devAutoLoginModules['./lib/server/dev-auto-login.ts'];
+let devAutoLoginHandle: Handle | null = null;
+if (devAutoLoginLoader) {
+	try {
+		const mod = await devAutoLoginLoader();
+		devAutoLoginHandle = mod.devAutoLoginHandle ?? null;
+	} catch (err) {
+		console.warn('[dev-auto-login] failed to load:', (err as Error)?.message ?? err);
+	}
+}
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_WRITES = 60;
@@ -29,7 +50,9 @@ const appHandle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(appHandle, authHandle);
+export const handle = devAutoLoginHandle
+	? sequence(appHandle, devAutoLoginHandle, authHandle)
+	: sequence(appHandle, authHandle);
 
 function isUnsafeRequest(request: Request): boolean {
 	return MUTATING_METHODS.has(request.method);
