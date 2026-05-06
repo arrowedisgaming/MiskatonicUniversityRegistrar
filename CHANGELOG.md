@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-06
+
+### Added
+- Edit mode on the investigator sheet (`/sheet/[id]`). An "Edit" button next to Play Mode swaps the read-only sheet for an in-place editor: name, age, era, gender, pronouns, residence, birthplace, portrait URL, all eight characteristics (with +/- steppers and inline numeric input), all skills (sorted by total, with steppers and inline input that flow through the skill audit-trail allocations), and the eleven backstory fields. A sticky toolbar exposes Cancel / Save changes; saving sends the full character JSON to the existing `PUT /api/investigators/:id` endpoint and reloads the page so server-rendered data stays authoritative. Skills allocation reduction follows `experience → personal-interest → occupation` order so the wizard's audit trail is preserved as much as possible. Saves recompute derived stats (HP/MP/Sanity/Luck max, Damage Bonus, Build, Move Rate) from the edited characteristics + age + Cthulhu Mythos, and clamp current values into the new bounds.
+- Sheet route loader (`src/routes/sheet/[id]/+page.server.ts`) now exposes the full content pack (`getContentPack()`) so the editor can read `damageBonusBuildTable`, `ageModifiers`, and the era list without a second fetch.
+
+### Changed
+- All `<button>` and `<a>` controls in the investigator sheet header (JSON / Markdown / PDF / Edit / Play Mode / Back) now declare `cursor: pointer`, matching the rest of the app.
+
+### Notes
+- Edit mode bounds age to **15–89** to match the wizard and the content pack's `ageModifiers` range. Outside that range, `getAgeModifier()` returns `null` and `calculateAllDerived` would silently drop age-driven move-rate and characteristic adjustments.
+- The Mode field (Standard / Pulp) is intentionally **not** editable from this form — Pulp creation is still gated in the wizard while Pulp talents/archetypes are unimplemented, and exposing a Mode toggle here would let users persist a state the rest of the app does not honor.
+- Stepper +/- buttons and number inputs in edit mode carry per-row `aria-label`s ("Decrease Strength", "Accounting total", etc.) so screen-reader users hear what they're adjusting, in line with the project's WCAG 2.1 AA pass.
+
 ## [0.6.1] - 2026-05-06
 
 ### Fixed
@@ -284,7 +298,8 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.4.0...v0.5.0

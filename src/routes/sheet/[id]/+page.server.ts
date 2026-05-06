@@ -5,7 +5,7 @@ import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
 import { eq, and } from 'drizzle-orm';
 import type { CoCCharacterData } from '$lib/types/character';
-import { getOccupations, getSkills } from '$lib/server/content/loader';
+import { getContentPack, getOccupations, getSkills } from '$lib/server/content/loader';
 import { migrateCharacterData } from '$lib/engine/character-migration';
 
 export const load: PageServerLoad = async (event) => {
@@ -27,12 +27,14 @@ export const load: PageServerLoad = async (event) => {
 
 	const occupations = getOccupations();
 	const skills = getSkills();
+	const contentPack = getContentPack();
 
 	return {
 		investigator: {
 			id: row.id,
 			character: migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData
 		},
+		contentPack,
 		occupations,
 		skills
 	};
