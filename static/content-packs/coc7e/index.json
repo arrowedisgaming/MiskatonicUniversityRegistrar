@@ -25,6 +25,13 @@
 			"description": "Contemporary investigations using the modern-day tables and era-limited skills.",
 			"currencyUnit": "dollars",
 			"currencySymbol": "$"
+		},
+		{
+			"id": "gaslight",
+			"name": "Gaslight (1880–1899)",
+			"description": "The fog-shrouded streets of late-Victorian Britain, 1880–1899. An age of gas lamps and coal-fired engines, of bustles and bowler hats, of consulting detectives and rising spiritualism — where the British Empire stretches across the globe and Jack the Ripper signs his letters 'from hell.' Investigators range from upper-class aristocrats to working-class engineers, all chasing horrors lurking behind the respectable face of the Empire.",
+			"currencyUnit": "pounds",
+			"currencySymbol": "£"
 		}
 	],
 	"characteristicMethods": [
@@ -176,6 +183,14 @@
 			{ "minCR": 50, "maxCR": 89, "livingStandard": "Wealthy", "spendingLevel": 1000, "cashMultiplier": 100, "assetsMultiplier": 10000 },
 			{ "minCR": 90, "maxCR": 98, "livingStandard": "Rich", "spendingLevel": 5000, "cashMultiplier": 400, "assetsMultiplier": 40000 },
 			{ "minCR": 99, "maxCR": 99, "livingStandard": "Super Rich", "spendingLevel": 100000, "cashFixed": 1000000, "assetsFixed": 100000000, "assetsLabel": "$100M+" }
+		],
+		"gaslight": [
+			{ "minCR": 0, "maxCR": 0, "livingStandard": "Penniless", "spendingLevel": 0, "cashFixed": 0, "assetsFixed": 0, "assetsLabel": "None" },
+			{ "minCR": 1, "maxCR": 9, "livingStandard": "Poor", "spendingLevel": 0, "cashMultiplier": 10, "assetsMultiplier": 1 },
+			{ "minCR": 10, "maxCR": 49, "livingStandard": "Average", "spendingLevel": 3, "cashMultiplier": 10, "assetsMultiplier": 10 },
+			{ "minCR": 50, "maxCR": 89, "livingStandard": "Wealthy", "spendingLevel": 15, "cashMultiplier": 12, "assetsMultiplier": 100 },
+			{ "minCR": 90, "maxCR": 98, "livingStandard": "Rich", "spendingLevel": 50, "cashMultiplier": 50, "assetsMultiplier": 500 },
+			{ "minCR": 99, "maxCR": 99, "livingStandard": "Super Rich", "spendingLevel": 250, "cashFixed": 10000, "assetsFixed": 1000000, "assetsLabel": "£1M+" }
 		]
 	}
 }
