@@ -131,7 +131,8 @@ export const occupationDefinitionSchema = z.object({
 	interpersonalChoiceCount: z.number().int().min(0).optional(),
 	combatChoiceCount: z.number().int().min(0).optional(),
 	scienceChoiceCount: z.number().int().min(0).optional(),
-	suggestedContacts: z.string().optional()
+	suggestedContacts: z.string().optional(),
+	socialClass: z.enum(['upper', 'middle', 'working', 'criminal', 'any']).optional()
 });
 
 export const occupationsSchema = z.array(occupationDefinitionSchema);

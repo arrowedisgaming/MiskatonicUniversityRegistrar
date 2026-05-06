@@ -119,6 +119,7 @@ export interface CoCOccupationDefinition {
 	/** How many Science specializations to pick */
 	scienceChoiceCount?: number;
 	suggestedContacts?: string;
+	socialClass?: 'upper' | 'middle' | 'working' | 'criminal' | 'any';
 }
 
 export interface SkillPointFormula {
