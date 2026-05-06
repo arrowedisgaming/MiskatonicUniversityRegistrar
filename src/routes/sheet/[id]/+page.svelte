@@ -7,8 +7,14 @@
 	import { calculateAllDerived } from '$lib/engine/derived-stats';
 	import {
 		computeSkillValues,
+		createSkillAllocation,
 		resolveSkillBaseValue
 	} from '$lib/engine/skills';
+	import {
+		filterSkillDefsForSheetAddPicker,
+		shouldShowInvestigatorSkillOnSheet,
+		skillDefMatchesSheetAddSearch
+	} from '$lib/engine/investigator-sheet-skills';
 	import type { CoCSkillDefinition } from '$lib/types/content-pack';
 	import {
 		CHARACTER_SCHEMA_VERSION,
@@ -64,6 +70,20 @@
 	let editError = $state<string | null>(null);
 	let editChar = $state<CoCCharacterData | null>(null);
 
+	const SHEET_ADD_SKILL_MATCH_LIMIT = 15;
+
+	let skillSearchQuery = $state('');
+	let hideUncommonAndRestrictedSkills = $state(true);
+	let skillCustomizeForAdd = $state<CoCSkillDefinition | null>(null);
+	let skillCustomizeNameInput = $state('');
+
+	function resetSkillAddUi() {
+		skillSearchQuery = '';
+		hideUncommonAndRestrictedSkills = true;
+		skillCustomizeForAdd = null;
+		skillCustomizeNameInput = '';
+	}
+
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
 		// CoCCharacterData is JSON-serializable; structuredClone keeps it fast/safe.
 		return structuredClone(source);
@@ -89,6 +109,7 @@
 		editError = null;
 		editChar = ensureBackstoryShape(cloneCharacter(char));
 		editMode = true;
+		resetSkillAddUi();
 	}
 
 	function cancelEdit() {
@@ -96,6 +117,7 @@
 		editSaving = false;
 		editError = null;
 		editChar = null;
+		resetSkillAddUi();
 	}
 
 	function mutateEditChar(updater: (c: CoCCharacterData) => CoCCharacterData) {
@@ -173,6 +195,57 @@
 
 	function getSkillDef(skillId: string): CoCSkillDefinition | undefined {
 		return data.skills.find((s) => s.id === skillId);
+	}
+
+	function appendSkillFromDraft(
+		draft: CoCCharacterData,
+		def: CoCSkillDefinition,
+		customName: string | null
+	): CoCCharacterData {
+		const exists = draft.skills.some(
+			(s) => s.skillId === def.id && (s.customName ?? null) === (customName ?? null)
+		);
+		if (exists) return draft;
+		const base = resolveSkillBaseValue(def, draft.characteristics.values);
+		const row = createSkillAllocation(def.id, base, [], false, customName ?? undefined);
+		return { ...draft, skills: [...draft.skills, row] };
+	}
+
+	function pickSkillToAdd(def: CoCSkillDefinition) {
+		skillCustomizeForAdd = null;
+		skillCustomizeNameInput = '';
+		if (!editChar) return;
+		if (def.isCustomizable) {
+			// Customizable defs can have multiple rows distinguished by customName,
+			// so re-picking the same def opens the label form again instead of bailing.
+			skillCustomizeForAdd = def;
+			skillCustomizeNameInput = '';
+			return;
+		}
+		if (editChar.skills.some((s) => s.skillId === def.id)) return;
+		mutateEditChar((c) => appendSkillFromDraft(c, def, null));
+		skillSearchQuery = '';
+	}
+
+	function confirmCustomSkillAdd() {
+		const def = skillCustomizeForAdd;
+		if (!def || !editChar || !skillCustomizeNameInput.trim()) return;
+		const name = skillCustomizeNameInput.trim();
+		const duplicate = editChar.skills.some(
+			(s) =>
+				s.skillId === def.id &&
+				(s.customName ?? '').trim().toLowerCase() === name.toLowerCase()
+		);
+		if (duplicate) return;
+		mutateEditChar((c) => appendSkillFromDraft(c, def, name));
+		skillCustomizeForAdd = null;
+		skillCustomizeNameInput = '';
+		skillSearchQuery = '';
+	}
+
+	function cancelCustomSkillAdd() {
+		skillCustomizeForAdd = null;
+		skillCustomizeNameInput = '';
 	}
 
 	function upsertAllocation(
@@ -479,13 +552,24 @@
 		}
 	}
 
-	// Skills sorted by total descending
+	const skillsAddPickerMatches = $derived.by(() => {
+		if (!editChar) return [] as CoCSkillDefinition[];
+		const pool = filterSkillDefsForSheetAddPicker(data.skills, editChar.era, {
+			hideUncommonAndRestricted: hideUncommonAndRestrictedSkills,
+			existingSkillIds: new Set(editChar.skills.map((s) => s.skillId))
+		});
+		return pool
+			.filter((d) => skillDefMatchesSheetAddSearch(d, skillSearchQuery))
+			.sort((a, b) => a.name.localeCompare(b.name))
+			.slice(0, SHEET_ADD_SKILL_MATCH_LIMIT);
+	});
+
+	// Read/play: highest total first. Edit mode: stable document order so rows don't jump while typing.
 	const sortedSkills = $derived.by(() => {
 		const skills = editMode && editChar ? editChar.skills : char.skills;
-		return skills
-			.filter((s) => s.total > s.baseValue || s.isOccupation)
-			.slice()
-			.sort((a, b) => b.total - a.total);
+		const visible = skills.filter(shouldShowInvestigatorSkillOnSheet).slice();
+		if (editMode && editChar) return visible;
+		return visible.sort((a, b) => b.total - a.total);
 	});
 
 	function trackerWidthPct(current: number, max: number): number {
@@ -909,9 +993,113 @@
 	</div>
 
 	<!-- Skills -->
-	{#if sortedSkills.length > 0}
+	{#if (editMode && editChar) || sortedSkills.length > 0}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
+			{#if editMode && editChar}
+				<div class="mb-4 space-y-3 rounded-md border border-[var(--color-border)]/50 bg-[var(--color-background)]/40 p-3">
+					<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+						<div class="min-w-0 grow">
+							<label
+								for="add-skill-search"
+								class="mb-1 block text-xs font-semibold uppercase text-[var(--color-muted-foreground)]"
+							>Add skill</label>
+							<input
+								id="add-skill-search"
+								type="search"
+								value={skillSearchQuery}
+								oninput={(e) => {
+									skillSearchQuery = (e.currentTarget as HTMLInputElement).value;
+								}}
+								placeholder="Search by name…"
+								autocomplete="off"
+								class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+							/>
+						</div>
+						<label class="flex shrink-0 cursor-pointer items-start gap-2 text-sm leading-snug">
+							<input
+								type="checkbox"
+								checked={hideUncommonAndRestrictedSkills}
+								onchange={(e) => {
+									hideUncommonAndRestrictedSkills = (e.currentTarget as HTMLInputElement).checked;
+								}}
+								class="mt-0.5 rounded border-[var(--color-border)]"
+							/>
+							<span>
+								Hide uncommon &amp; restricted skills<br />
+								<span class="text-xs text-[var(--color-muted-foreground)]">
+									Uncheck to include entries like Demolitions and Cthulhu Mythos.
+								</span>
+							</span>
+						</label>
+					</div>
+					{#if skillCustomizeForAdd}
+						<div
+							class="flex flex-col gap-3 rounded-md border border-[var(--color-primary)]/30 bg-[var(--color-accent)]/20 p-3 sm:flex-row sm:items-end"
+						>
+							<div class="min-w-0 grow">
+								<label
+									for="add-skill-custom-name"
+									class="mb-1 block text-xs font-semibold uppercase text-[var(--color-muted-foreground)]"
+								>
+									Specialization label ({skillCustomizeForAdd.name})
+								</label>
+								<input
+									id="add-skill-custom-name"
+									type="text"
+									value={skillCustomizeNameInput}
+									oninput={(e) => {
+										skillCustomizeNameInput = (e.currentTarget as HTMLInputElement).value;
+									}}
+									placeholder="e.g. Forgery, Violin…"
+									class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+								/>
+							</div>
+							<div class="flex shrink-0 flex-wrap gap-2">
+								<button
+									type="button"
+									onclick={confirmCustomSkillAdd}
+									disabled={!skillCustomizeNameInput.trim()}
+									class="cursor-pointer rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									Add skill
+								</button>
+								<button
+									type="button"
+									onclick={cancelCustomSkillAdd}
+									class="cursor-pointer rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium hover:bg-[var(--color-accent)]"
+								>
+									Cancel
+								</button>
+							</div>
+						</div>
+					{/if}
+					{#if skillsAddPickerMatches.length > 0}
+						<ul class="max-h-48 space-y-1 overflow-y-auto text-sm" aria-label="Matching skills">
+							{#each skillsAddPickerMatches as def (def.id)}
+								{@const pickerBase = resolveSkillBaseValue(def, editChar.characteristics.values)}
+								<li>
+									<button
+										type="button"
+										onclick={() => pickSkillToAdd(def)}
+										class="w-full cursor-pointer rounded-md border border-transparent px-2 py-1.5 text-left hover:border-[var(--color-border)] hover:bg-[var(--color-accent)]"
+									>
+										<span class="font-medium">{def.name}</span>
+										<span class="ml-2 text-xs text-[var(--color-muted-foreground)]">
+											({pickerBase}% base)
+											{#if def.derivedBase}&nbsp;(from characteristics){/if}
+										</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{:else if skillSearchQuery.trim()}
+						<p class="text-xs text-[var(--color-muted-foreground)]">
+							No matching skills. Try different words or uncheck the filter above.
+						</p>
+					{/if}
+				</div>
+			{/if}
 			<div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
 				{#each sortedSkills as skill}
 					{#if editMode && editChar}

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-05-06
+
+### Added
+- Investigator sheet edit mode: **searchable add-skill picker** (content-pack names, token search, first 15 matches). **Hide uncommon & restricted skills** checkbox (default on) filters out `uncommon` and `noPointAllocation` defs; unchecking reveals skills such as Demolitions and Cthulhu Mythos. Customizable specialization skills (Other Language, Art/Craft, etc.) require a label before the row is appended and may be added multiple times with different labels (e.g. two languages).
+- Engine helpers in `src/lib/engine/investigator-sheet-skills.ts` for sheet visibility and add-picker filtering, with unit tests.
+
+### Fixed
+- Skills at pure base with no allocations now stay visible when added from sheet edit (and occupation rows unchanged), instead of disappearing from the Skills block.
+
 ## [0.9.0] - 2026-05-06
 
 ### Added
