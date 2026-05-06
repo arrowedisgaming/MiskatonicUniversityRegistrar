@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-06
+
 ### Added
-- 36 new Gaslight-era occupations added to `static/content-packs/coc7e/occupations.json`: Adventuress, Alienist, Antiquarian (gaslight), Aristocrat, Artist (gaslight), Blacksmith, Cabbie, Clergy (gaslight), Consulting Detective, Craftsperson, Criminal (Gonoph), Criminal (Cracksman), Criminal (Footpad), Criminal (Magsman), Criminal (Macer), Criminal (Rampsman), Criminal (Screever), Criminal (Shofulman), Criminal (Street Gang), Military Officer (gaslight), Military Enlisted/NCO, Explorer (gaslight), Gentleman/Gentlewoman (gaslight), Inquiry Agent, Journalist (gaslight), Inventor, Laborer, Chimney Sweep, Gravedigger/Sexton, Navvy, Physician, Police Constable, Police Detective (gaslight), Scientist (gaslight), Servant, Spy (gaslight). Each includes `eras: ["gaslight"]`, `socialClass`, `creditRating`, `skillPointFormula`, and `occupationSkills`.
-- 15 existing 1920s occupations updated to also support the Gaslight era (added `"gaslight"` to their `eras` arrays): `accountant`, `acrobat`, `actor`, `archaeologist`, `artist`, `author`, `engineer`, `entertainer`, `farmer`, `musician`, `nurse`, `photographer`, `professor`, `sailor`, `student`.
+- **Cthulhu by Gaslight era** — a new `gaslight` era (1880–1899, late-Victorian) is now selectable in the wizard alongside 1920s Classic and Modern Day. Era picker, wealth table, equipment list, skill filter, and exports all respond automatically via the existing content-pack data architecture.
+- 36 new dedicated Gaslight occupations: Adventuress, Alienist, Antiquarian, Aristocrat, Artist, Blacksmith, Cabbie, Clergy, Consulting Detective, Craftsperson, Criminal (Gonoph) + 7 specialist criminal subtypes (Cracksman, Footpad, Magsman, Macer, Rampsman, Screever, Shofulman, Street Gang), Military Officer, Military Enlisted/NCO, Explorer, Gentleman/Gentlewoman, Inquiry Agent, Journalist, Inventor (Pulp only), Laborer + 3 specialists (Chimney Sweep, Gravedigger/Sexton, Navvy), Physician, Police Constable, Police Detective, Scientist, Servant, Spy. Each carries `socialClass`, CR range, skill-point formula, and 8-skill list from the 4th edition sourcebook.
+- 15 existing 1920s occupations extended to also appear in Gaslight (`accountant`, `acrobat`, `actor`, `archaeologist`, `artist`, `author`, `engineer`, `entertainer`, `farmer`, `musician`, `nurse`, `photographer`, `professor`, `sailor`, `student`).
+- 6 new Gaslight-era skills: Alienism (01%), Mesmerism (01%, uncommon), Reassure (APP/5), Religion (10%, specialization), Drive Carriage (20%), Pilot — Balloon (01%).
+- Drive Auto and Psychoanalysis restricted from the Gaslight era (replaced by Drive Carriage and Alienism respectively); Hypnosis replaced by Mesmerism.
+- Victorian wealth table (£ sterling, 6 tiers: Penniless → Super Rich) from *Cthulhu by Gaslight* 4th ed. p.73.
+- Victorian common-item list (20 items: pocket watch, gas lamp, walking stick, oilskin, etc.) and 9 Victorian weapons (Webley Revolver, Martini-Henry Rifle, Truncheon, Cavalry Sabre, Derringer, Blackjack, etc.).
+- `socialClass` field on `CoCOccupationDefinition` type and Zod schema (optional; `upper | middle | working | criminal | any`).
+- Currency symbol parameterised in `calculateStartingWealth` (default `'$'`; Gaslight passes `'£'`), so Equipment step shows £-prefixed cash and assets for Victorian investigators.
+- Era names resolved via content-pack metadata in PDF and Markdown exports (e.g. "Gaslight (1880–1899)" instead of the raw id "gaslight").
 
 ## [0.8.0] - 2026-05-06
 
