@@ -211,7 +211,8 @@
 		"category": "practical",
 		"isSpecialization": false,
 		"eras": [
-			"all"
+			"1920s",
+			"modern"
 		]
 	},
 	{
@@ -407,7 +408,8 @@
 		"category": "academic",
 		"isSpecialization": false,
 		"eras": [
-			"all"
+			"1920s",
+			"modern"
 		],
 		"uncommon": true
 	},
@@ -608,7 +610,8 @@
 		"category": "academic",
 		"isSpecialization": false,
 		"eras": [
-			"all"
+			"1920s",
+			"modern"
 		]
 	},
 	{
@@ -904,6 +907,77 @@
 		"isSpecialization": false,
 		"eras": [
 			"all"
+		]
+	},
+	{
+		"id": "alienism",
+		"name": "Alienism",
+		"baseValue": 1,
+		"category": "academic",
+		"isSpecialization": false,
+		"eras": [
+			"gaslight"
+		]
+	},
+	{
+		"id": "mesmerism",
+		"name": "Mesmerism",
+		"baseValue": 1,
+		"category": "social",
+		"isSpecialization": false,
+		"uncommon": true,
+		"eras": [
+			"gaslight"
+		]
+	},
+	{
+		"id": "reassure",
+		"name": "Reassure",
+		"baseValue": 0,
+		"category": "social",
+		"isSpecialization": false,
+		"derivedBase": "app/5",
+		"eras": [
+			"gaslight",
+			"1920s",
+			"modern"
+		]
+	},
+	{
+		"id": "religion",
+		"name": "Religion",
+		"baseValue": 10,
+		"category": "academic",
+		"isSpecialization": true,
+		"specializationGroup": "religion",
+		"specializationLabel": "Religion",
+		"eras": [
+			"gaslight",
+			"1920s",
+			"modern"
+		]
+	},
+	{
+		"id": "drive-carriage",
+		"name": "Drive (Carriage)",
+		"baseValue": 20,
+		"category": "practical",
+		"isSpecialization": false,
+		"eras": [
+			"gaslight",
+			"1920s"
+		]
+	},
+	{
+		"id": "pilot-balloon",
+		"name": "Pilot (Balloon)",
+		"baseValue": 1,
+		"category": "practical",
+		"isSpecialization": true,
+		"specializationGroup": "pilot",
+		"specializationLabel": "Balloon",
+		"eras": [
+			"gaslight"
 		]
 	}
 ]
