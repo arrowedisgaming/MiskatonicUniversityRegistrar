@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-05-06
+
+### Fixed
+- One-page PDF: generic specialization fill-in rows (e.g. `Firearms(________)`, `Fighting(________)`) no longer print a misleading regular/half/fifth target. Previously the row reused the first definition's `baseValue`, but Firearms spans 5–25 across its specs and Fighting spans 5–25 — so `Firearms(________)` was printed as 20 (Handgun) and `Fighting(________)` as 25 (Brawl), leading a player who wrote in a different specialization to read the wrong target. The blank row now keeps a concrete value only when every definition in the group shares the same base and none derive from a characteristic (Art/Craft, Science, etc.); for mixed-base groups the value/half/fifth cells render empty so the player writes in the correct number for the specialization they pick. Regression tests added for both branches in `tests/unit/export/pdf-helpers.test.ts`.
+
 ## [0.6.0] - 2026-05-06
 
 ### Changed
@@ -279,7 +284,8 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.3.0...v0.4.0

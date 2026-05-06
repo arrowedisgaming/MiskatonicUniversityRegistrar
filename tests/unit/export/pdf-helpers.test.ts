@@ -212,6 +212,52 @@ describe('buildSkillRows', () => {
 		expect(acRows[0].displayName).toContain('________');
 	});
 
+	it('keeps a concrete base on the blank row when every spec in the group shares it', () => {
+		// Art/Craft fixture: both specs base 5 → blank row carries 5 so
+		// half/fifth render correctly on the printed sheet.
+		const rows = buildSkillRows(character, skills, occupation);
+		const blank = rows.find(
+			(r) => r.isBlankSlot && r.displayName.startsWith('Art/Craft')
+		);
+		expect(blank?.value).toBe(5);
+	});
+
+	it('emits null value on the blank row when group bases differ (Firearms/Fighting)', () => {
+		// Regression for the printed-sheet rules error: previously the blank row
+		// reused the first definition's baseValue, which silently misled players
+		// for spec groups whose definitions span multiple bases.
+		const mixedSkills: CoCSkillDefinition[] = [
+			def({
+				id: 'firearms-handgun',
+				name: 'Firearms (Handgun)',
+				baseValue: 20,
+				category: 'combat',
+				isSpecialization: true,
+				specializationGroup: 'firearms'
+			}),
+			def({
+				id: 'firearms-rifle-shotgun',
+				name: 'Firearms (Rifle/Shotgun)',
+				baseValue: 25,
+				category: 'combat',
+				isSpecialization: true,
+				specializationGroup: 'firearms'
+			}),
+			def({
+				id: 'firearms-other',
+				name: 'Firearms (Other)',
+				baseValue: 5,
+				category: 'combat',
+				isSpecialization: true,
+				specializationGroup: 'firearms'
+			})
+		];
+		const rows = buildSkillRows(character, mixedSkills, occupation);
+		const blank = rows.find((r) => r.isBlankSlot && r.displayName.startsWith('Firearms'));
+		expect(blank).toBeDefined();
+		expect(blank?.value).toBeNull();
+	});
+
 	it('renders allocation rows + one blank slot when group has allocations', () => {
 		character.skills = [
 			{

@@ -306,15 +306,20 @@ function buildSkillsSection(rows: SkillRow[]) {
 	const columns = distributeIntoColumns(rows, SKILL_COLUMNS);
 
 	const renderColumn = (colRows: SkillRow[]) => {
-		const body: Array<Array<{ text: string; style: string }>> = colRows.map((row) => [
-			{
-				text: formatRowName(row),
-				style: row.isBlankSlot ? 'skillBlank' : 'skillName'
-			},
-			{ text: `${row.value}`, style: 'skillValue' },
-			{ text: `${halfValue(row.value)}`, style: 'skillSub' },
-			{ text: `${fifthValue(row.value)}`, style: 'skillSub' }
-		]);
+		const body: Array<Array<{ text: string; style: string }>> = colRows.map((row) => {
+			const valueText = row.value === null ? '' : `${row.value}`;
+			const halfText = row.value === null ? '' : `${halfValue(row.value)}`;
+			const fifthText = row.value === null ? '' : `${fifthValue(row.value)}`;
+			return [
+				{
+					text: formatRowName(row),
+					style: row.isBlankSlot ? 'skillBlank' : 'skillName'
+				},
+				{ text: valueText, style: 'skillValue' },
+				{ text: halfText, style: 'skillSub' },
+				{ text: fifthText, style: 'skillSub' }
+			];
+		});
 		// Pad shorter columns to keep heights aligned.
 		const targetLength = Math.max(...columns.map((c) => c.length));
 		while (body.length < targetLength) {

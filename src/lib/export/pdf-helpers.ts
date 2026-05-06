@@ -17,7 +17,13 @@ import type { CharacteristicId, Era } from '$lib/types/common';
 export interface SkillRow {
 	key: string;
 	displayName: string;
-	value: number;
+	/**
+	 * `null` for generic specialization fill-in rows whose group has mixed bases
+	 * (e.g. Firearms, Fighting). The renderer prints empty value/half/fifth cells
+	 * so the player writes in the correct target for the specialization they
+	 * choose rather than reading an arbitrary first-definition base.
+	 */
+	value: number | null;
 	isOccupation: boolean;
 	isImproved: boolean;
 	category: string;
@@ -151,10 +157,18 @@ export function buildSkillRows(
 			});
 		}
 
+		// Only emit a concrete value on the generic blank row when every
+		// definition in the group shares the same base AND none derive from a
+		// characteristic. Otherwise the row stands for any specialization the
+		// player writes in, and a single number would mislead.
+		const uniformBase =
+			defs.every((d) => !d.derivedBase) &&
+			defs.every((d) => d.baseValue === sample.baseValue);
+
 		specRows.push({
 			key: `${group}:blank`,
 			displayName: `${groupName}(________)`,
-			value: sample.baseValue,
+			value: uniformBase ? sample.baseValue : null,
 			isOccupation: false,
 			isImproved: false,
 			category,
