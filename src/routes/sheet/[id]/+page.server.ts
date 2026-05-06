@@ -33,7 +33,9 @@ export const load: PageServerLoad = async (event) => {
 	return {
 		investigator: {
 			id: row.id,
-			character: migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData
+			character: migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData,
+			shareId: row.shareId,
+			isPublic: row.isPublic
 		},
 		contentPack,
 		occupations,

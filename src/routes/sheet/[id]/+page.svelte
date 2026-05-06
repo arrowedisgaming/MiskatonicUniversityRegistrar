@@ -32,7 +32,9 @@
 		splitDamageSegments
 	} from '$lib/engine/weapon-damage-roll';
 	import { BACKSTORY_KEYS, BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
-	import { generatePDF } from '$lib/export/pdf-export';
+	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
+	import ShareDialog from '$lib/components/investigator/ShareDialog.svelte';
+	import SheetReadOnly from '$lib/components/investigator/SheetReadOnly.svelte';
 	import { rollDie } from '$lib/engine/dice';
 	import { showDiceRoll } from '$lib/stores/dice-rolls';
 	import { makeDiceRollRequest } from '$lib/dice/protocol';
@@ -70,8 +72,6 @@
 	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
 
 	let isDirty = $state(false);
-	let pdfError = $state<string | null>(null);
-	let pdfExporting = $state(false);
 
 	let editMode = $state(false);
 	let editSaving = $state(false);
@@ -644,27 +644,6 @@
 		return entry.skillDisplayLabel ?? entry.skillId ?? 'Skill';
 	}
 
-	async function exportPDF() {
-		pdfError = null;
-		pdfExporting = true;
-		try {
-			const occName = occupation?.name ?? 'Unknown';
-			const pdfBytes = await generatePDF(char, occName, data.skills, data.occupations, data.contentPack);
-			const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = `${(char.name || 'investigator').replace(/\s+/g, '-')}.pdf`;
-			a.click();
-			URL.revokeObjectURL(url);
-		} catch (e) {
-			pdfError = e instanceof Error ? e.message : 'PDF generation failed';
-			console.error('PDF export error:', e);
-		} finally {
-			pdfExporting = false;
-		}
-	}
-
 	const equipWeaponPickerMatches = $derived.by(() => {
 		if (!editChar) return [] as WeaponDefinition[];
 		const q = equipWeaponSearchQuery.trim().toLowerCase();
@@ -982,14 +961,13 @@
 					>
 						Markdown
 					</a>
-					<button
-						type="button"
-						onclick={exportPDF}
-						disabled={pdfExporting}
-						class="cursor-pointer rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						{pdfExporting ? 'Exporting...' : 'PDF'}
-					</button>
+					<PDFExportButton
+						character={char}
+						occupationName={occupation?.name ?? 'Unknown'}
+						skills={data.skills}
+						occupations={data.occupations}
+						contentPack={data.contentPack}
+					/>
 				</div>
 				<button
 					type="button"
@@ -1008,6 +986,11 @@
 				>
 					{playMode ? 'Exit Play Mode' : 'Play Mode'}
 				</button>
+				<ShareDialog
+					investigatorId={data.investigator.id}
+					isDraft={char.isDraft}
+					initialShareId={data.investigator.isPublic ? data.investigator.shareId : null}
+				/>
 				<a
 					href="/investigators"
 					class="cursor-pointer rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]"
@@ -1017,12 +1000,6 @@
 			{/if}
 		</div>
 	</div>
-
-	{#if pdfError}
-		<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
-			PDF export failed: {pdfError}
-		</div>
-	{/if}
 
 	<!-- In-Play Tracking -->
 	{#if playMode}
@@ -1134,95 +1111,100 @@
 		</section>
 	{/if}
 
-	<!-- Characteristics & Derived -->
-	<div class="grid gap-6 lg:grid-cols-2">
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
-			<div class="grid grid-cols-4 gap-2 text-center text-sm">
-				{#each ALL_CHARACTERISTICS as statId}
-					{@const v = (editMode && editChar ? editChar.characteristics.values[statId] : char.characteristics.values[statId])}
-					{#if editMode && editChar}
-						<div class="rounded-md border border-[var(--color-border)]/50 p-2">
-							<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
-							<div class="mt-1 flex items-center justify-center gap-1">
-								<button
-									type="button"
-									onclick={() => updateCharacteristic(statId, v - 1)}
-									aria-label="Decrease {CHARACTERISTIC_LABELS[statId]}"
-									class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
-								>
-									−
-								</button>
-								<input
-									type="number"
-									min="0"
-									max="99"
-									value={v}
-									aria-label="{CHARACTERISTIC_LABELS[statId]} value"
-									oninput={(e) =>
-										updateCharacteristic(
-											statId,
-											parseInt((e.currentTarget as HTMLInputElement).value) || 0
-										)}
-									class="no-spinner w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm"
-								/>
-								<button
-									type="button"
-									onclick={() => updateCharacteristic(statId, v + 1)}
-									aria-label="Increase {CHARACTERISTIC_LABELS[statId]}"
-									class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
-								>
-									+
-								</button>
+	<!--
+		Default (non-edit, non-play) display delegates to the shared <SheetReadOnly />
+		component so the owner's read view and the public /s/[shareId] view render
+		from a single source of truth. Edit/play modes keep their inline branches.
+	-->
+	{#if !editMode && !playMode}
+		<SheetReadOnly character={char} skills={data.skills} occupations={data.occupations} />
+	{/if}
+
+	<!-- Characteristics & Derived (edit/play modes) -->
+	{#if (editMode && editChar) || playMode}
+		<div class="grid gap-6 lg:grid-cols-2">
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+				<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
+				<div class="grid grid-cols-4 gap-2 text-center text-sm">
+					{#each ALL_CHARACTERISTICS as statId}
+						{@const v = (editMode && editChar ? editChar.characteristics.values[statId] : char.characteristics.values[statId])}
+						{#if editMode && editChar}
+							<div class="rounded-md border border-[var(--color-border)]/50 p-2">
+								<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
+								<div class="mt-1 flex items-center justify-center gap-1">
+									<button
+										type="button"
+										onclick={() => updateCharacteristic(statId, v - 1)}
+										aria-label="Decrease {CHARACTERISTIC_LABELS[statId]}"
+										class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
+									>
+										−
+									</button>
+									<input
+										type="number"
+										min="0"
+										max="99"
+										value={v}
+										aria-label="{CHARACTERISTIC_LABELS[statId]} value"
+										oninput={(e) =>
+											updateCharacteristic(
+												statId,
+												parseInt((e.currentTarget as HTMLInputElement).value) || 0
+											)}
+										class="no-spinner w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm"
+									/>
+									<button
+										type="button"
+										onclick={() => updateCharacteristic(statId, v + 1)}
+										aria-label="Increase {CHARACTERISTIC_LABELS[statId]}"
+										class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
+									>
+										+
+									</button>
+								</div>
+								<span class="mt-1 block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
 							</div>
-							<span class="mt-1 block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
+						{:else if playMode}
+							<button
+								type="button"
+								class="rounded-md border border-[var(--color-border)]/50 p-2 transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-accent)] disabled:opacity-50"
+								disabled={diceRolling}
+								onclick={() => rollCharacteristic(statId)}
+								aria-label="Roll {CHARACTERISTIC_LABELS[statId]} check"
+							>
+								<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
+								<span class="block text-xl font-bold">{v}</span>
+								<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
+							</button>
+						{/if}
+					{/each}
+				</div>
+			</div>
+
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+				<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
+				<div class="grid grid-cols-2 gap-2 text-sm">
+					{#each [
+						['Hit Points', `${char.derivedStats.hp.current}/${char.derivedStats.hp.max}`],
+						['Magic Points', `${char.derivedStats.mp.current}/${char.derivedStats.mp.max}`],
+						['Sanity', `${char.derivedStats.sanity.current}/${char.derivedStats.sanity.max}`],
+						['Luck', `${char.derivedStats.luck.current}`],
+						['Damage Bonus', char.derivedStats.damageBonus],
+						['Build', String(char.derivedStats.build)],
+						['Move Rate', String(char.derivedStats.moveRate)]
+					] as [label, value]}
+						<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
+							<span class="text-[var(--color-muted-foreground)]">{label}</span>
+							<span class="font-bold">{value}</span>
 						</div>
-					{:else if playMode}
-						<button
-							type="button"
-							class="rounded-md border border-[var(--color-border)]/50 p-2 transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-accent)] disabled:opacity-50"
-							disabled={diceRolling}
-							onclick={() => rollCharacteristic(statId)}
-							aria-label="Roll {CHARACTERISTIC_LABELS[statId]} check"
-						>
-							<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
-							<span class="block text-xl font-bold">{v}</span>
-							<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
-						</button>
-					{:else}
-						<div class="rounded-md border border-[var(--color-border)]/50 p-2">
-							<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{statId}</span>
-							<span class="block text-xl font-bold">{v}</span>
-							<span class="block text-xs text-[var(--color-muted-foreground)]">{halfValue(v)} / {fifthValue(v)}</span>
-						</div>
-					{/if}
-				{/each}
+					{/each}
+				</div>
 			</div>
 		</div>
+	{/if}
 
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
-			<div class="grid grid-cols-2 gap-2 text-sm">
-				{#each [
-					['Hit Points', `${char.derivedStats.hp.current}/${char.derivedStats.hp.max}`],
-					['Magic Points', `${char.derivedStats.mp.current}/${char.derivedStats.mp.max}`],
-					['Sanity', `${char.derivedStats.sanity.current}/${char.derivedStats.sanity.max}`],
-					['Luck', `${char.derivedStats.luck.current}`],
-					['Damage Bonus', char.derivedStats.damageBonus],
-					['Build', String(char.derivedStats.build)],
-					['Move Rate', String(char.derivedStats.moveRate)]
-				] as [label, value]}
-					<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
-						<span class="text-[var(--color-muted-foreground)]">{label}</span>
-						<span class="font-bold">{value}</span>
-					</div>
-				{/each}
-			</div>
-		</div>
-	</div>
-
-	<!-- Skills -->
-	{#if (editMode && editChar) || sortedSkills.length > 0}
+	<!-- Skills (edit/play modes; default rendered by SheetReadOnly) -->
+	{#if (editMode && editChar) || (playMode && sortedSkills.length > 0)}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
 			{#if editMode && editChar}
@@ -1402,21 +1384,6 @@
 								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
 							</span>
 						</button>
-					{:else}
-						<div class="flex justify-between text-sm">
-							<span>
-								{skillDisplayName(skill.skillId)}
-								{#if skill.customName?.trim()}
-									<span class="text-[var(--color-muted-foreground)]"> ({skill.customName})</span>
-								{/if}
-								{#if skill.isOccupation}
-									<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
-								{/if}
-							</span>
-							<span class="font-bold tabular-nums">{skill.total}%
-								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
-							</span>
-						</div>
 					{/if}
 				{/each}
 			</div>
@@ -1646,7 +1613,8 @@
 					</ul>
 				{/if}
 		</div>
-	{:else if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
+	{:else if playMode && (char.equipment.items.length > 0 || char.equipment.weapons.length > 0)}
+		<!-- Play-mode equipment: weapon damage segments become roll buttons. Default render is in SheetReadOnly. -->
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
 
@@ -1671,32 +1639,28 @@
 									<tr class="border-b border-[var(--color-border)]/20 align-top">
 										<td class="py-1 pr-2 font-medium">{w.name}</td>
 										<td class="py-1 pr-2">
-											{#if playMode}
-												<div class="flex flex-wrap items-center gap-1">
-													{#each dmgBands as seg, bandIdx}
-														{@const segLabel =
-															dmgBands.length > 1 ? `Band ${bandIdx + 1} (${seg})` : null}
-														{#if isWeaponDamageFormulaSupported(seg, char.derivedStats.damageBonus)}
-															<button
-																type="button"
-																disabled={diceRolling}
-																onclick={() => rollWeaponDamageSegment(w, seg, segLabel)}
-																class="cursor-pointer rounded border border-[var(--color-border)] px-1.5 py-0.5 text-left font-mono text-[11px] hover:bg-[var(--color-accent)] disabled:opacity-50"
-																title="Roll {seg}"
-															>
-																{seg}
-															</button>
-														{:else}
-															<span
-																class="font-mono text-[11px] text-[var(--color-muted-foreground)]"
-																title="This damage formula cannot be rolled automatically"
-															>{seg}</span>
-														{/if}
-													{/each}
-												</div>
-											{:else}
-												<span class="font-mono">{w.damage}</span>
-											{/if}
+											<div class="flex flex-wrap items-center gap-1">
+												{#each dmgBands as seg, bandIdx}
+													{@const segLabel =
+														dmgBands.length > 1 ? `Band ${bandIdx + 1} (${seg})` : null}
+													{#if isWeaponDamageFormulaSupported(seg, char.derivedStats.damageBonus)}
+														<button
+															type="button"
+															disabled={diceRolling}
+															onclick={() => rollWeaponDamageSegment(w, seg, segLabel)}
+															class="cursor-pointer rounded border border-[var(--color-border)] px-1.5 py-0.5 text-left font-mono text-[11px] hover:bg-[var(--color-accent)] disabled:opacity-50"
+															title="Roll {seg}"
+														>
+															{seg}
+														</button>
+													{:else}
+														<span
+															class="font-mono text-[11px] text-[var(--color-muted-foreground)]"
+															title="This damage formula cannot be rolled automatically"
+														>{seg}</span>
+													{/if}
+												{/each}
+											</div>
 										</td>
 										<td class="py-1 pr-2">{w.range}</td>
 										<td class="py-1">{w.attacksPerRound}</td>
@@ -1743,7 +1707,8 @@
 				{/each}
 			</div>
 		</div>
-	{:else if Object.values(char.backstory).some((v) => v.trim())}
+	{:else if playMode && Object.values(char.backstory).some((v) => v.trim())}
+		<!-- Play-mode backstory render. Default render is in SheetReadOnly. -->
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Backstory</h2>
 			<div class="space-y-3 text-sm">

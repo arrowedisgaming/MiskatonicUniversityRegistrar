@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-05-06
+
+### Added
+- **Public share links for finished investigators.** A new "Share" button on the sheet header opens a dialog with a toggle: enabling sharing mints a 16-char unguessable token, sets `isPublic = true`, and copies the public URL (`/s/<shareId>`) to the clipboard automatically (with a select-text fallback for browsers that block the Clipboard API). Anyone with the link can open it without signing in and see a read-only view of the sheet — no edit, no play mode, no rolls, no JSON/Markdown export. PDF export remains available on the public page since it is generated client-side from the same character data. Toggling sharing OFF rotates the token: the previous URL stops resolving immediately, and re-enabling generates a fresh URL. Drafts cannot be shared (server returns 409). The owner's primary investigator id is never exposed in the shared URL — only the token.
+- New API endpoints `POST` and `DELETE` at `/api/investigators/[id]/share`, both owner-gated via `ensureUser` and ownership filter, returning JSON `{ shareId, shareUrl }` on enable and 204 on disable.
+- New public route `/s/[shareId]/+page.server.ts` + `+page.svelte` that loads by `shareId` + `isPublic = true` + `isArchived = false` (defense in depth — soft-deleted investigators stop resolving on their old public URLs even if sharing was never explicitly disabled) without ever calling `ensureUser`. The load payload is `{ character, contentPack, occupations, skills }` only — no `userId`, no internal primary `id`. The page also emits `<meta name="robots" content="noindex, nofollow">` so unlisted links stay unlisted.
+- New pure server module `src/lib/server/investigator/share.ts` with `enableInvestigatorShare`, `disableInvestigatorShare`, `loadSharedInvestigator`, and `SHARE_ID_LENGTH = 16`. The route handlers are thin wrappers; all behavior is unit-testable against an in-memory SQLite. 14 new tests cover token mint length, token rotation invalidating the old URL, draft refusal (409), non-owner refusal (404), idempotent disable, archived-row exclusion from public lookup, and verifying the shared payload never contains `userId`.
+- New shared components under `src/lib/components/investigator/`:
+  - `SheetReadOnly.svelte` — pure-display rendering of characteristics, derived attributes, skills, equipment, and backstory. Used by both the owner's sheet (default mode) and the public share page so a single source of truth drives the read view.
+  - `PDFExportButton.svelte` — wraps `generatePDF` with `pdfExporting` / `pdfError` state and is reused by both routes.
+  - `ShareDialog.svelte` — owner-only toggle UI with switch, URL display, Copy button (calls `navigator.clipboard.writeText`, falls back to selecting the readonly input after `tick()` so the input is mounted), and inline draft-blocked / error states.
+
+### Changed
+- `src/routes/sheet/[id]/+page.svelte` no longer inlines its default (non-edit, non-play) read markup; it delegates to `<SheetReadOnly />`. Each section (Characteristics & Derived, Skills, Equipment, Backstory) now renders inline only in edit or play modes; the shared component renders the same data the same way for the default branch and for the public share page.
+- `src/routes/sheet/[id]/+page.server.ts` now also returns `shareId` and `isPublic` from the investigator row so the share dialog can render the current share state on first paint.
+
 ## [0.11.0] - 2026-05-06
 
 ### Added
