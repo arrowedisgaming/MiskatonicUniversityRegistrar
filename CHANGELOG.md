@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-06
+
+### Changed
+- PDF investigator-sheet export rebuilt as a single Letter page in the period investigator-sheet idiom. Layout: header → characteristics grid + tracker boxes + backstory in a top split row → three-column complete skill list → combat & possessions band → fan-content disclaimer footer. Burgundy banner section headers (`#5C1A1B`) on a parchment-zebra (`#f6f0eb`) skill table. The skill list is era-filtered, computes derived bases for Dodge / Language (Own) from characteristics, collapses specialization groups (Art/Craft, Science, Pilot, Survival, Firearms, Fighting, Language) to allocations plus one fillable blank slot per group, and marks occupation skills from the occupation definition rather than only from per-character allocation flags. Each skill row shows regular / half / fifth values matching the characteristics block. Backstory renders four prioritized fields (Ideology / Significant People / Traits / Key Connection) in the right column under Attributes, with per-field truncation. The Chaosium fan-content disclaimer remains in the page footer. Original layout — no Chaosium logos, trade dress, artwork, or verbatim rule text.
+- `generatePDF` signature now `(character, occupationName, skills, occupations)` so the export has the data needed to render the full era-applicable skill list and resolve occupation skill markers. The sheet route loader (`/sheet/[id]/+page.server.ts`) now exposes `skills` from the content pack alongside `occupations`.
+- Characteristics table polish: title-case names (`Strength`, not `STRENGTH`), center-aligned in a 90pt name column, with vertical centering achieved via per-cell top-margin compensation (pdfmake has no `vAlign` for cells; each cell's top margin is `(rowHeight − cellHeight) / 2`). Top-left "unused" corner cell shaded burgundy to tie back to the section banner. Font sizes rebalanced to keep the table the same overall height while spreading visual weight more evenly: row name 11pt, regular value 13pt, half/fifth 12pt, column headers 8pt.
+- Dev script (`npm run dev`) now also loads `.env.local` via Node's native `--env-file-if-exists` flag, so per-machine dev-only flags (e.g. `AUTH_DEV_AUTOLOGIN=true` for the existing dev-auto-login pass-through) can live in a gitignored file rather than the committed `.env`. Fix targets a real gap: Vite reads `.env` for `import.meta.env` / `$env/dynamic/private` but does not populate `process.env`, which the dev-auto-login handle reads directly. Loading at the Node-process level via `--env-file-if-exists` puts the flag in `process.env` before Vite starts. The flag is `if-exists`, so a fresh clone with no `.env.local` runs `vite dev` cleanly.
+
+### Added
+- New pure module `src/lib/export/pdf-helpers.ts` (`buildSkillRows`, `computeDerivedBase`, `filterSkillsForEra`, `findOccupation`, `getOccupationSkillIds`, `formatSkillName`, `truncate`, `distributeIntoColumns`) and a pure `buildDocDefinition` exported from `src/lib/export/pdf-export.ts`. Together they make the previously untestable PDF pipeline assertable in Vitest without loading pdfmake. 31 new unit tests cover era filtering, derived-base parsing (`edu`, `dex/2`, fallbacks), specialization-group collapse, occupation marker resolution from the occupation definition, name formatting with `customName` overrides, truncation edges, column-distribution clamping (no trailing empty columns), and doc-definition shape (Letter page size, no explicit page break, disclaimer present, all section banners present, era filtering applied, occupation marker present).
+
+### Fixed
+- `distributeIntoColumns` no longer emits trailing zero-row columns when the input has fewer items than `columnCount`. Latent issue: a near-empty skill list would produce empty pdfmake table nodes. Unreachable in practice with the current ~50-row era-filtered skill list, but cheap to make defensible.
+- CHANGELOG comparison links restored — `[Unreleased]` was still pointing at `v0.1.4...HEAD`, and the intermediate `[0.2.0]` through `[0.5.0]` link references had never been added.
+
 ## [0.5.0] - 2026-05-05
 
 ### Added
@@ -264,7 +279,14 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.1.1...v0.1.2
