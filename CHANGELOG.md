@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- 36 new Gaslight-era occupations added to `static/content-packs/coc7e/occupations.json`: Adventuress, Alienist, Antiquarian (gaslight), Aristocrat, Artist (gaslight), Blacksmith, Cabbie, Clergy (gaslight), Consulting Detective, Craftsperson, Criminal (Gonoph), Criminal (Cracksman), Criminal (Footpad), Criminal (Magsman), Criminal (Macer), Criminal (Rampsman), Criminal (Screever), Criminal (Shofulman), Criminal (Street Gang), Military Officer (gaslight), Military Enlisted/NCO, Explorer (gaslight), Gentleman/Gentlewoman (gaslight), Inquiry Agent, Journalist (gaslight), Inventor, Laborer, Chimney Sweep, Gravedigger/Sexton, Navvy, Physician, Police Constable, Police Detective (gaslight), Scientist (gaslight), Servant, Spy (gaslight). Each includes `eras: ["gaslight"]`, `socialClass`, `creditRating`, `skillPointFormula`, and `occupationSkills`.
+- 15 existing 1920s occupations updated to also support the Gaslight era (added `"gaslight"` to their `eras` arrays): `accountant`, `acrobat`, `actor`, `archaeologist`, `artist`, `author`, `engineer`, `entertainer`, `farmer`, `musician`, `nurse`, `photographer`, `professor`, `sailor`, `student`.
+
 ## [0.8.0] - 2026-05-06
 
 ### Added

@@ -3,7 +3,8 @@
 		"id": "accountant",
 		"name": "Accountant",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 30,
@@ -50,7 +51,8 @@
 		"id": "acrobat",
 		"name": "Acrobat",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -101,7 +103,8 @@
 		"id": "actor",
 		"name": "Actor",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -513,7 +516,8 @@
 		"id": "archaeologist",
 		"name": "Archaeologist",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 10,
@@ -611,7 +615,8 @@
 		"id": "artist",
 		"name": "Artist",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -838,7 +843,8 @@
 		"id": "author",
 		"name": "Author",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -2465,7 +2471,8 @@
 		"id": "engineer",
 		"name": "Engineer",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 30,
@@ -2516,7 +2523,8 @@
 		"id": "entertainer",
 		"name": "Entertainer",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -2669,7 +2677,8 @@
 		"id": "farmer",
 		"name": "Farmer",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -4305,7 +4314,8 @@
 		"id": "musician",
 		"name": "Musician",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -4350,7 +4360,8 @@
 		"id": "nurse",
 		"name": "Nurse",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -4681,7 +4692,8 @@
 		"id": "photographer",
 		"name": "Photographer",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 9,
@@ -4995,7 +5007,8 @@
 		"id": "professor",
 		"name": "Professor",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 20,
@@ -5375,7 +5388,8 @@
 		"id": "sailor",
 		"name": "Sailor",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 20,
@@ -5921,7 +5935,8 @@
 		"id": "student",
 		"name": "Student",
 		"eras": [
-			"1920s"
+			"1920s",
+			"gaslight"
 		],
 		"creditRating": {
 			"min": 5,
@@ -6523,5 +6538,2379 @@
 		],
 		"personalChoiceCount": 0,
 		"suggestedContacts": "Scientists, environmentalists."
+	},
+	{
+		"id": "adventuress",
+		"name": "Adventuress",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 80
+		},
+		"socialClass": "upper",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Upper class society, wealthy patrons, law enforcement."
+	},
+	{
+		"id": "alienist",
+		"name": "Alienist",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 80
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			},
+			{
+				"skillId": "alienism",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Medical colleagues, patients and their families, academics."
+	},
+	{
+		"id": "antiquarian-gaslight",
+		"name": "Antiquarian",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 70
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "archaeology",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": false
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Museums, auction houses, antique dealers, academic historians."
+	},
+	{
+		"id": "aristocrat",
+		"name": "Aristocrat",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 50,
+			"max": 99
+		},
+		"socialClass": "upper",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-rifle-shotgun",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Nobility, government, military officers, land agents."
+	},
+	{
+		"id": "artist-gaslight",
+		"name": "Artist",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 50
+		},
+		"socialClass": "any",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"pow",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Art world, galleries, patrons, models, critics."
+	},
+	{
+		"id": "blacksmith",
+		"name": "Blacksmith",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 1,
+			"max": 20
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "animal-handling",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Farmers, stablehands, local tradespeople."
+	},
+	{
+		"id": "cabbie",
+		"name": "Cabbie",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 20
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "animal-handling",
+				"required": true
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "jump",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": false
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": false
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Street people, petty criminals, passengers of all classes."
+	},
+	{
+		"id": "clergy-gaslight",
+		"name": "Clergy",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 60
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"pow",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "history",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "religion",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Parishioners, local community leaders, Church hierarchy."
+	},
+	{
+		"id": "consulting-detective",
+		"name": "Consulting Detective",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 50
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "anthropology",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-chemistry",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Police, government officials, street informants, clients."
+	},
+	{
+		"id": "craftsperson",
+		"name": "Craftsperson",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 50
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			},
+			{
+				"skillId": "listen",
+				"required": false
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Guild members, local merchants, suppliers, customers."
+	},
+	{
+		"id": "criminal-gonoph",
+		"name": "Criminal (Gonoph)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 65
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "survival-custom",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Fellow criminals, fences, street people."
+	},
+	{
+		"id": "criminal-cracksman",
+		"name": "Criminal (Cracksman)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 20
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Fellow thieves, fences, receivers of stolen goods."
+	},
+	{
+		"id": "criminal-footpad",
+		"name": "Criminal (Footpad)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 10
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Street criminals, local gang leaders."
+	},
+	{
+		"id": "criminal-magsman",
+		"name": "Criminal (Magsman)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Con men, criminal gangs, wealthy marks."
+	},
+	{
+		"id": "criminal-macer",
+		"name": "Criminal (Macer)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 20,
+			"max": 40
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-acting",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Fences, criminal middlemen, society marks."
+	},
+	{
+		"id": "criminal-rampsman",
+		"name": "Criminal (Rampsman)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 10
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "climb",
+				"required": true
+			},
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Street gang members, receivers of stolen goods."
+	},
+	{
+		"id": "criminal-screever",
+		"name": "Criminal (Screever)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 30
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-forgery",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Street beggars, forgers, petty criminals."
+	},
+	{
+		"id": "criminal-shofulman",
+		"name": "Criminal (Shofulman)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 30
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "appraise",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-forgery",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Currency dealers, fences, criminal underworld."
+	},
+	{
+		"id": "criminal-street-gang",
+		"name": "Criminal (Street Gang)",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 0,
+			"max": 10
+		},
+		"socialClass": "criminal",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "dex",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "dodge",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "sleight-of-hand",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Gang members, street criminals, local fence."
+	},
+	{
+		"id": "military-officer-gaslight",
+		"name": "Military Officer",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 40,
+			"max": 80
+		},
+		"socialClass": "upper",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"pow",
+						"app"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-sword",
+				"required": true
+			},
+			{
+				"skillId": "firearms-handgun",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "swim",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Military colleagues, government, colonial administrators."
+	},
+	{
+		"id": "military-enlisted",
+		"name": "Military Enlisted/NCO",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 30
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-rifle-shotgun",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "swim",
+				"required": false
+			},
+			{
+				"skillId": "navigate",
+				"required": false
+			},
+			{
+				"skillId": "track",
+				"required": false
+			},
+			{
+				"skillId": "reassure",
+				"required": false
+			},
+			{
+				"skillId": "survival-custom",
+				"required": false
+			},
+			{
+				"skillId": "fighting-custom",
+				"required": false
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": false
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			}
+		],
+		"personalChoiceCount": 5,
+		"suggestedContacts": "Military comrades, veterans' groups, local community."
+	},
+	{
+		"id": "explorer-gaslight",
+		"name": "Explorer",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 45,
+			"max": 90
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "firearms-rifle-shotgun",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "anthropology",
+				"required": false
+			},
+			{
+				"skillId": "archaeology",
+				"required": false
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "swim",
+				"required": false
+			},
+			{
+				"skillId": "natural-world",
+				"required": false
+			},
+			{
+				"skillId": "track",
+				"required": false
+			},
+			{
+				"skillId": "pilot-balloon",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			}
+		],
+		"personalChoiceCount": 4,
+		"suggestedContacts": "Royal Geographical Society, colonial government, native guides, academic institutions."
+	},
+	{
+		"id": "gentleman-gaslight",
+		"name": "Gentleman/Gentlewoman",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 40,
+			"max": 98
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "ride",
+				"required": true
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Upper classes, social clubs, local politics, servants."
+	},
+	{
+		"id": "inquiry-agent",
+		"name": "Inquiry Agent",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 40
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "accounting",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "locksmith",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": false
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Police, solicitors, insurance companies, private clients."
+	},
+	{
+		"id": "journalist-gaslight",
+		"name": "Journalist",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 9,
+			"max": 40
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"app",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "persuade",
+				"required": true
+			},
+			{
+				"skillId": "accounting",
+				"required": false
+			},
+			{
+				"skillId": "law",
+				"required": false
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": false
+			},
+			{
+				"skillId": "history",
+				"required": false
+			},
+			{
+				"skillId": "psychology",
+				"required": false
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Press contacts, politicians, police, sources across society."
+	},
+	{
+		"id": "inventor",
+		"name": "Inventor",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 50
+		},
+		"socialClass": "any",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "science-custom",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "natural-world",
+				"required": true
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Pulp Cthulhu only. Academic and industry contacts, patent office."
+	},
+	{
+		"id": "laborer",
+		"name": "Laborer",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 1,
+			"max": 10
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": false
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": false
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": false
+			},
+			{
+				"skillId": "pilot-balloon",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": false
+			},
+			{
+				"skillId": "natural-world",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 5,
+		"suggestedContacts": "Fellow laborers, local trade organizers, foremen."
+	},
+	{
+		"id": "laborer-chimney-sweep",
+		"name": "Chimney Sweep",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 20
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": false
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": false
+			},
+			{
+				"skillId": "pilot-balloon",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": false
+			},
+			{
+				"skillId": "natural-world",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 4,
+		"suggestedContacts": "Household servants, building owners, other sweeps."
+	},
+	{
+		"id": "laborer-gravedigger",
+		"name": "Gravedigger/Sexton",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 1,
+			"max": 10
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": false
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": false
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": false
+			},
+			{
+				"skillId": "pilot-balloon",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": false
+			},
+			{
+				"skillId": "natural-world",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 5,
+		"suggestedContacts": "Clergy, undertakers, medical professionals, local community."
+	},
+	{
+		"id": "laborer-navvy",
+		"name": "Navvy",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 5,
+			"max": 15
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "str",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"dex",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": true
+			},
+			{
+				"skillId": "demolitions",
+				"required": true
+			},
+			{
+				"skillId": "science-engineering",
+				"required": true
+			},
+			{
+				"skillId": "climb",
+				"required": false
+			},
+			{
+				"skillId": "art-craft-custom",
+				"required": false
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": false
+			},
+			{
+				"skillId": "operate-heavy-machinery",
+				"required": false
+			},
+			{
+				"skillId": "pilot-balloon",
+				"required": false
+			},
+			{
+				"skillId": "ride",
+				"required": false
+			}
+		],
+		"personalChoiceCount": 3,
+		"suggestedContacts": "Fellow navvies, railway companies, engineers."
+	},
+	{
+		"id": "physician",
+		"name": "Physician",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 30,
+			"max": 80
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "medicine",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "science-biology",
+				"required": true
+			},
+			{
+				"skillId": "science-pharmacy",
+				"required": true
+			}
+		],
+		"personalChoiceCount": 1,
+		"suggestedContacts": "Medical colleagues, specialists, patients, pharmacists."
+	},
+	{
+		"id": "police-constable",
+		"name": "Police Constable",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 60
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "first-aid",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			},
+			{
+				"skillId": "psychology",
+				"required": false
+			},
+			{
+				"skillId": "reassure",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 2,
+		"suggestedContacts": "Police force, local community, magistrates."
+	},
+	{
+		"id": "police-detective-gaslight",
+		"name": "Police Detective",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 60
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"str",
+						"dex"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "fighting-brawl",
+				"required": true
+			},
+			{
+				"skillId": "firearms-handgun",
+				"required": true
+			},
+			{
+				"skillId": "law",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Scotland Yard, local police, magistrates, informants."
+	},
+	{
+		"id": "scientist-gaslight",
+		"name": "Scientist",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 50
+		},
+		"socialClass": "middle",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				}
+			],
+			"choiceTerms": [
+				{
+					"options": [
+						"pow",
+						"int"
+					],
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "electrical-repair",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "library-use",
+				"required": true
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": true
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"scienceChoiceCount": 3,
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Academic institutions, Royal Society, fellow researchers, industry."
+	},
+	{
+		"id": "servant",
+		"name": "Servant",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 2,
+			"max": 30
+		},
+		"socialClass": "working",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "int",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "art-craft-custom",
+				"required": true
+			},
+			{
+				"skillId": "listen",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "accounting",
+				"required": false
+			},
+			{
+				"skillId": "appraise",
+				"required": false
+			},
+			{
+				"skillId": "drive-carriage",
+				"required": false
+			},
+			{
+				"skillId": "first-aid",
+				"required": false
+			},
+			{
+				"skillId": "language-other",
+				"required": false
+			},
+			{
+				"skillId": "mechanical-repair",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			},
+			{
+				"skillId": "psychology",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			}
+		],
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 4,
+		"suggestedContacts": "Household staff, employers of the upper classes, tradespeople."
+	},
+	{
+		"id": "spy-gaslight",
+		"name": "Spy",
+		"eras": [
+			"gaslight"
+		],
+		"creditRating": {
+			"min": 10,
+			"max": 70
+		},
+		"socialClass": "any",
+		"skillPointFormula": {
+			"terms": [
+				{
+					"characteristic": "edu",
+					"multiplier": 2
+				},
+				{
+					"characteristic": "app",
+					"multiplier": 2
+				}
+			]
+		},
+		"occupationSkills": [
+			{
+				"skillId": "disguise",
+				"required": true
+			},
+			{
+				"skillId": "language-other",
+				"required": true
+			},
+			{
+				"skillId": "navigate",
+				"required": true
+			},
+			{
+				"skillId": "psychology",
+				"required": true
+			},
+			{
+				"skillId": "spot-hidden",
+				"required": true
+			},
+			{
+				"skillId": "stealth",
+				"required": true
+			},
+			{
+				"skillId": "fighting-brawl",
+				"required": false
+			},
+			{
+				"skillId": "firearms-handgun",
+				"required": false
+			},
+			{
+				"skillId": "charm",
+				"required": false
+			},
+			{
+				"skillId": "fast-talk",
+				"required": false
+			},
+			{
+				"skillId": "intimidate",
+				"required": false
+			},
+			{
+				"skillId": "persuade",
+				"required": false
+			}
+		],
+		"combatChoiceCount": 1,
+		"interpersonalChoiceCount": 1,
+		"personalChoiceCount": 0,
+		"suggestedContacts": "Government intelligence services, foreign contacts, informants."
 	}
 ]
