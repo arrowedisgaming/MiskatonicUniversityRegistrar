@@ -83,7 +83,7 @@ const BACKSTORY_FIELD_MAX = 5000;
 
 const PLAY_ROLL_HISTORY_MAX = 10_000;
 
-const playRollHistoryEntry = z.object({
+const playRollHistoryPercentile = z.object({
 	id: z.string().min(1).max(80),
 	at: z.string().max(40),
 	targetKind: z.enum(['characteristic', 'skill']),
@@ -98,6 +98,19 @@ const playRollHistoryEntry = z.object({
 	outcome: z.enum(['critical', 'extreme', 'hard', 'regular', 'failure']),
 	isFumble: z.boolean()
 });
+
+const playRollHistoryWeaponDamage = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.literal('weaponDamage'),
+	weaponName: z.string().max(200),
+	formula: z.string().max(80),
+	segmentLabel: z.string().max(80).nullable().optional(),
+	total: z.number().int(),
+	detail: z.string().max(2000)
+});
+
+const playRollHistoryEntry = z.union([playRollHistoryPercentile, playRollHistoryWeaponDamage]);
 
 export const cocCharacterDataSchema = z.object({
 	schemaVersion: z.number().int().positive(),

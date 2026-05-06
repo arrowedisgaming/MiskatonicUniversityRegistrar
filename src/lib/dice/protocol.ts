@@ -1,4 +1,4 @@
-export const DICE_SIDES = [4, 6, 8, 10, 12, 20, 100] as const;
+export const DICE_SIDES = [3, 4, 6, 8, 10, 12, 20, 100] as const;
 
 export type DiceSides = (typeof DICE_SIDES)[number];
 export type DiceScheme = 'classic' | 'modern';

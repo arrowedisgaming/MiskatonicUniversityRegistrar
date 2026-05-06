@@ -15,14 +15,22 @@
 		shouldShowInvestigatorSkillOnSheet,
 		skillDefMatchesSheetAddSearch
 	} from '$lib/engine/investigator-sheet-skills';
-	import type { CoCSkillDefinition } from '$lib/types/content-pack';
+	import type { CoCSkillDefinition, WeaponDefinition } from '$lib/types/content-pack';
 	import {
 		CHARACTER_SCHEMA_VERSION,
+		type CharacterWeapon,
 		type CoCCharacterData,
 		type CoCSkillAllocation,
+		type EquipmentItem,
 		type PlayRollHistoryEntry,
 		type SkillPointAllocation
 	} from '$lib/types/character';
+	import {
+		describeWeaponDiceLimitViolations,
+		isWeaponDamageFormulaSupported,
+		planWeaponDamageRoll,
+		splitDamageSegments
+	} from '$lib/engine/weapon-damage-roll';
 	import { BACKSTORY_KEYS, BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
 	import { generatePDF } from '$lib/export/pdf-export';
 	import { rollDie } from '$lib/engine/dice';
@@ -71,8 +79,11 @@
 	let editChar = $state<CoCCharacterData | null>(null);
 
 	const SHEET_ADD_SKILL_MATCH_LIMIT = 15;
+	const SHEET_ADD_WEAPON_MATCH_LIMIT = 15;
 
 	let skillSearchQuery = $state('');
+	let equipWeaponSearchQuery = $state('');
+	let equipItemDraftName = $state('');
 	let hideUncommonAndRestrictedSkills = $state(true);
 	let skillCustomizeForAdd = $state<CoCSkillDefinition | null>(null);
 	let skillCustomizeNameInput = $state('');
@@ -82,6 +93,11 @@
 		hideUncommonAndRestrictedSkills = true;
 		skillCustomizeForAdd = null;
 		skillCustomizeNameInput = '';
+	}
+
+	function resetEquipAddUi() {
+		equipWeaponSearchQuery = '';
+		equipItemDraftName = '';
 	}
 
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
@@ -110,6 +126,7 @@
 		editChar = ensureBackstoryShape(cloneCharacter(char));
 		editMode = true;
 		resetSkillAddUi();
+		resetEquipAddUi();
 	}
 
 	function cancelEdit() {
@@ -118,11 +135,32 @@
 		editError = null;
 		editChar = null;
 		resetSkillAddUi();
+		resetEquipAddUi();
 	}
 
 	function mutateEditChar(updater: (c: CoCCharacterData) => CoCCharacterData) {
 		if (!editChar) return;
 		editChar = updater(editChar);
+	}
+
+	/** SvelteKit `error()` responses are JSON `{ message: string }` — show that, not raw JSON. */
+	function readableApiError(body: string, status: number): string {
+		const s = body.trim();
+		if (!s) return `Save failed (HTTP ${status})`;
+		try {
+			const data = JSON.parse(s) as unknown;
+			if (
+				data !== null &&
+				typeof data === 'object' &&
+				'message' in data &&
+				typeof (data as { message: unknown }).message === 'string'
+			) {
+				return (data as { message: string }).message;
+			}
+		} catch {
+			/* plain text or non-JSON */
+		}
+		return s;
 	}
 
 	async function persistCharacter(next: CoCCharacterData): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -134,7 +172,10 @@
 
 		if (res.ok) return { ok: true };
 		const text = await res.text().catch(() => '');
-		return { ok: false, message: text || `Save failed (HTTP ${res.status})` };
+		return {
+			ok: false,
+			message: readableApiError(text, res.status) || `Save failed (HTTP ${res.status})`
+		};
 	}
 
 	function clampInt(n: number, min: number, max: number): number {
@@ -281,10 +322,31 @@
 		return next.filter((a) => a.points > 0);
 	}
 
-	function setSkillTotal(draft: CoCCharacterData, skillId: string, desiredTotal: number): CoCCharacterData {
-		const idx = draft.skills.findIndex((s) => s.skillId === skillId);
+	function normalizeSkillCustomName(s: string | null | undefined): string {
+		return (s ?? '').trim().toLowerCase();
+	}
+
+	function skillRowsMatch(a: CoCSkillAllocation, b: CoCSkillAllocation): boolean {
+		return (
+			a.skillId === b.skillId && normalizeSkillCustomName(a.customName) === normalizeSkillCustomName(b.customName)
+		);
+	}
+
+	function findSkillRowIndex(draft: CoCCharacterData, row: CoCSkillAllocation): number {
+		return draft.skills.findIndex((s) => skillRowsMatch(s, row));
+	}
+
+	function removeSkillRow(draft: CoCCharacterData, row: CoCSkillAllocation): CoCCharacterData {
+		const idx = findSkillRowIndex(draft, row);
+		if (idx === -1) return draft;
+		return { ...draft, skills: draft.skills.filter((_, i) => i !== idx) };
+	}
+
+	function setSkillTotalForRow(draft: CoCCharacterData, row: CoCSkillAllocation, desiredTotal: number): CoCCharacterData {
+		const idx = findSkillRowIndex(draft, row);
 		if (idx === -1) return draft;
 		const skill = draft.skills[idx];
+		const skillId = skill.skillId;
 		const def = getSkillDef(skillId);
 		const baseValue = def ? resolveSkillBaseValue(def, draft.characteristics.values) : skill.baseValue;
 		const targetTotal = clampInt(desiredTotal, 0, 99);
@@ -343,6 +405,12 @@
 			next = { ...next, schemaVersion: CHARACTER_SCHEMA_VERSION };
 			next = recomputeAllSkills(next);
 			next = recomputeDerived(next);
+
+			const diceLimitMsg = describeWeaponDiceLimitViolations(next);
+			if (diceLimitMsg) {
+				editError = diceLimitMsg;
+				return;
+			}
 
 			const saved = await persistCharacter(next);
 			if (!saved.ok) {
@@ -515,6 +583,47 @@
 		}
 	}
 
+	async function rollWeaponDamageSegment(
+		weapon: CharacterWeapon,
+		segment: string,
+		segmentLabel: string | null
+	) {
+		if (diceRolling) return;
+		const plan = planWeaponDamageRoll(segment.trim(), char.derivedStats.damageBonus);
+		if (!plan.ok) {
+			lastRollBanner = { title: `${weapon.name} — damage`, detail: plan.reason };
+			return;
+		}
+
+		const labelPieces = segmentLabel?.trim()
+			? `${weapon.name} (${segmentLabel})`
+			: weapon.name;
+
+		diceRolling = true;
+		try {
+			await showDiceRoll(plan.request);
+
+			const entry: PlayRollHistoryEntry = {
+				id: crypto.randomUUID(),
+				at: new Date().toISOString(),
+				targetKind: 'weaponDamage',
+				weaponName: weapon.name,
+				formula: segment.trim(),
+				segmentLabel: segmentLabel?.trim() || null,
+				total: plan.total,
+				detail: plan.breakdownText
+			};
+			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			lastRollBanner = {
+				title: `${labelPieces}: ${plan.total}`,
+				detail: plan.breakdownText
+			};
+			await persistInvestigator();
+		} finally {
+			diceRolling = false;
+		}
+	}
+
 	function formatLogTime(iso: string): string {
 		try {
 			const d = new Date(iso);
@@ -525,6 +634,10 @@
 	}
 
 	function logEntryTitle(entry: PlayRollHistoryEntry): string {
+		if (entry.targetKind === 'weaponDamage') {
+			const seg = entry.segmentLabel?.trim();
+			return seg ? `${entry.weaponName} (${seg})` : entry.weaponName;
+		}
 		if (entry.targetKind === 'characteristic' && entry.characteristicId) {
 			return CHARACTERISTIC_LABELS[entry.characteristicId];
 		}
@@ -550,6 +663,111 @@
 		} finally {
 			pdfExporting = false;
 		}
+	}
+
+	const equipWeaponPickerMatches = $derived.by(() => {
+		if (!editChar) return [] as WeaponDefinition[];
+		const q = equipWeaponSearchQuery.trim().toLowerCase();
+		return data.equipment.weapons
+			.filter((w) => w.name.toLowerCase().includes(q))
+			.sort((a, b) => a.name.localeCompare(b.name))
+			.slice(0, SHEET_ADD_WEAPON_MATCH_LIMIT);
+	});
+
+	const commonEquipItemsForEra = $derived.by(() => {
+		if (!editChar) return [] as string[];
+		return (
+			data.equipment.commonItems[editChar.era] ??
+			data.equipment.commonItems['1920s'] ??
+			[]
+		);
+	});
+
+	function appendWeaponToEditChar(w: CharacterWeapon) {
+		mutateEditChar((c) => ({
+			...c,
+			equipment: { ...c.equipment, weapons: [...c.equipment.weapons, w] }
+		}));
+	}
+
+	function addWeaponFromCatalog(def: WeaponDefinition) {
+		appendWeaponToEditChar({
+			name: def.name,
+			damage: def.damage,
+			range: def.range,
+			attacksPerRound: def.attacksPerRound,
+			ammo: def.ammo ?? null,
+			malfunction: def.malfunction ?? null
+		});
+		equipWeaponSearchQuery = '';
+	}
+
+	function addCustomWeaponRow() {
+		appendWeaponToEditChar({
+			name: '',
+			damage: '',
+			range: '',
+			attacksPerRound: '',
+			ammo: null,
+			malfunction: null
+		});
+	}
+
+	function removeWeaponAt(index: number) {
+		mutateEditChar((c) => ({
+			...c,
+			equipment: {
+				...c.equipment,
+				weapons: c.equipment.weapons.filter((_, i) => i !== index)
+			}
+		}));
+	}
+
+	function updateWeaponAt(index: number, patch: Partial<CharacterWeapon>) {
+		mutateEditChar((c) => {
+			const weapons = c.equipment.weapons.map((w, i) => (i === index ? { ...w, ...patch } : w));
+			return { ...c, equipment: { ...c.equipment, weapons } };
+		});
+	}
+
+	function addEquipmentItemDraft() {
+		const name = equipItemDraftName.trim();
+		if (!name || !editChar) return;
+		const row: EquipmentItem = { name, quantity: 1, notes: '' };
+		mutateEditChar((c) => ({
+			...c,
+			equipment: { ...c.equipment, items: [...c.equipment.items, row] }
+		}));
+		equipItemDraftName = '';
+	}
+
+	function removeItemAt(index: number) {
+		mutateEditChar((c) => ({
+			...c,
+			equipment: {
+				...c.equipment,
+				items: c.equipment.items.filter((_, i) => i !== index)
+			}
+		}));
+	}
+
+	function updateItemAt(index: number, patch: Partial<EquipmentItem>) {
+		mutateEditChar((c) => {
+			const items = c.equipment.items.map((it, i) => (i === index ? { ...it, ...patch } : it));
+			return { ...c, equipment: { ...c.equipment, items } };
+		});
+	}
+
+	function addCommonEquipmentItem(itemName: string) {
+		if (!editChar) return;
+		if (editChar.equipment.items.some((i) => i.name === itemName)) return;
+		mutateEditChar((c) => ({
+			...c,
+			equipment: {
+				...c.equipment,
+				items: [...c.equipment.items, { name: itemName, quantity: 1, notes: '' }]
+			}
+		}));
 	}
 
 	const skillsAddPickerMatches = $derived.by(() => {
@@ -872,7 +1090,9 @@
 			<div class="border-t border-[var(--color-border)] pt-3">
 				<h3 class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">Roll log</h3>
 				{#if playRollHistory.length === 0}
-					<p class="text-xs text-[var(--color-muted-foreground)]">No rolls yet. Tap a characteristic or skill below.</p>
+					<p class="text-xs text-[var(--color-muted-foreground)]">
+						No rolls yet. Tap a characteristic, skill, or weapon damage control below.
+					</p>
 				{:else}
 					<ul class="max-h-48 space-y-2 overflow-y-auto text-xs">
 						{#each playRollHistory as entry}
@@ -881,22 +1101,31 @@
 									<span class="font-medium">{logEntryTitle(entry)}</span>
 									<span class="tabular-nums text-[var(--color-muted-foreground)]">{formatLogTime(entry.at)}</span>
 								</div>
-								<div class="mt-0.5 flex flex-wrap gap-x-2 text-[var(--color-muted-foreground)]">
-									<span>Target {entry.target}% (½ {entry.half} / ⅕ {entry.fifth})</span>
-								</div>
-								<div class="mt-0.5">
-									<span class="font-mono tabular-nums">{entry.rawRoll}</span>
-									{#if entry.effectiveRoll !== entry.rawRoll}
-										<span class="text-[var(--color-muted-foreground)]"> → effective {entry.effectiveRoll}</span>
-									{/if}
-									<span class="ml-2 font-medium">
-										{outcomeDescription({
-											effectiveRoll: entry.effectiveRoll,
-											outcome: entry.outcome,
-											isFumble: entry.isFumble
-										})}
-									</span>
-								</div>
+								{#if entry.targetKind === 'weaponDamage'}
+									<div class="mt-0.5 font-mono tabular-nums text-[var(--color-muted-foreground)]">
+										<span class="text-[var(--color-foreground)]">{entry.formula}</span>
+										<span class="mx-1">→</span>
+										<span class="font-bold text-[var(--color-foreground)]">{entry.total}</span>
+									</div>
+									<div class="mt-0.5 text-[var(--color-muted-foreground)]">{entry.detail}</div>
+								{:else}
+									<div class="mt-0.5 flex flex-wrap gap-x-2 text-[var(--color-muted-foreground)]">
+										<span>Target {entry.target}% (½ {entry.half} / ⅕ {entry.fifth})</span>
+									</div>
+									<div class="mt-0.5">
+										<span class="font-mono tabular-nums">{entry.rawRoll}</span>
+										{#if entry.effectiveRoll !== entry.rawRoll}
+											<span class="text-[var(--color-muted-foreground)]"> → effective {entry.effectiveRoll}</span>
+										{/if}
+										<span class="ml-2 font-medium">
+											{outcomeDescription({
+												effectiveRoll: entry.effectiveRoll,
+												outcome: entry.outcome,
+												isFumble: entry.isFumble
+											})}
+										</span>
+									</div>
+								{/if}
 							</li>
 						{/each}
 					</ul>
@@ -1113,10 +1342,10 @@
 									<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
 								{/if}
 							</span>
-							<div class="flex items-center gap-1">
+							<div class="flex shrink-0 items-center gap-1">
 								<button
 									type="button"
-									onclick={() => mutateEditChar((c) => setSkillTotal(c, skill.skillId, skill.total - 1))}
+									onclick={() => mutateEditChar((c) => setSkillTotalForRow(c, skill, skill.total - 1))}
 									aria-label="Decrease {skillDisplayName(skill.skillId)}"
 									class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
 								>
@@ -1130,17 +1359,25 @@
 									aria-label="{skillDisplayName(skill.skillId)} total"
 									oninput={(e) => {
 										const v = parseInt((e.currentTarget as HTMLInputElement).value) || 0;
-										mutateEditChar((c) => setSkillTotal(c, skill.skillId, v));
+										mutateEditChar((c) => setSkillTotalForRow(c, skill, v));
 									}}
 									class="no-spinner w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm"
 								/>
 								<button
 									type="button"
-									onclick={() => mutateEditChar((c) => setSkillTotal(c, skill.skillId, skill.total + 1))}
+									onclick={() => mutateEditChar((c) => setSkillTotalForRow(c, skill, skill.total + 1))}
 									aria-label="Increase {skillDisplayName(skill.skillId)}"
 									class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-base font-bold hover:bg-[var(--color-accent)]"
 								>
 									+
+								</button>
+								<button
+									type="button"
+									onclick={() => mutateEditChar((c) => removeSkillRow(c, skill))}
+									aria-label="Remove {skillRowLabel(skill)}"
+									class="ml-1 rounded-md border border-[var(--color-border)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide hover:bg-[var(--color-destructive)]/15"
+								>
+									Remove
 								</button>
 							</div>
 						</div>
@@ -1183,6 +1420,296 @@
 					{/if}
 				{/each}
 			</div>
+		</div>
+	{/if}
+
+	<!-- Equipment -->
+	{#if editMode && editChar}
+		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
+
+			<p class="mb-4 text-sm text-[var(--color-muted-foreground)]">
+					{editChar.equipment.livingStandard} &middot; Spending Level: ${editChar.equipment.spendingLevel.toLocaleString()} &middot; Cash: ${editChar.equipment.cash.toLocaleString()} &middot; Assets: {editChar.equipment.assetsLabel}
+				</p>
+
+				<div class="mb-6 space-y-3 rounded-md border border-[var(--color-border)]/50 bg-[var(--color-background)]/40 p-3">
+					<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+						<div class="min-w-0 grow">
+							<label
+								for="add-weapon-search"
+								class="mb-1 block text-xs font-semibold uppercase text-[var(--color-muted-foreground)]"
+							>Add weapon from catalog</label>
+							<input
+								id="add-weapon-search"
+								type="search"
+								value={equipWeaponSearchQuery}
+								oninput={(e) => {
+									equipWeaponSearchQuery = (e.currentTarget as HTMLInputElement).value;
+								}}
+								placeholder="Search weapons…"
+								autocomplete="off"
+								class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+							/>
+						</div>
+						<button
+							type="button"
+							onclick={addCustomWeaponRow}
+							class="shrink-0 cursor-pointer rounded-md border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-accent)]"
+						>
+							Add custom weapon
+						</button>
+					</div>
+					{#if equipWeaponPickerMatches.length > 0}
+						<ul class="max-h-40 space-y-1 overflow-y-auto text-sm">
+							{#each equipWeaponPickerMatches as def, wi (wi)}
+								<li>
+									<button
+										type="button"
+										onclick={() => addWeaponFromCatalog(def)}
+										class="w-full rounded border border-transparent px-2 py-1.5 text-left hover:border-[var(--color-border)] hover:bg-[var(--color-accent)]"
+									>
+										<span class="font-medium">{def.name}</span>
+										<span class="ml-2 text-xs text-[var(--color-muted-foreground)]">{def.damage}</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{:else if equipWeaponSearchQuery.trim()}
+						<p class="text-xs text-[var(--color-muted-foreground)]">No matching weapons.</p>
+					{/if}
+				</div>
+
+				{#if editChar.equipment.weapons.length > 0}
+					<div class="mb-6 overflow-x-auto">
+						<table class="w-full min-w-[40rem] text-sm">
+							<thead>
+								<tr class="border-b border-[var(--color-border)] text-left text-xs uppercase text-[var(--color-muted-foreground)]">
+									<th class="pb-2 pr-2">Weapon</th>
+									<th class="pb-2 pr-2">Damage</th>
+									<th class="pb-2 pr-2">Range</th>
+									<th class="pb-2 pr-2">Attacks</th>
+									<th class="pb-2 w-20"></th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each editChar.equipment.weapons as w, wi (wi)}
+									<tr class="border-b border-[var(--color-border)]/25 align-top">
+										<td class="py-2 pr-2">
+											<input
+												type="text"
+												value={w.name}
+												oninput={(e) =>
+													updateWeaponAt(wi, { name: (e.currentTarget as HTMLInputElement).value })}
+												aria-label="Weapon name {wi + 1}"
+												class="w-full min-w-[8rem] rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+											/>
+										</td>
+										<td class="py-2 pr-2">
+											<input
+												type="text"
+												value={w.damage}
+												oninput={(e) =>
+													updateWeaponAt(wi, { damage: (e.currentTarget as HTMLInputElement).value })}
+												aria-label="Weapon damage {wi + 1}"
+												class="w-full min-w-[6rem] rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+											/>
+										</td>
+										<td class="py-2 pr-2">
+											<input
+												type="text"
+												value={w.range}
+												oninput={(e) =>
+													updateWeaponAt(wi, { range: (e.currentTarget as HTMLInputElement).value })}
+												aria-label="Weapon range {wi + 1}"
+												class="w-full min-w-[6rem] rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+											/>
+										</td>
+										<td class="py-2 pr-2">
+											<input
+												type="text"
+												value={w.attacksPerRound}
+												oninput={(e) =>
+													updateWeaponAt(wi, {
+														attacksPerRound: (e.currentTarget as HTMLInputElement).value
+													})}
+												aria-label="Weapon attacks per round {wi + 1}"
+												class="w-full min-w-[4rem] rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+											/>
+										</td>
+										<td class="py-2">
+											<button
+												type="button"
+												onclick={() => removeWeaponAt(wi)}
+												class="cursor-pointer whitespace-nowrap rounded border border-[var(--color-border)] px-2 py-1 text-[10px] font-semibold uppercase hover:bg-[var(--color-destructive)]/15"
+											>
+												Remove
+											</button>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/if}
+
+				<h3 class="mb-2 text-sm font-semibold" data-heading>Other items</h3>
+				<div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+					<div class="min-w-0 grow">
+						<label
+							for="add-equip-item"
+							class="mb-1 block text-xs font-semibold uppercase text-[var(--color-muted-foreground)]"
+						>Add item</label>
+						<input
+							id="add-equip-item"
+							type="text"
+							value={equipItemDraftName}
+							oninput={(e) => {
+								equipItemDraftName = (e.currentTarget as HTMLInputElement).value;
+							}}
+							onkeydown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									addEquipmentItemDraft();
+								}
+							}}
+							placeholder="Item name…"
+							class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+						/>
+					</div>
+					<button
+						type="button"
+						onclick={addEquipmentItemDraft}
+						class="cursor-pointer rounded-md border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-accent)]"
+					>
+						Add
+					</button>
+				</div>
+
+				{#if commonEquipItemsForEra.length > 0}
+					<p class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Quick add</p>
+					<div class="mb-4 flex flex-wrap gap-2">
+						{#each commonEquipItemsForEra as itemName (itemName)}
+							<button
+								type="button"
+								onclick={() => addCommonEquipmentItem(itemName)}
+								disabled={editChar.equipment.items.some((i) => i.name === itemName)}
+								class="cursor-pointer rounded-full border border-[var(--color-border)] px-2 py-1 text-xs hover:bg-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								{itemName}
+							</button>
+						{/each}
+					</div>
+				{/if}
+
+				{#if editChar.equipment.items.length > 0}
+					<ul class="space-y-2 text-sm">
+						{#each editChar.equipment.items as item, ii (ii)}
+							<li class="flex flex-wrap items-start gap-2 rounded-md border border-[var(--color-border)]/40 p-2">
+								<input
+									type="text"
+									value={item.name}
+									oninput={(e) =>
+										updateItemAt(ii, { name: (e.currentTarget as HTMLInputElement).value })}
+									aria-label="Item name"
+									class="min-w-[10rem] grow rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+								/>
+								<label class="flex items-center gap-1 text-xs text-[var(--color-muted-foreground)]">
+									Qty
+									<input
+										type="number"
+										min="0"
+										value={item.quantity}
+										oninput={(e) => {
+											const v = parseInt((e.currentTarget as HTMLInputElement).value) || 0;
+											updateItemAt(ii, { quantity: v });
+										}}
+										class="no-spinner w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1 py-0.5"
+									/>
+								</label>
+								<input
+									type="text"
+									value={item.notes}
+									oninput={(e) =>
+										updateItemAt(ii, { notes: (e.currentTarget as HTMLInputElement).value })}
+									placeholder="Notes"
+									class="min-w-[8rem] grow rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+								/>
+								<button
+									type="button"
+									onclick={() => removeItemAt(ii)}
+									class="cursor-pointer rounded border border-[var(--color-border)] px-2 py-1 text-[10px] font-semibold uppercase hover:bg-[var(--color-destructive)]/15"
+								>
+									Remove
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+		</div>
+	{:else if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
+		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
+
+				<p class="mb-2 text-sm text-[var(--color-muted-foreground)]">
+					{char.equipment.livingStandard} &middot; Spending Level: ${char.equipment.spendingLevel.toLocaleString()} &middot; Cash: ${char.equipment.cash.toLocaleString()} &middot; Assets: {char.equipment.assetsLabel}
+				</p>
+
+				{#if char.equipment.weapons.length > 0}
+					<div class="mb-3 overflow-x-auto">
+						<table class="w-full text-xs">
+							<thead>
+								<tr class="border-b border-[var(--color-border)] text-left uppercase text-[var(--color-muted-foreground)]">
+									<th class="pb-1 pr-2">Weapon</th>
+									<th class="pb-1 pr-2">Damage</th>
+									<th class="pb-1 pr-2">Range</th>
+									<th class="pb-1 pr-2">Attacks</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each char.equipment.weapons as w, wi (wi)}
+									{@const dmgBands = splitDamageSegments(w.damage)}
+									<tr class="border-b border-[var(--color-border)]/20 align-top">
+										<td class="py-1 pr-2 font-medium">{w.name}</td>
+										<td class="py-1 pr-2">
+											{#if playMode}
+												<div class="flex flex-wrap items-center gap-1">
+													{#each dmgBands as seg, bandIdx}
+														{@const segLabel =
+															dmgBands.length > 1 ? `Band ${bandIdx + 1} (${seg})` : null}
+														{#if isWeaponDamageFormulaSupported(seg, char.derivedStats.damageBonus)}
+															<button
+																type="button"
+																disabled={diceRolling}
+																onclick={() => rollWeaponDamageSegment(w, seg, segLabel)}
+																class="cursor-pointer rounded border border-[var(--color-border)] px-1.5 py-0.5 text-left font-mono text-[11px] hover:bg-[var(--color-accent)] disabled:opacity-50"
+																title="Roll {seg}"
+															>
+																{seg}
+															</button>
+														{:else}
+															<span
+																class="font-mono text-[11px] text-[var(--color-muted-foreground)]"
+																title="This damage formula cannot be rolled automatically"
+															>{seg}</span>
+														{/if}
+													{/each}
+												</div>
+											{:else}
+												<span class="font-mono">{w.damage}</span>
+											{/if}
+										</td>
+										<td class="py-1 pr-2">{w.range}</td>
+										<td class="py-1">{w.attacksPerRound}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/if}
+
+				{#if char.equipment.items.length > 0}
+					<p class="text-sm">{char.equipment.items.map((i) => i.name).join(', ')}</p>
+				{/if}
 		</div>
 	{/if}
 
@@ -1229,37 +1756,6 @@
 					</div>
 				{/each}
 			</div>
-		</div>
-	{/if}
-
-	<!-- Equipment -->
-	{#if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
-		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
-			<p class="mb-2 text-sm text-[var(--color-muted-foreground)]">
-				{char.equipment.livingStandard} &middot; Spending Level: ${char.equipment.spendingLevel.toLocaleString()} &middot; Cash: ${char.equipment.cash.toLocaleString()} &middot; Assets: {char.equipment.assetsLabel}
-			</p>
-			{#if char.equipment.weapons.length > 0}
-				<div class="mb-2 overflow-x-auto">
-					<table class="w-full text-xs">
-						<thead>
-							<tr class="border-b border-[var(--color-border)] text-left uppercase text-[var(--color-muted-foreground)]">
-								<th class="pb-1 pr-2">Weapon</th><th class="pb-1 pr-2">Damage</th><th class="pb-1 pr-2">Range</th><th class="pb-1">Attacks</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each char.equipment.weapons as w}
-								<tr class="border-b border-[var(--color-border)]/20">
-									<td class="py-1 pr-2 font-medium">{w.name}</td><td class="py-1 pr-2">{w.damage}</td><td class="py-1 pr-2">{w.range}</td><td class="py-1">{w.attacksPerRound}</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/if}
-			{#if char.equipment.items.length > 0}
-				<p class="text-sm">{char.equipment.items.map((i) => i.name).join(', ')}</p>
-			{/if}
 		</div>
 	{/if}
 </div>

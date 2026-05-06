@@ -202,7 +202,22 @@ describe('buildDocDefinition', () => {
 	it('adds modest spacing inside and above the backstory grid', () => {
 		const ideologyCell = findTableWithFirstCellText(doc, 'IDEOLOGY / BELIEFS');
 		expect(ideologyCell).toBeTruthy();
-		expect(ideologyCell.table.body[0][0].margin).toEqual([0, 0, 0, 2]);
+		// Tight label → body gap (no extra bottom margin on the title; padding handles inset).
+		expect(ideologyCell.table.body[0][0].margin).toEqual([0, 0, 0, 0]);
+		expect(ideologyCell.table.body[0][0].fillColor).toBe('#ffffff');
+		expect(ideologyCell.table.body[1][0].fillColor).toBe('#ffffff');
+
+		const sigCell = findTableWithFirstCellText(doc, 'SIGNIFICANT PEOPLE');
+		expect(sigCell).toBeTruthy();
+		expect(sigCell.table.body[1][0].fillColor).toBe('#f3f2f1');
+
+		const keyConnCell = findTableWithFirstCellText(doc, 'KEY CONNECTION');
+		expect(keyConnCell).toBeTruthy();
+		expect(keyConnCell.table.body[0][0].fillColor).toBe('#f3f2f1');
+
+		const traitsCell = findTableWithFirstCellText(doc, 'TRAITS');
+		expect(traitsCell).toBeTruthy();
+		expect(traitsCell.table.body[1][0].fillColor).toBe('#ffffff');
 
 		const ideologyRow = findNode(
 			doc,

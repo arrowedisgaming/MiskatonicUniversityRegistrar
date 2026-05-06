@@ -17,6 +17,7 @@ import {
 	validateSkillAllocation
 } from '$lib/engine/skills';
 import { calculateAllDerived } from '$lib/engine/derived-stats';
+import { describeWeaponDiceLimitViolations } from '$lib/engine/weapon-damage-roll';
 
 export type ValidationResult = { valid: true } | { valid: false; errors: string[] };
 
@@ -111,6 +112,9 @@ export function validateFinalInvestigator(char: CoCCharacterData): ValidationRes
 	if (char.derivedStats.build !== derived.build) {
 		errors.push(`Build ${char.derivedStats.build} does not match engine-derived ${derived.build}`);
 	}
+
+	const weaponDiceMsg = describeWeaponDiceLimitViolations(char);
+	if (weaponDiceMsg) errors.push(weaponDiceMsg);
 
 	return errors.length === 0 ? { valid: true } : { valid: false, errors };
 }

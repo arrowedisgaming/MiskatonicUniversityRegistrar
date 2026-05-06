@@ -5,8 +5,8 @@ import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 /** Schema version for character data migration */
 export const CHARACTER_SCHEMA_VERSION = 3;
 
-/** Single entry from play-mode percentile rolls (append-only log). */
-export interface PlayRollHistoryEntry {
+/** Play-mode percentile d100 checks (Characteristics & skills). */
+export interface PlayRollHistoryPercentileEntry {
 	id: string;
 	at: string;
 	targetKind: 'characteristic' | 'skill';
@@ -21,6 +21,20 @@ export interface PlayRollHistoryEntry {
 	outcome: CoCPercentileOutcome;
 	isFumble: boolean;
 }
+
+/** Play-mode weapon damage roll (summed dice + optional flat). */
+export interface PlayRollHistoryWeaponDamageEntry {
+	id: string;
+	at: string;
+	targetKind: 'weaponDamage';
+	weaponName: string;
+	formula: string;
+	segmentLabel?: string | null;
+	total: number;
+	detail: string;
+}
+
+export type PlayRollHistoryEntry = PlayRollHistoryPercentileEntry | PlayRollHistoryWeaponDamageEntry;
 
 export type { CoCPercentileOutcome };
 

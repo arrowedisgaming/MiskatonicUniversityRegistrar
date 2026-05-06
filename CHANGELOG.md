@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-05-06
+
+### Added
+- **Play-mode weapon damage rolls** on the investigator sheet. Each weapon row in Play Mode shows a "Roll damage" button per damage segment (shotgun-style multi-band weapons like `4D6/2D6/1D6` get one button per band). Clicking rolls the dice via the existing 3D dice overlay, substitutes `DB` from the investigator's derived damage bonus, supports flat modifiers (`1D10+2`), negative dice, and pushes the result into the play-roll history with a per-roll breakdown (e.g. `2D6: [4,3] → 7 · DB +1D4: [3] → 3 = 10`).
+- New pure engine module `src/lib/engine/weapon-damage-roll.ts` with `splitDamageSegments`, `parseDamageBonusForRoll`, `planWeaponDamageRoll`, `getWeaponDamageDiceLimitError`, `getWeaponDamageSegmentValidationError`, `isWeaponDamageFormulaSupported`, and `describeWeaponDiceLimitViolations`. Strict dice caps prevent pathological formulas from allocating large arrays (`MAX_WEAPON_DAMAGE_DICE_PER_TOKEN = 24`, `MAX_WEAPON_DAMAGE_DICE_PER_SEGMENT = 48`). 16 unit tests cover segment splitting, DB parsing, dice-limit boundaries (per-token, per-segment, DB-substituted), unsupported die types, and label truncation.
+- d3 added to `DICE_SIDES` in the dice protocol so weapons that roll d3 (e.g. brass knuckles) animate correctly in the 3D overlay.
+- Server-side enforcement: `validateFinalInvestigator` now calls `describeWeaponDiceLimitViolations` so a malformed weapon damage string is rejected by the API save path with a per-weapon error message, not just by the client.
+- `PlayRollHistoryWeaponDamageEntry` type and matching Zod schema. The existing `PlayRollHistoryEntry` is now a discriminated union (`PlayRollHistoryPercentileEntry | PlayRollHistoryWeaponDamageEntry`) so the play-mode roll log can mix d100 checks and weapon damage rolls. Old saved characters load unchanged — `playRollHistory` defaults to `[]` and the new arm is purely additive (no `schemaVersion` bump).
+
+### Changed
+- `parseDamageBonusForRoll` now returns `null` for unrecognised DB strings (e.g. compound `+1D4+2`) instead of silently dropping the term and returning `{ flat: 0, dice: [] }`. The 9 standard CoC DB values from `damageBonusBuildTable` are unaffected; this is a defensive contract change so future content packs or hand-edited derived stats fail loudly. Caller error messages updated to "Damage bonus is unrecognised or exceeds dice limits".
+
 ## [0.10.0] - 2026-05-06
 
 ### Added
@@ -335,7 +347,10 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.9.0...v0.10.0
+[0.9.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...v0.6.1
