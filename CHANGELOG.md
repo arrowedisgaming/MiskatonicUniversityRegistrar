@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-06
+
+### Added
+- New pure engine module `src/lib/engine/backstory.ts` — canonical backstory field order, human-readable labels, and PDF priority lists now live in one place rather than being duplicated across the PDF exporter and the sheet route. Exports `BACKSTORY_FIELDS`, `BACKSTORY_KEYS`, `BACKSTORY_LABEL_BY_KEY`, `PDF_BACKSTORY_PRIORITY_KEYS`, and `PDF_BACKSTORY_PRIMARY_KEYS`.
+
+### Changed
+- One-page PDF redesigned:
+  - Backstory section replaced with a two-column micro-grid; each field renders as a label (burgundy, 5.6pt) over its value (6.4pt), showing up to 128 characters per field instead of 100. Non-empty fields are prioritised (Personal Description → Ideology → Significant People → Key Connection → Traits) with remaining non-empty fields filling any leftover slots, up to 8 fields total.
+  - Combat & Possessions block moved under the Characteristics column so the right column (Attributes + Backstory) is no longer cut short.
+  - Weapons and gear items share a single combined table (6 total rows); overflow is reported as "+N weapons, +N items not shown".
+  - Blank specialisation fill-in slots (`Firearms(________)` etc.) are no longer printed in the skill list.
+  - Section band margins and padding tightened; tracker boxes now use explicit `paddingTop`/`paddingBottom` callbacks for consistent vertical centering; Characteristics corner cell changed from burgundy to black.
+- Investigator sheet route now imports `BACKSTORY_KEYS` and `BACKSTORY_LABEL_BY_KEY` from `src/lib/engine/backstory.ts`, removing the locally-duplicated field list and camelCase-split label fallback.
+
 ## [0.7.0] - 2026-05-06
 
 ### Added
@@ -298,7 +312,8 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.5.0...v0.6.0

@@ -17,6 +17,7 @@
 		type PlayRollHistoryEntry,
 		type SkillPointAllocation
 	} from '$lib/types/character';
+	import { BACKSTORY_KEYS, BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
 	import { generatePDF } from '$lib/export/pdf-export';
 	import { rollDie } from '$lib/engine/dice';
 	import { showDiceRoll } from '$lib/stores/dice-rolls';
@@ -63,20 +64,6 @@
 	let editError = $state<string | null>(null);
 	let editChar = $state<CoCCharacterData | null>(null);
 
-	const BACKSTORY_FIELDS: (keyof CoCCharacterData['backstory'])[] = [
-		'personalDescription',
-		'ideologyBeliefs',
-		'significantPeople',
-		'meaningfulLocations',
-		'treasuredPossessions',
-		'traits',
-		'injuriesScars',
-		'phobiasManias',
-		'arcaneTomesSpellsArtifacts',
-		'encountersWithStrangeEntities',
-		'keyConnection'
-	];
-
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
 		// CoCCharacterData is JSON-serializable; structuredClone keeps it fast/safe.
 		return structuredClone(source);
@@ -84,14 +71,16 @@
 
 	function ensureBackstoryShape(next: CoCCharacterData): CoCCharacterData {
 		const backstory = { ...next.backstory } as CoCCharacterData['backstory'];
-		for (const k of BACKSTORY_FIELDS) {
+		for (const k of BACKSTORY_KEYS) {
 			backstory[k] = (backstory[k] ?? '') as (typeof backstory)[typeof k];
 		}
 		return { ...next, backstory };
 	}
 
 	function backstoryLabel(key: string): string {
-		return key.replace(/([A-Z])/g, ' $1').trim();
+		return (
+			BACKSTORY_LABEL_BY_KEY[key as BackstoryKey] ?? key.replace(/([A-Z])/g, ' $1').trim()
+		);
 	}
 
 	function startEdit() {
@@ -1014,7 +1003,7 @@
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Backstory</h2>
 			<div class="space-y-4">
-				{#each BACKSTORY_FIELDS as key (key)}
+				{#each BACKSTORY_KEYS as key (key)}
 					<div>
 						<label
 							for={`backstory-${String(key)}`}

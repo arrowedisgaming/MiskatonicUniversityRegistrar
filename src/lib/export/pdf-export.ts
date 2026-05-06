@@ -14,6 +14,13 @@ import type {
 import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 import { halfValue, fifthValue } from '$lib/engine/characteristics';
 import {
+	BACKSTORY_FIELDS,
+	BACKSTORY_LABEL_BY_KEY,
+	PDF_BACKSTORY_PRIMARY_KEYS,
+	PDF_BACKSTORY_PRIORITY_KEYS,
+	type BackstoryKey
+} from '$lib/engine/backstory';
+import {
 	buildSkillRows,
 	distributeIntoColumns,
 	findOccupation,
@@ -27,8 +34,9 @@ const PDF_TEXT_SECONDARY = '#3a3a3a';
 const PDF_LABEL = '#444444';
 const PDF_FOOTER = '#555555';
 
-// Period accent — burgundy banner fill, white uppercase text on top.
+// Period accent — burgundy section bands, white uppercase text on top.
 const PDF_BANNER_FILL = '#5C1A1B';
+const PDF_CHARACTERISTICS_CORNER_FILL = '#000000';
 const PDF_BANNER_TEXT = '#ffffff';
 const PDF_RULE = '#8a8a8a';
 const PDF_BLANK_SLOT = '#777777';
@@ -41,7 +49,7 @@ const DISCLAIMER =
 
 const SKILL_COLUMNS = 3;
 const NAME_TRUNCATE = 48;
-const BACKSTORY_TRUNCATE = 100;
+const BACKSTORY_VALUE_TRUNCATE = 128;
 const EQUIPMENT_TRUNCATE = 240;
 const MAX_WEAPON_ROWS = 6;
 
@@ -92,9 +100,7 @@ export function buildDocDefinition(
 			{ text: '', margin: [0, 4, 0, 0] },
 			buildStatsRow(character),
 			{ text: '', margin: [0, 6, 0, 0] },
-			buildSkillsSection(skillRows),
-			{ text: '', margin: [0, 6, 0, 0] },
-			buildWeaponsAndFinances(character)
+			buildSkillsSection(skillRows)
 		],
 		defaultStyle: { fontSize: 8, lineHeight: 1.2, color: PDF_INK },
 		styles: {
@@ -105,24 +111,28 @@ export function buildDocDefinition(
 				bold: true,
 				color: PDF_BANNER_TEXT,
 				fillColor: PDF_BANNER_FILL,
+				lineHeight: 1,
 				margin: [0, 0, 0, 0]
 			},
 			label: { fontSize: 6, color: PDF_LABEL, bold: true },
 			statValue: { fontSize: 13, bold: true, alignment: 'center' as const },
 			statSub: { fontSize: 7, color: PDF_TEXT_SECONDARY, alignment: 'center' as const },
-			trackerValue: { fontSize: 11, bold: true, alignment: 'center' as const },
+			trackerValue: { fontSize: 11, bold: true, alignment: 'center' as const, lineHeight: 1 },
 			trackerLabel: {
 				fontSize: 6,
 				color: PDF_LABEL,
 				bold: true,
-				alignment: 'center' as const
+				alignment: 'center' as const,
+				lineHeight: 1
 			},
 			skillName: { fontSize: 8.5 },
 			skillBlank: { fontSize: 8.5, italics: true, color: PDF_BLANK_SLOT },
 			skillValue: { fontSize: 8.5, bold: true, alignment: 'right' as const },
 			skillSub: { fontSize: 7, color: PDF_TEXT_SECONDARY, alignment: 'right' as const },
 			fieldLabel: { fontSize: 6, color: PDF_LABEL, bold: true },
-			fieldValue: { fontSize: 7.5 }
+			fieldValue: { fontSize: 7.5 },
+			backstoryLabel: { fontSize: 5.6, color: PDF_BANNER_FILL, bold: true },
+			backstoryValue: { fontSize: 6.4, lineHeight: 1.05 }
 		}
 	};
 }
@@ -153,12 +163,16 @@ function bannerCell(text: string) {
 	return {
 		table: {
 			widths: ['*'],
-			body: [[{ text: text.toUpperCase(), style: 'banner', margin: [4, 2, 4, 2] }]]
+			body: [[{ text: text.toUpperCase(), style: 'banner', margin: [4, 3, 4, 1] }]]
 		},
 		layout: {
 			hLineWidth: () => 0,
 			vLineWidth: () => 0,
-			fillColor: () => PDF_BANNER_FILL
+			fillColor: () => PDF_BANNER_FILL,
+			paddingLeft: () => 0,
+			paddingRight: () => 0,
+			paddingTop: () => 0,
+			paddingBottom: () => 0
 		},
 		margin: [0, 0, 0, 2] as [number, number, number, number]
 	};
@@ -167,16 +181,25 @@ function bannerCell(text: string) {
 function buildStatsRow(c: CoCCharacterData) {
 	return {
 		columns: [
-			{ width: '*', stack: [bannerCell('Characteristics'), buildCharacteristicsTable(c)] },
+			{
+				width: '*',
+				stack: [
+					bannerCell('Characteristics'),
+					buildCharacteristicsTable(c),
+					{ text: '', margin: [0, 6, 0, 0] as [number, number, number, number] },
+					buildCombatAndPossessions(c)
+				]
+			},
 			{ width: 12, text: '' },
 			{
 				width: '*',
 				stack: [
 					bannerCell('Attributes'),
 					buildTrackersGrid(c),
-					{ text: '', margin: [0, 6, 0, 0] as [number, number, number, number] },
+					{ text: '', margin: [0, 4, 0, 0] as [number, number, number, number] },
 					bannerCell('Backstory'),
-					...buildBackstoryRows(c)
+					buildBackstoryGrid(c),
+					buildFinancesRow(c)
 				]
 			}
 		]
@@ -191,8 +214,8 @@ function buildCharacteristicsTable(c: CoCCharacterData) {
 		alignment: 'center' as const
 	};
 	const headerRow = [
-		// Top-left "unused" corner — burgundy fill ties it back to the section banner.
-		{ text: '', fillColor: PDF_BANNER_FILL },
+		// Top-left "unused" corner prints as a solid black anchor.
+		{ text: '', fillColor: PDF_CHARACTERISTICS_CORNER_FILL },
 		{ text: 'Reg', ...headerCellStyle },
 		{ text: 'Half', ...headerCellStyle },
 		{ text: 'Fifth', ...headerCellStyle }
@@ -253,15 +276,31 @@ function trackerBox(label: string, current: number | string, max?: number | stri
 		table: {
 			widths: ['*'],
 			body: [
-				[{ text: label.toUpperCase(), style: 'trackerLabel', margin: [0, 2, 0, 0] }],
-				[{ text: valueText, style: 'trackerValue', margin: [0, 0, 0, 3] }]
+				[
+					{
+						text: label.toUpperCase(),
+						style: 'trackerLabel',
+						margin: [0, 0, 0, 0] as [number, number, number, number]
+					}
+				],
+				[
+					{
+						text: valueText,
+						style: 'trackerValue',
+						margin: [0, 0, 0, 0] as [number, number, number, number]
+					}
+				]
 			]
 		},
 		layout: {
 			hLineWidth: () => 0.75,
 			vLineWidth: () => 0.75,
 			hLineColor: () => PDF_INK,
-			vLineColor: () => PDF_INK
+			vLineColor: () => PDF_INK,
+			paddingLeft: () => 0,
+			paddingRight: () => 0,
+			paddingTop: (rowIndex: number) => (rowIndex === 0 ? 2 : 3),
+			paddingBottom: (rowIndex: number) => (rowIndex === 0 ? 2 : 3)
 		}
 	};
 }
@@ -303,7 +342,9 @@ function formatRowName(row: SkillRow): string {
 }
 
 function buildSkillsSection(rows: SkillRow[]) {
-	const columns = distributeIntoColumns(rows, SKILL_COLUMNS);
+	// Do not print the grey italic “(________)” blank specialization slots on the PDF.
+	const printableRows = rows.filter((r) => !r.isBlankSlot);
+	const columns = distributeIntoColumns(printableRows, SKILL_COLUMNS);
 
 	const renderColumn = (colRows: SkillRow[]) => {
 		const body: Array<Array<{ text: string; style: string }>> = colRows.map((row) => {
@@ -358,11 +399,19 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 	const eq = c.equipment;
 	const stack: any[] = [bannerCell('Combat & Possessions')];
 
-	const weaponRows = eq.weapons.slice(0, MAX_WEAPON_ROWS);
-	const overflow = eq.weapons.length - weaponRows.length;
-	const weaponBody = [
+	// Combined table: weapons + gear in one layout.
+	// We cap total rows to keep the left column bounded.
+	const MAX_ROWS = MAX_WEAPON_ROWS;
+	const weaponRows = eq.weapons.slice(0, MAX_ROWS);
+	const remaining = Math.max(0, MAX_ROWS - weaponRows.length);
+	const gearRows = eq.items.slice(0, remaining);
+
+	const overflowWeapons = Math.max(0, eq.weapons.length - weaponRows.length);
+	const overflowGear = Math.max(0, eq.items.length - gearRows.length);
+
+	const body: any[] = [
 		[
-			{ text: 'Weapon', style: 'label' },
+			{ text: 'Item', style: 'label' },
 			{ text: 'Damage', style: 'label' },
 			{ text: 'Range', style: 'label' },
 			{ text: 'Atk', style: 'label' }
@@ -372,20 +421,31 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 			{ text: w.damage, fontSize: 7 },
 			{ text: w.range, fontSize: 7 },
 			{ text: w.attacksPerRound, fontSize: 7 }
+		]),
+		...gearRows.map((i) => [
+			{ text: truncate(i.name, 28), fontSize: 7 },
+			{ text: '', fontSize: 7, color: PDF_TEXT_SECONDARY },
+			{ text: '', fontSize: 7, color: PDF_TEXT_SECONDARY },
+			{ text: '', fontSize: 7, color: PDF_TEXT_SECONDARY }
 		])
 	];
-	if (overflow > 0) {
-		weaponBody.push([
-			{ text: `+${overflow} more weapon${overflow === 1 ? '' : 's'} not shown`, fontSize: 6, color: PDF_FOOTER, italics: true } as any,
+
+	if (overflowWeapons + overflowGear > 0) {
+		const parts = [
+			overflowWeapons > 0 ? `+${overflowWeapons} weapon${overflowWeapons === 1 ? '' : 's'}` : '',
+			overflowGear > 0 ? `+${overflowGear} item${overflowGear === 1 ? '' : 's'}` : ''
+		].filter(Boolean);
+		body.push([
+			{ text: `${parts.join(', ')} not shown`, fontSize: 6, color: PDF_FOOTER, italics: true } as any,
 			{ text: '' },
 			{ text: '' },
 			{ text: '' }
 		]);
 	}
 
-	if (weaponRows.length > 0) {
+	if (weaponRows.length > 0 || gearRows.length > 0) {
 		stack.push({
-			table: { widths: ['*', 60, 50, 30], body: weaponBody },
+			table: { widths: ['*', 60, 50, 30], body },
 			layout: {
 				hLineWidth: () => 0.25,
 				vLineWidth: () => 0.25,
@@ -400,6 +460,11 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 		});
 	}
 
+	return { stack };
+}
+
+function buildFinancesRow(c: CoCCharacterData) {
+	const eq = c.equipment;
 	const financeParts = [
 		eq.livingStandard ? `Living: ${eq.livingStandard}` : '',
 		eq.spendingLevel ? `Spend: $${eq.spendingLevel.toLocaleString()}` : '',
@@ -407,40 +472,102 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 		eq.assetsLabel ? `Assets: ${eq.assetsLabel}` : ''
 	].filter(Boolean);
 
-	stack.push({
+	return {
 		columns: [
 			{ text: 'FINANCES', style: 'fieldLabel', width: 50 },
 			{ text: financeParts.join('  ·  '), style: 'fieldValue' }
 		],
-		margin: [0, 0, 0, 3] as [number, number, number, number]
-	});
+		margin: [0, 4, 0, 0] as [number, number, number, number]
+	};
+}
 
-	if (eq.items.length > 0) {
-		const itemList = truncate(eq.items.map((i) => i.name).join(', '), EQUIPMENT_TRUNCATE);
-		stack.push({
-			columns: [
-				{ text: 'GEAR', style: 'fieldLabel', width: 50 },
-				{ text: itemList, style: 'fieldValue' }
+function buildCombatAndPossessions(c: CoCCharacterData) {
+	// Same content as the old bottom section, but placed under Characteristics so
+	// the left column uses space that would otherwise be blank.
+	return buildWeaponsAndFinances(c);
+}
+
+function normalizeBackstoryValue(raw: string): string {
+	const trimmed = raw.trim();
+	if (!trimmed) return '—';
+	return trimmed.replace(/\s+/g, ' ');
+}
+
+function backstoryPairsForPdf(c: CoCCharacterData): Array<{ key: BackstoryKey; label: string; value: string }> {
+	const valueByKey = (k: BackstoryKey) => normalizeBackstoryValue(c.backstory[k] ?? '');
+
+	// Prefer fewer fields with more text:
+	// - pick from an explicit priority list, skipping empties
+	// - then (only if space remains) fill from remaining non-empty fields
+	const priority = PDF_BACKSTORY_PRIORITY_KEYS.map((key) => ({
+		key,
+		label: BACKSTORY_LABEL_BY_KEY[key],
+		value: truncate(valueByKey(key), BACKSTORY_VALUE_TRUNCATE)
+	})).filter((f) => f.value !== '—');
+
+	const prioritySet = new Set<BackstoryKey>(PDF_BACKSTORY_PRIORITY_KEYS as BackstoryKey[]);
+	const remainder = BACKSTORY_FIELDS
+		.map((f) => f.key)
+		.filter((k): k is BackstoryKey => !prioritySet.has(k))
+		.map((key) => ({
+			key,
+			label: BACKSTORY_LABEL_BY_KEY[key],
+			value: truncate(valueByKey(key), BACKSTORY_VALUE_TRUNCATE)
+		}))
+		.filter((f) => f.value !== '—');
+
+	// Keep at least the historical four if they have content, even if they weren't in the priority list for some reason.
+	const historical = PDF_BACKSTORY_PRIMARY_KEYS.map((key) => ({
+		key,
+		label: BACKSTORY_LABEL_BY_KEY[key],
+		value: truncate(valueByKey(key), BACKSTORY_VALUE_TRUNCATE)
+	})).filter((f) => f.value !== '—' && !prioritySet.has(f.key));
+
+	return [...priority, ...historical, ...remainder];
+}
+
+function backstoryCell(def: { label: string; value: string }): any {
+	return {
+		table: {
+			widths: ['*'],
+			body: [
+				[{ text: def.label.toUpperCase(), style: 'backstoryLabel', margin: [0, 0, 0, 2] }],
+				[{ text: def.value, style: 'backstoryValue' }]
 			]
+		},
+		layout: {
+			hLineWidth: () => 0,
+			vLineWidth: () => 0,
+			paddingLeft: () => 0,
+			paddingRight: () => 0,
+			paddingTop: () => 0,
+			paddingBottom: () => 2
+		}
+	};
+}
+
+function buildBackstoryGrid(c: CoCCharacterData): any {
+	const entries = backstoryPairsForPdf(c);
+	const cols: any[] = [];
+
+	for (let i = 0; i < entries.length; i += 2) {
+		const left = entries[i];
+		const right = entries[i + 1];
+
+		cols.push({
+			columns: [
+				{ width: '*', stack: [backstoryCell(left)] },
+				{ width: 8, text: '' },
+				{ width: '*', stack: right ? [backstoryCell(right)] : [{ text: '', fontSize: 1 }] }
+			],
+			margin: [0, 0, 0, 2] as [number, number, number, number]
 		});
 	}
 
-	return { stack };
-}
-
-const BACKSTORY_FIELDS: Array<[label: string, key: keyof CoCCharacterData['backstory']]> = [
-	['Ideology / Beliefs', 'ideologyBeliefs'],
-	['Significant People', 'significantPeople'],
-	['Traits', 'traits'],
-	['Key Connection', 'keyConnection']
-];
-
-function buildBackstoryRows(c: CoCCharacterData): any[] {
-	return BACKSTORY_FIELDS.map(([label, key]) => ({
-		columns: [
-			{ text: label.toUpperCase(), style: 'fieldLabel', width: 65 },
-			{ text: truncate(c.backstory[key] || '—', BACKSTORY_TRUNCATE), style: 'fieldValue' }
-		],
-		margin: [0, 1, 0, 1] as [number, number, number, number]
-	}));
+	// Guardrail: keep the block bounded and predictable on one page.
+	const MAX_VISUAL_ROWS = 4;
+	return {
+		stack: cols.slice(0, MAX_VISUAL_ROWS),
+		margin: [0, 2, 0, 0] as [number, number, number, number]
+	};
 }

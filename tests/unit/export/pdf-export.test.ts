@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocDefinition } from '$lib/export/pdf-export';
 import { createBlankCharacter } from '$lib/types/character';
+import { BACKSTORY_KEYS } from '$lib/engine/backstory';
 import type {
 	CoCSkillDefinition,
 	CoCOccupationDefinition
@@ -82,6 +83,34 @@ function representativeCharacter() {
 	return c;
 }
 
+function findNode(root: unknown, predicate: (node: any) => boolean): any | null {
+	const seen = new Set<unknown>();
+	const stack: unknown[] = [root];
+
+	while (stack.length > 0) {
+		const node = stack.pop();
+		if (!node || typeof node !== 'object' || seen.has(node)) continue;
+		seen.add(node);
+
+		if (predicate(node)) return node;
+
+		const values = Array.isArray(node) ? node : Object.values(node);
+		for (const value of values) {
+			if (value && typeof value === 'object') stack.push(value);
+		}
+	}
+
+	return null;
+}
+
+function containsText(root: unknown, text: string): boolean {
+	return Boolean(findNode(root, (node) => node.text === text));
+}
+
+function findTableWithFirstCellText(root: unknown, text: string): any | null {
+	return findNode(root, (node) => node.table?.body?.[0]?.[0]?.text === text);
+}
+
 describe('buildDocDefinition', () => {
 	const doc = buildDocDefinition(
 		representativeCharacter(),
@@ -114,6 +143,26 @@ describe('buildDocDefinition', () => {
 		expect(json).toContain('BACKSTORY');
 	});
 
+	it('keeps section bands red while vertically centering their labels', () => {
+		const styles = doc.styles as Record<string, any>;
+		expect(styles.banner.alignment).toBeUndefined();
+		expect(styles.banner.fillColor).toBe('#5C1A1B');
+		expect(styles.banner.lineHeight).toBe(1);
+
+		const characteristicsBanner = findTableWithFirstCellText(doc, 'CHARACTERISTICS');
+		expect(characteristicsBanner).toBeTruthy();
+		expect(characteristicsBanner.table.body[0][0].margin).toEqual([4, 3, 4, 1]);
+		expect(characteristicsBanner.layout.fillColor()).toBe('#5C1A1B');
+		expect(characteristicsBanner.layout.paddingTop()).toBe(0);
+		expect(characteristicsBanner.layout.paddingBottom()).toBe(0);
+
+		const characteristicsCorner = findNode(
+			doc,
+			(node) => node.text === '' && node.fillColor === '#000000'
+		);
+		expect(characteristicsCorner).toBeTruthy();
+	});
+
 	it('shows the investigator name in the header', () => {
 		expect(JSON.stringify(doc)).toContain('Edmund Carter');
 	});
@@ -128,4 +177,96 @@ describe('buildDocDefinition', () => {
 		// "● Spot Hidden" — the filled circle marker
 		expect(json).toMatch(/●\\?\s?Spot Hidden/);
 	});
+
+	it('keeps attribute tracker boxes compact and visually centered', () => {
+		const luckBox = findTableWithFirstCellText(doc, 'LUCK');
+		expect(luckBox).toBeTruthy();
+		expect(luckBox.table.heights).toBeUndefined();
+		expect(luckBox.layout.paddingTop(0)).toBe(2);
+		expect(luckBox.layout.paddingBottom(0)).toBe(2);
+		expect(luckBox.layout.paddingTop(1)).toBe(3);
+		expect(luckBox.layout.paddingBottom(1)).toBe(3);
+	});
+
+	it('adds modest spacing inside and above the backstory grid', () => {
+		const ideologyCell = findTableWithFirstCellText(doc, 'IDEOLOGY / BELIEFS');
+		expect(ideologyCell).toBeTruthy();
+		expect(ideologyCell.table.body[0][0].margin).toEqual([0, 0, 0, 2]);
+
+		const ideologyRow = findNode(
+			doc,
+			(node) => Array.isArray(node.columns) &&
+				Array.isArray(node.margin) &&
+				node.margin[3] === 2 &&
+				containsText(node, 'IDEOLOGY / BELIEFS')
+		);
+		expect(ideologyRow).toBeTruthy();
+
+		const backstoryGrid = findNode(
+			doc,
+			(node) => Array.isArray(node.stack) &&
+				Array.isArray(node.margin) &&
+				node.margin[1] === 2 &&
+				node.stack.some((item: unknown) => containsText(item, 'IDEOLOGY / BELIEFS'))
+		);
+		expect(backstoryGrid).toBeTruthy();
+	});
+
+	it('allows longer backstory values before truncating for the expanded layout', () => {
+		const long = 'x'.repeat(150);
+		const character = representativeCharacter();
+		character.backstory.personalDescription = long;
+
+		const expandedDoc = buildDocDefinition(
+			character,
+			'Antiquarian',
+			FIXTURE_SKILLS,
+			FIXTURE_OCCUPATIONS
+		);
+		const personalDescriptionCell = findTableWithFirstCellText(expandedDoc, 'PERSONAL DESCRIPTION');
+		expect(personalDescriptionCell).toBeTruthy();
+		const value = personalDescriptionCell.table.body[1][0].text;
+		expect(value).toHaveLength(128);
+		expect(value.endsWith('…')).toBe(true);
+	});
+
+	it('renders as a single-page PDF even with worst-case backstory', async () => {
+		const worst = representativeCharacter();
+
+		// Fill every backstory field with long text to stress the layout.
+		const long = [
+			'This is intentionally long backstory text designed to stress wrapping, truncation, and layout constraints.',
+			'It should never cause the investigator sheet to overflow onto a second page.'
+		].join(' ');
+
+		for (const k of BACKSTORY_KEYS) {
+			worst.backstory[k] = `${long} ${long} ${long}`;
+		}
+
+		const worstDoc: any = buildDocDefinition(worst, 'Antiquarian', FIXTURE_SKILLS, FIXTURE_OCCUPATIONS);
+		// Make the output parseable by a lightweight page-count heuristic.
+		// pdfmake defaults to compression, which can hide the "/Type /Page" markers.
+		worstDoc.compress = false;
+		// Ensure pdfkit buffers pages so we can reliably count them in tests.
+		worstDoc.bufferPages = true;
+
+		// pdfmake is loaded only in this test to keep the doc-definition tests fast.
+		const pdfMake = (await import('pdfmake/build/pdfmake')).default as any;
+		const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default as any;
+		pdfMake.addVirtualFileSystem(pdfFonts);
+
+		const pdfDoc = pdfMake.createPdf(worstDoc);
+		const pdfKit = await pdfDoc.pdfDocumentPromise;
+		expect(pdfKit).toBeTruthy();
+
+		// Force full layout/render.
+		await pdfDoc.getBuffer();
+
+		const pdfMakePages = (pdfKit as any)._pdfMakePages;
+		const pageCount = Array.isArray(pdfMakePages) ? pdfMakePages.length : null;
+		expect(pageCount).toBe(1);
+	}, 30_000);
 });
+
+// Intentionally no byte-parsing heuristic: pdfmake may compress/object-stream the output,
+// while pdfkit's bufferedPageRange() gives a reliable page count.
