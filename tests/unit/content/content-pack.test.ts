@@ -64,4 +64,56 @@ describe('bundled CoC 7e content pack', () => {
 		expect(eq.weapons.length).toBeGreaterThan(0);
 		expect(typeof eq.commonItems).toBe('object');
 	});
+
+	it('has a gaslight era entry with £ currency symbol', () => {
+		const pack = getContentPack();
+		const gaslight = pack.eras.find((e) => e.id === 'gaslight');
+		expect(gaslight).toBeTruthy();
+		expect(gaslight?.currencySymbol).toBe('£');
+		expect(gaslight?.currencyUnit).toBe('pounds');
+	});
+
+	it('has a gaslight wealth table with 6 tiers', () => {
+		const pack = getContentPack();
+		const table = pack.wealthTables['gaslight'];
+		expect(Array.isArray(table)).toBe(true);
+		expect(table.length).toBe(6);
+		// Super Rich tier covers CR 99
+		expect(table.find((t) => t.maxCR === 99)).toBeTruthy();
+	});
+
+	it('has at least one occupation tagged gaslight', () => {
+		const occupations = getOccupations();
+		const gaslightOccs = occupations.filter((o) => o.eras.includes('gaslight'));
+		expect(gaslightOccs.length).toBeGreaterThan(20);
+	});
+
+	it('gaslight occupations include key Victorian entries', () => {
+		const occupations = getOccupations();
+		const ids = new Set(occupations.filter((o) => o.eras.includes('gaslight')).map((o) => o.id));
+		expect(ids.has('consulting-detective')).toBe(true);
+		expect(ids.has('aristocrat')).toBe(true);
+		expect(ids.has('physician')).toBe(true);
+	});
+
+	it('skills.json includes gaslight-specific skills', () => {
+		const skills = getSkills();
+		const ids = new Set(skills.map((s) => s.id));
+		expect(ids.has('alienism')).toBe(true);
+		expect(ids.has('mesmerism')).toBe(true);
+		expect(ids.has('reassure')).toBe(true);
+		expect(ids.has('drive-carriage')).toBe(true);
+	});
+
+	it('gaslight equipment has Victorian common items', () => {
+		const eq = getEquipment();
+		const items = eq.commonItems['gaslight'];
+		expect(Array.isArray(items)).toBe(true);
+		expect(items.length).toBeGreaterThan(10);
+		expect(
+			items.some(
+				(i) => i.toLowerCase().includes('pocket watch') || i.toLowerCase().includes('gas lamp')
+			)
+		).toBe(true);
+	});
 });

@@ -7,6 +7,7 @@ import type {
 	CoCOccupationDefinition,
 	CoCContentPack
 } from '$lib/types/content-pack';
+import type { Era } from '$lib/types/common';
 
 const FIXTURE_CONTENT_PACK = {
 	eras: [
@@ -239,6 +240,21 @@ describe('buildDocDefinition', () => {
 		const value = personalDescriptionCell.table.body[1][0].text;
 		expect(value).toHaveLength(128);
 		expect(value.endsWith('…')).toBe(true);
+	});
+
+	it('renders gaslight era name in subtitle, not raw id', () => {
+		const char = representativeCharacter();
+		char.era = 'gaslight' as Era;
+		const gaslightDoc = buildDocDefinition(
+			char,
+			'Consulting Detective',
+			FIXTURE_SKILLS,
+			FIXTURE_OCCUPATIONS,
+			FIXTURE_CONTENT_PACK
+		);
+		const json = JSON.stringify(gaslightDoc);
+		expect(json).toContain('Gaslight (1880');
+		expect(json).not.toContain('"gaslight Era"');
 	});
 
 	it('renders as a single-page PDF even with worst-case backstory', async () => {

@@ -125,6 +125,13 @@ describe('validateFinalInvestigator', () => {
 		}
 	});
 
+	it('accepts a gaslight-era investigator', () => {
+		const { char } = buildValidFinal();
+		char.era = 'gaslight';
+		const result = validateFinalInvestigator(char);
+		expect(result.valid).toBe(true);
+	});
+
 	it('rejects skill point overspend', () => {
 		const { char } = buildValidFinal();
 		// Professor budget is EDU×4 = 320. Spend 5 × 99 = 495 to blow past it.

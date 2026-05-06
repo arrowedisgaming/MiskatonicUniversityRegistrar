@@ -98,6 +98,22 @@ describe('getSkillsByGroup', () => {
 	});
 });
 
+describe('filterOccupationsByEra — gaslight', () => {
+	it('returns gaslight-tagged occupations', () => {
+		const occs = [
+			occupation({ id: 'a', eras: ['gaslight'] }),
+			occupation({ id: 'b', eras: ['1920s'] }),
+			occupation({ id: 'c', eras: ['gaslight', '1920s'] }),
+			occupation({ id: 'd', eras: ['all'] })
+		];
+		const result = filterOccupationsByEra(occs, 'gaslight').map((o) => o.id);
+		expect(result).toContain('a');
+		expect(result).not.toContain('b');
+		expect(result).toContain('c');
+		expect(result).toContain('d'); // 'all' wildcard
+	});
+});
+
 describe('skill group constants', () => {
 	it('expose the four interpersonal skills used by occupation choice slots', () => {
 		expect(INTERPERSONAL_SKILLS).toHaveLength(4);
