@@ -463,7 +463,7 @@
 		pdfExporting = true;
 		try {
 			const occName = occupation?.name ?? 'Unknown';
-			const pdfBytes = await generatePDF(char, occName, data.skills, data.occupations);
+			const pdfBytes = await generatePDF(char, occName, data.skills, data.occupations, data.contentPack);
 			const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');

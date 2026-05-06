@@ -18,14 +18,15 @@ export interface WealthResult {
  */
 export function calculateStartingWealth(
 	creditRating: number,
-	wealthTable: WealthEntry[]
+	wealthTable: WealthEntry[],
+	currencySymbol: string = '$'
 ): WealthResult {
 	const entry = wealthTable.find(
 		(w) => creditRating >= w.minCR && creditRating <= w.maxCR
 	);
 
 	if (!entry) {
-		return { livingStandard: 'Unknown', spendingLevel: 0, cash: 0, assets: 0, assetsLabel: '$0' };
+		return { livingStandard: 'Unknown', spendingLevel: 0, cash: 0, assets: 0, assetsLabel: `${currencySymbol}0` };
 	}
 
 	const legacyCashMultiplier = entry.cash ?? 0;
@@ -37,6 +38,6 @@ export function calculateStartingWealth(
 		spendingLevel: entry.spendingLevel,
 		cash,
 		assets,
-		assetsLabel: entry.assetsLabel ?? `$${assets.toLocaleString()}`
+		assetsLabel: entry.assetsLabel ?? `${currencySymbol}${assets.toLocaleString()}`
 	};
 }

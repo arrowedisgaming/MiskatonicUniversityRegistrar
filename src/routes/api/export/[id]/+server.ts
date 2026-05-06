@@ -5,7 +5,7 @@ import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
 import { eq, and } from 'drizzle-orm';
 import type { CoCCharacterData } from '$lib/types/character';
-import { getOccupations } from '$lib/server/content/loader';
+import { getOccupations, getContentPack } from '$lib/server/content/loader';
 import { exportToJSON } from '$lib/export/json-export';
 import { exportToMarkdown } from '$lib/export/markdown-export';
 import { migrateCharacterData } from '$lib/engine/character-migration';
@@ -28,6 +28,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const character = migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData;
 	const occupations = getOccupations();
+	const contentPack = getContentPack();
 	const occupationName = occupations.find((o) => o.id === character.occupation?.occupationId)?.name ?? 'Unknown';
 	const safeName = (character.name || 'investigator').replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-');
 
@@ -42,7 +43,7 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		case 'md': {
-			const markdown = exportToMarkdown(character, occupationName);
+			const markdown = exportToMarkdown(character, occupationName, contentPack);
 			return new Response(markdown, {
 				headers: {
 					'Content-Type': 'text/markdown; charset=utf-8',

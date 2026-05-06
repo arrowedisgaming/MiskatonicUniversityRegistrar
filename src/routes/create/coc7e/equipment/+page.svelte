@@ -15,7 +15,9 @@
 	const creditRatingSkill = $wizard.character.skills.find((s) => s.skillId === 'credit-rating');
 	const creditRating = creditRatingSkill?.total ?? 0;
 	const wealthTable = data.contentPack.wealthTables[$wizard.character.era] ?? data.contentPack.wealthTable ?? [];
-	const wealth = calculateStartingWealth(creditRating, wealthTable);
+	const eraDefinition = data.contentPack.eras.find((e) => e.id === $wizard.character.era);
+	const currencySymbol = eraDefinition?.currencySymbol ?? '$';
+	const wealth = calculateStartingWealth(creditRating, wealthTable, currencySymbol);
 
 	// Equipment state
 	let items = $state<EquipmentItem[]>(

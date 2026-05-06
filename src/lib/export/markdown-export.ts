@@ -3,10 +3,15 @@
  */
 
 import type { CoCCharacterData } from '$lib/types/character';
+import type { CoCContentPack } from '$lib/types/content-pack';
 import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 import { halfValue, fifthValue } from '$lib/engine/characteristics';
 
-export function exportToMarkdown(character: CoCCharacterData, occupationName: string): string {
+function getEraLabel(era: string, contentPack: CoCContentPack): string {
+	return contentPack.eras.find((e) => e.id === era)?.name ?? era;
+}
+
+export function exportToMarkdown(character: CoCCharacterData, occupationName: string, contentPack: CoCContentPack): string {
 	const c = character;
 	const lines: string[] = [];
 
@@ -36,7 +41,7 @@ export function exportToMarkdown(character: CoCCharacterData, occupationName: st
 	// Title
 	lines.push(`# ${c.name || 'Unnamed Investigator'}`);
 	lines.push('');
-	lines.push(`**${occupationName}** · Age ${c.age} · ${c.era} Era`);
+	lines.push(`**${occupationName}** · Age ${c.age} · ${getEraLabel(c.era, contentPack)} Era`);
 	lines.push('');
 
 	// Characteristics

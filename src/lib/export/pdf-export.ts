@@ -8,6 +8,7 @@
 
 import type { CoCCharacterData } from '$lib/types/character';
 import type {
+	CoCContentPack,
 	CoCSkillDefinition,
 	CoCOccupationDefinition
 } from '$lib/types/content-pack';
@@ -53,6 +54,10 @@ const BACKSTORY_VALUE_TRUNCATE = 128;
 const EQUIPMENT_TRUNCATE = 240;
 const MAX_WEAPON_ROWS = 6;
 
+function getEraLabel(era: string, contentPack: CoCContentPack): string {
+	return contentPack.eras.find((e) => e.id === era)?.name ?? era;
+}
+
 let pdfMakeInstance: any = null;
 
 async function getPdfMake() {
@@ -68,9 +73,10 @@ export async function generatePDF(
 	character: CoCCharacterData,
 	occupationName: string,
 	skills: CoCSkillDefinition[],
-	occupations: CoCOccupationDefinition[]
+	occupations: CoCOccupationDefinition[],
+	contentPack: CoCContentPack
 ): Promise<Uint8Array> {
-	const docDefinition = buildDocDefinition(character, occupationName, skills, occupations);
+	const docDefinition = buildDocDefinition(character, occupationName, skills, occupations, contentPack);
 	const pdfMake = await getPdfMake();
 	const pdfDoc = pdfMake.createPdf(docDefinition);
 	return await pdfDoc.getBuffer();
@@ -80,7 +86,8 @@ export function buildDocDefinition(
 	character: CoCCharacterData,
 	occupationName: string,
 	skills: CoCSkillDefinition[],
-	occupations: CoCOccupationDefinition[]
+	occupations: CoCOccupationDefinition[],
+	contentPack: CoCContentPack
 ): Record<string, unknown> {
 	const occupation = findOccupation(occupations, character.occupation?.occupationId);
 	const skillRows = buildSkillRows(character, skills, occupation);
@@ -96,7 +103,7 @@ export function buildDocDefinition(
 			alignment: 'center' as const
 		},
 		content: [
-			buildHeader(character, occupationName),
+			buildHeader(character, occupationName, contentPack),
 			{ text: '', margin: [0, 4, 0, 0] },
 			buildStatsRow(character),
 			{ text: '', margin: [0, 6, 0, 0] },
@@ -139,12 +146,12 @@ export function buildDocDefinition(
 
 // --- Sections ---
 
-function buildHeader(c: CoCCharacterData, occupationName: string) {
+function buildHeader(c: CoCCharacterData, occupationName: string, contentPack: CoCContentPack) {
 	const name = truncate(c.name || 'Unnamed Investigator', NAME_TRUNCATE);
 	const subtitleParts = [
 		occupationName,
 		`Age ${c.age}`,
-		`${c.era} Era`,
+		`${getEraLabel(c.era, contentPack)} Era`,
 		c.residence,
 		c.birthplace ? `b. ${c.birthplace}` : '',
 		c.pronouns

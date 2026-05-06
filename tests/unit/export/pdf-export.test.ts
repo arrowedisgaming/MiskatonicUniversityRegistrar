@@ -4,8 +4,17 @@ import { createBlankCharacter } from '$lib/types/character';
 import { BACKSTORY_KEYS } from '$lib/engine/backstory';
 import type {
 	CoCSkillDefinition,
-	CoCOccupationDefinition
+	CoCOccupationDefinition,
+	CoCContentPack
 } from '$lib/types/content-pack';
+
+const FIXTURE_CONTENT_PACK = {
+	eras: [
+		{ id: '1920s', name: '1920s Classic', description: '', currencyUnit: 'dollars', currencySymbol: '$' },
+		{ id: 'modern', name: 'Modern Day', description: '', currencyUnit: 'dollars', currencySymbol: '$' },
+		{ id: 'gaslight', name: 'Gaslight (1880–1899)', description: '', currencyUnit: 'pounds', currencySymbol: '£' }
+	]
+} as unknown as CoCContentPack;
 
 const skill = (over: Partial<CoCSkillDefinition>): CoCSkillDefinition => ({
 	id: 'x',
@@ -116,7 +125,8 @@ describe('buildDocDefinition', () => {
 		representativeCharacter(),
 		'Antiquarian',
 		FIXTURE_SKILLS,
-		FIXTURE_OCCUPATIONS
+		FIXTURE_OCCUPATIONS,
+		FIXTURE_CONTENT_PACK
 	);
 
 	it('uses Letter page size', () => {
@@ -221,7 +231,8 @@ describe('buildDocDefinition', () => {
 			character,
 			'Antiquarian',
 			FIXTURE_SKILLS,
-			FIXTURE_OCCUPATIONS
+			FIXTURE_OCCUPATIONS,
+			FIXTURE_CONTENT_PACK
 		);
 		const personalDescriptionCell = findTableWithFirstCellText(expandedDoc, 'PERSONAL DESCRIPTION');
 		expect(personalDescriptionCell).toBeTruthy();
@@ -243,7 +254,7 @@ describe('buildDocDefinition', () => {
 			worst.backstory[k] = `${long} ${long} ${long}`;
 		}
 
-		const worstDoc: any = buildDocDefinition(worst, 'Antiquarian', FIXTURE_SKILLS, FIXTURE_OCCUPATIONS);
+		const worstDoc: any = buildDocDefinition(worst, 'Antiquarian', FIXTURE_SKILLS, FIXTURE_OCCUPATIONS, FIXTURE_CONTENT_PACK);
 		// Make the output parseable by a lightweight page-count heuristic.
 		// pdfmake defaults to compression, which can hide the "/Type /Page" markers.
 		worstDoc.compress = false;
