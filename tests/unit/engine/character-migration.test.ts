@@ -40,5 +40,6 @@ describe('migrateCharacterData', () => {
 		expect(migrated.equipment.livingStandard).toBe('Average');
 		expect(migrated.equipment.assets).toBe(2050);
 		expect(migrated.equipment.assetsLabel).toBe('$2,050');
+		expect(migrated.equipment.assetsList).toEqual([]);
 	});
 });

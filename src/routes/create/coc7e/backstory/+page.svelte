@@ -1,6 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { BACKSTORY_KEYS, type BackstoryKey } from '$lib/engine/backstory';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
+	import type { BackstoryTableEntry, CoCContentPack, NameTableEntry } from '$lib/types/content-pack';
+
+	const data = page.data as {
+		contentPack: CoCContentPack;
+		names?: NameTableEntry[];
+		backstoryTables?: BackstoryTableEntry[];
+	};
+	const namesData = $derived(data.names ?? []);
+	const backstoryTablesData = $derived(data.backstoryTables ?? []);
 
 	// Identity fields
 	let name = $state($wizard.character.name);
@@ -44,6 +55,34 @@
 	});
 
 	let canProceed = $derived(name.trim().length > 0);
+	let availableNameTables = $derived(namesData.filter((table) => table.era === $wizard.character.era || table.era === 'all'));
+	let backstoryTableByField = $derived(new Map(backstoryTablesData.map((table) => [table.field, table.entries])));
+
+	function randomFrom<T>(items: T[]): T | null {
+		if (items.length === 0) return null;
+		return items[Math.floor(Math.random() * items.length)] ?? null;
+	}
+
+	function randomName() {
+		const table = randomFrom(availableNameTables);
+		if (!table) return;
+		const given = randomFrom(table.given);
+		const family = randomFrom(table.family);
+		name = [given, family].filter(Boolean).join(' ');
+	}
+
+	function rollBackstoryField(field: BackstoryKey, overwrite = true) {
+		if (!overwrite && backstoryValues[field]?.trim()) return;
+		const entries = backstoryTableByField.get(field) ?? [];
+		const entry = randomFrom(entries);
+		if (entry) backstoryValues[field] = entry;
+	}
+
+	function fillEmptyBackstory() {
+		for (const field of BACKSTORY_KEYS) {
+			rollBackstoryField(field, false);
+		}
+	}
 
 	function proceed() {
 		wizard.updateCharacter((c) => ({
@@ -86,9 +125,17 @@
 		<div class="grid gap-4 sm:grid-cols-2">
 			<div>
 				<label for="name" class="mb-1 block text-sm font-medium">Name <span class="text-[var(--color-destructive)]">*</span></label>
-				<input id="name" type="text" bind:value={name} placeholder="Dr. Henry Armitage"
-					class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm
-						placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]" />
+				<div class="flex gap-2">
+					<input id="name" type="text" bind:value={name} placeholder="Dr. Henry Armitage"
+						class="min-w-0 flex-1 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm
+							placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]" />
+					{#if availableNameTables.length > 0}
+						<button type="button" onclick={randomName}
+							class="rounded-md border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-accent)]">
+							Random
+						</button>
+					{/if}
+				</div>
 			</div>
 			<div>
 				<label for="gender" class="mb-1 block text-sm font-medium">Gender</label>
@@ -120,13 +167,27 @@
 	<!-- Backstory -->
 	<div class="space-y-4">
 		<h2 class="text-lg font-semibold" data-heading>Backstory</h2>
+		{#if backstoryTablesData.length > 0}
+			<button type="button" onclick={fillEmptyBackstory}
+				class="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]">
+				Fill all empty
+			</button>
+		{/if}
 		<p class="text-sm text-[var(--color-muted-foreground)]" data-flavor>
 			&ldquo;The most merciful thing in the world is the inability of the human mind to correlate all its contents.&rdquo;
 		</p>
 
 		{#each backstoryFields as field}
 			<div>
-				<label for={field.key} class="mb-1 block text-sm font-medium">{field.label}</label>
+				<div class="mb-1 flex items-center justify-between gap-2">
+					<label for={field.key} class="block text-sm font-medium">{field.label}</label>
+					{#if backstoryTableByField.get(field.key)?.length}
+						<button type="button" onclick={() => rollBackstoryField(field.key)}
+							class="rounded border border-[var(--color-border)] px-2 py-0.5 text-xs hover:bg-[var(--color-accent)]">
+							Roll
+						</button>
+					{/if}
+				</div>
 				<textarea
 					id={field.key}
 					bind:value={backstoryValues[field.key]}

@@ -69,6 +69,11 @@ export function completeDiceRoll(id: number): void {
 	if (next) startRoll(next);
 }
 
+export function skipActiveDiceRoll(): void {
+	if (!active) return;
+	completeDiceRoll(active.id);
+}
+
 function startRoll(roll: QueuedDiceRoll): void {
 	active = roll;
 	diceRollState.set({ id: roll.id, request: roll.request });

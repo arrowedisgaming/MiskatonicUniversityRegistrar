@@ -66,7 +66,9 @@ export const contentPackSchema = z.object({
 	files: z.object({
 		skills: z.string(),
 		occupations: z.string(),
-		equipment: z.string()
+		equipment: z.string(),
+		names: z.string().optional(),
+		backstoryTables: z.string().optional()
 	}),
 	eras: z.array(eraDefinition).min(1),
 	characteristicMethods: z.array(characteristicMethod).min(1),
@@ -150,3 +152,16 @@ export const equipmentSchema = z.object({
 	weapons: z.array(weaponDefinitionSchema),
 	commonItems: z.record(z.string(), z.array(z.string()))
 });
+
+export const namesSchema = z.array(z.object({
+	era: z.string().min(1),
+	region: z.string().min(1),
+	gender: z.string().min(1),
+	given: z.array(z.string().min(1).max(100)).max(500),
+	family: z.array(z.string().min(1).max(100)).max(500)
+}));
+
+export const backstoryTablesSchema = z.array(z.object({
+	field: z.string().min(1).max(100),
+	entries: z.array(z.string().min(1).max(1000)).max(500)
+}));

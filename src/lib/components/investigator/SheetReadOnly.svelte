@@ -110,7 +110,7 @@
 {/if}
 
 <!-- Equipment -->
-{#if character.equipment.items.length > 0 || character.equipment.weapons.length > 0}
+{#if character.equipment.items.length > 0 || character.equipment.weapons.length > 0 || (character.equipment.assetsList ?? []).length > 0 || character.equipment.assetsLabel}
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
 
@@ -145,6 +145,23 @@
 
 		{#if character.equipment.items.length > 0}
 			<p class="text-sm">{character.equipment.items.map((i) => i.name).join(', ')}</p>
+		{/if}
+
+		{#if (character.equipment.assetsList ?? []).length > 0}
+			<div class="mt-3">
+				<h3 class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Itemized Assets</h3>
+				<ul class="space-y-1 text-sm">
+					{#each character.equipment.assetsList ?? [] as asset}
+						<li>
+							<span class="font-medium">{asset.name}</span>
+							<span class="text-[var(--color-muted-foreground)]">
+								{asset.value.toLocaleString()}{asset.type ? ` · ${asset.type}` : ''}
+								{asset.description ? ` · ${asset.description}` : ''}
+							</span>
+						</li>
+					{/each}
+				</ul>
+			</div>
 		{/if}
 	</div>
 {/if}

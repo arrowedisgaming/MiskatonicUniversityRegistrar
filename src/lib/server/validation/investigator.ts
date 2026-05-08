@@ -21,9 +21,14 @@ import { describeWeaponDiceLimitViolations } from '$lib/engine/weapon-damage-rol
 import { isCustomOccupation } from '$lib/engine/occupation-filter';
 
 export type ValidationResult = { valid: true } | { valid: false; errors: string[] };
+export type InvestigatorValidationPhase = 'creation' | 'play';
 
-export function validateFinalInvestigator(char: CoCCharacterData): ValidationResult {
+export function validateFinalInvestigator(
+	char: CoCCharacterData,
+	options: { phase?: InvestigatorValidationPhase } = {}
+): ValidationResult {
 	const errors: string[] = [];
+	const phase = options.phase ?? 'play';
 
 	if (!char.occupation) {
 		errors.push('Final investigator must have an occupation');
@@ -102,7 +107,8 @@ export function validateFinalInvestigator(char: CoCCharacterData): ValidationRes
 		totalOccupationPoints,
 		totalPersonalPoints,
 		creditRatingRange,
-		eligible
+		eligible,
+		{ maxSkillTotal: phase === 'creation' ? 90 : 99 }
 	);
 
 	if (!skillCheck.valid) errors.push(...skillCheck.errors);
@@ -144,6 +150,13 @@ export function validateFinalInvestigator(char: CoCCharacterData): ValidationRes
 
 	const weaponDiceMsg = describeWeaponDiceLimitViolations(char);
 	if (weaponDiceMsg) errors.push(weaponDiceMsg);
+
+	const blankWeaponCount = char.equipment.weapons.filter((w) => !w.name.trim()).length;
+	if (blankWeaponCount > 0) {
+		errors.push(
+			`Remove or name ${blankWeaponCount} blank weapon row${blankWeaponCount === 1 ? '' : 's'} before finalizing`
+		);
+	}
 
 	return errors.length === 0 ? { valid: true } : { valid: false, errors };
 }

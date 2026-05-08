@@ -44,6 +44,7 @@
 	let playRollHistory = $state<PlayRollHistoryEntry[]>(untrack(() => [...(char.playRollHistory ?? [])]));
 	let diceRolling = $state(false);
 	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
+	let lastRollClearTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// All skills including base/unallocated ones (full play-mode list), sorted alphabetically
 	const sortedSkills = $derived(
@@ -90,6 +91,15 @@
 		}
 	}
 
+	function showTransientRollBanner(next: { title: string; detail: string }) {
+		lastRollBanner = next;
+		if (lastRollClearTimer) clearTimeout(lastRollClearTimer);
+		lastRollClearTimer = setTimeout(() => {
+			lastRollBanner = null;
+			lastRollClearTimer = null;
+		}, 3500);
+	}
+
 	async function rollCharacteristic(statId: CharacteristicId) {
 		if (diceRolling) return;
 		const target = char.characteristics.values[statId];
@@ -118,7 +128,7 @@
 				isFumble: checked.isFumble
 			};
 			playRollHistory = [entry, ...playRollHistory].slice(0, ROLL_HISTORY_KEEP);
-			lastRollBanner = { title: `${label}: ${outcomeDescription(checked)}`, detail: `Rolled ${rawRoll}` };
+			showTransientRollBanner({ title: `${label}: ${outcomeDescription(checked)}`, detail: `Rolled ${rawRoll}` });
 			persistToWizard();
 		} finally {
 			diceRolling = false;
@@ -158,7 +168,7 @@
 				isFumble: checked.isFumble
 			};
 			playRollHistory = [entry, ...playRollHistory].slice(0, ROLL_HISTORY_KEEP);
-			lastRollBanner = { title: `${label}: ${outcomeDescription(checked)}`, detail: `Rolled ${rawRoll}` };
+			showTransientRollBanner({ title: `${label}: ${outcomeDescription(checked)}`, detail: `Rolled ${rawRoll}` });
 			persistToWizard();
 		} finally {
 			diceRolling = false;
@@ -223,12 +233,16 @@
 	</div>
 
 	<!-- Last roll banner -->
-	{#if lastRollBanner}
-		<div class="rounded-md border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 px-4 py-2.5 text-sm">
-			<span class="font-semibold">{lastRollBanner.title}</span>
-			<span class="ml-2 text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</span>
-		</div>
-	{/if}
+	<div class="min-h-12">
+		{#if diceRolling}
+			<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">Rolling…</div>
+		{:else if lastRollBanner}
+			<div class="rounded-md border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 px-4 py-2.5 text-sm">
+				<span class="font-semibold">{lastRollBanner.title}</span>
+				<span class="ml-2 text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</span>
+			</div>
+		{/if}
+	</div>
 
 	<!-- Stat trackers -->
 	<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">

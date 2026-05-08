@@ -61,6 +61,10 @@ function getEraLabel(era: string, contentPack: CoCContentPack): string {
 	return contentPack.eras.find((e) => e.id === era)?.name ?? era;
 }
 
+function getEraCurrencySymbol(era: string, contentPack: CoCContentPack): string {
+	return contentPack.eras.find((e) => e.id === era)?.currencySymbol ?? '$';
+}
+
 let pdfMakeInstance: any = null;
 
 async function getPdfMake() {
@@ -108,7 +112,7 @@ export function buildDocDefinition(
 		content: [
 			buildHeader(character, occupationName, contentPack),
 			{ text: '', margin: [0, 4, 0, 0] },
-			buildStatsRow(character),
+			buildStatsRow(character, contentPack),
 			{ text: '', margin: [0, 6, 0, 0] },
 			buildSkillsSection(skillRows)
 		],
@@ -188,7 +192,8 @@ function bannerCell(text: string) {
 	};
 }
 
-function buildStatsRow(c: CoCCharacterData) {
+function buildStatsRow(c: CoCCharacterData, contentPack: CoCContentPack) {
+	const currencySymbol = getEraCurrencySymbol(c.era, contentPack);
 	return {
 		columns: [
 			{
@@ -197,7 +202,7 @@ function buildStatsRow(c: CoCCharacterData) {
 					bannerCell('Characteristics'),
 					buildCharacteristicsTable(c),
 					{ text: '', margin: [0, 6, 0, 0] as [number, number, number, number] },
-					buildCombatAndPossessions(c)
+					buildCombatAndPossessions(c, currencySymbol)
 				]
 			},
 			{ width: 12, text: '' },
@@ -209,7 +214,7 @@ function buildStatsRow(c: CoCCharacterData) {
 					{ text: '', margin: [0, 4, 0, 0] as [number, number, number, number] },
 					bannerCell('Backstory'),
 					buildBackstoryGrid(c),
-					buildFinancesRow(c)
+					buildFinancesRow(c, currencySymbol)
 				]
 			}
 		]
@@ -347,8 +352,10 @@ function buildTrackersGrid(c: CoCCharacterData) {
 }
 
 function formatRowName(row: SkillRow): string {
-	const marker = row.isOccupation ? '● ' : row.isImproved ? '◐ ' : '○ ';
-	return marker + row.displayName;
+	// Unicode circle glyphs (●, ◐, ○) tofu in pdfmake's default Roboto. Use a
+	// plain bullet (which Roboto supports) and differentiate occupation /
+	// improved skills via font weight & italics on the cell, not by glyph.
+	return `• ${row.displayName}`;
 }
 
 function buildSkillsSection(rows: SkillRow[]) {
@@ -357,14 +364,15 @@ function buildSkillsSection(rows: SkillRow[]) {
 	const columns = distributeIntoColumns(printableRows, SKILL_COLUMNS);
 
 	const renderColumn = (colRows: SkillRow[]) => {
-		const body: Array<Array<{ text: string; style: string }>> = colRows.map((row) => {
+		const body: any[] = colRows.map((row) => {
 			const valueText = row.value === null ? '' : `${row.value}`;
 			const halfText = row.value === null ? '' : `${halfValue(row.value)}`;
 			const fifthText = row.value === null ? '' : `${fifthValue(row.value)}`;
 			return [
 				{
 					text: formatRowName(row),
-					style: row.isBlankSlot ? 'skillBlank' : 'skillName'
+					style: row.isBlankSlot ? 'skillBlank' : 'skillName',
+					bold: row.isOccupation
 				},
 				{ text: valueText, style: 'skillValue' },
 				{ text: halfText, style: 'skillSub' },
@@ -405,7 +413,7 @@ function buildSkillsSection(rows: SkillRow[]) {
 	return { stack: [bannerCell('Investigator Skills'), { columns: cols }] };
 }
 
-function buildWeaponsAndFinances(c: CoCCharacterData) {
+function buildWeaponsAndFinances(c: CoCCharacterData, currencySymbol: string) {
 	const eq = c.equipment;
 	const stack: any[] = [bannerCell('Combat & Possessions')];
 
@@ -418,6 +426,9 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 
 	const overflowWeapons = Math.max(0, eq.weapons.length - weaponRows.length);
 	const overflowGear = Math.max(0, eq.items.length - gearRows.length);
+	const assetSummary = (eq.assetsList ?? []).slice(0, 2).map((asset) =>
+		`${asset.name}${asset.value ? ` (${currencySymbol}${asset.value.toLocaleString()})` : ''}`
+	);
 
 	const body: any[] = [
 		[
@@ -470,15 +481,24 @@ function buildWeaponsAndFinances(c: CoCCharacterData) {
 		});
 	}
 
+	if (assetSummary.length > 0) {
+		stack.push({
+			text: `Assets: ${assetSummary.join(', ')}${(eq.assetsList ?? []).length > assetSummary.length ? ', +' + ((eq.assetsList ?? []).length - assetSummary.length) : ''}`,
+			fontSize: 6.5,
+			color: PDF_TEXT_SECONDARY,
+			margin: [0, 0, 0, 3] as [number, number, number, number]
+		});
+	}
+
 	return { stack };
 }
 
-function buildFinancesRow(c: CoCCharacterData) {
+function buildFinancesRow(c: CoCCharacterData, currencySymbol: string) {
 	const eq = c.equipment;
 	const financeParts = [
 		eq.livingStandard ? `Living: ${eq.livingStandard}` : '',
-		eq.spendingLevel ? `Spend: $${eq.spendingLevel.toLocaleString()}` : '',
-		`Cash: $${(eq.cash || 0).toLocaleString()}`,
+		eq.spendingLevel ? `Spend: ${currencySymbol}${eq.spendingLevel.toLocaleString()}` : '',
+		`Cash: ${currencySymbol}${(eq.cash || 0).toLocaleString()}`,
 		eq.assetsLabel ? `Assets: ${eq.assetsLabel}` : ''
 	].filter(Boolean);
 
@@ -491,10 +511,10 @@ function buildFinancesRow(c: CoCCharacterData) {
 	};
 }
 
-function buildCombatAndPossessions(c: CoCCharacterData) {
+function buildCombatAndPossessions(c: CoCCharacterData, currencySymbol: string) {
 	// Same content as the old bottom section, but placed under Characteristics so
 	// the left column uses space that would otherwise be blank.
-	return buildWeaponsAndFinances(c);
+	return buildWeaponsAndFinances(c, currencySymbol);
 }
 
 function normalizeBackstoryValue(raw: string): string {

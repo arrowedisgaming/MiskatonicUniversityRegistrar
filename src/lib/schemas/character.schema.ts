@@ -111,6 +111,12 @@ const playRollHistoryWeaponDamage = z.object({
 });
 
 const playRollHistoryEntry = z.union([playRollHistoryPercentile, playRollHistoryWeaponDamage]);
+const assetItem = z.object({
+	name: z.string().min(1).max(200),
+	value: z.number().min(0).max(1_000_000_000),
+	type: z.string().max(100),
+	description: z.string().max(1000).optional()
+});
 
 export const cocCharacterDataSchema = z.object({
 	schemaVersion: z.number().int().positive(),
@@ -170,6 +176,7 @@ export const cocCharacterDataSchema = z.object({
 			ammo: z.number().nullable(),
 			malfunction: z.number().nullable()
 		})).max(50),
+		assetsList: z.array(assetItem).max(50).default([]),
 		cash: z.number().min(0).max(1_000_000_000),
 		assets: z.number().min(0).max(1_000_000_000),
 		assetsLabel: z.string().max(200),

@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
 	applyAgeAdjustments,
 	makeEduImprovementCheck,
-	makeYouthLuckAdjustment
+	makeYouthLuckAdjustment,
+	recomputeEduImprovementChecks
 } from '$lib/engine/age-adjustments';
 import type { AgeModifierEntry } from '$lib/types/content-pack';
 
@@ -63,5 +64,47 @@ describe('applyAgeAdjustments', () => {
 		expect(result.values.con).toBe(35);
 		expect(result.values.dex).toBe(35);
 		expect(result.values.app).toBe(35);
+	});
+});
+
+describe('recomputeEduImprovementChecks', () => {
+	it('replays existing checks deterministically from a starting EDU', () => {
+		const checks = [
+			makeEduImprovementCheck(60, 80, 4),  // success → 64
+			makeEduImprovementCheck(64, 50, null), // miss
+			makeEduImprovementCheck(64, 70, 6)   // success → 70
+		];
+		const replayed = recomputeEduImprovementChecks(60, checks);
+		expect(replayed).toEqual(checks);
+	});
+
+	it('caps resultingEdu at 99 even when accumulated improvements would exceed it', () => {
+		const replayed = recomputeEduImprovementChecks(95, [
+			makeEduImprovementCheck(95, 96, 8),  // 95 + 8 = 103, capped to 99
+			makeEduImprovementCheck(99, 100, 5)  // 99 + 5 = 104, still capped
+		]);
+		expect(replayed[0].resultingEdu).toBe(99);
+		expect(replayed[1].resultingEdu).toBe(99);
+	});
+
+	it('returns a stable prefix when trimmed (age-bracket shrink case)', () => {
+		const fullChecks = [
+			makeEduImprovementCheck(60, 80, 4),
+			makeEduImprovementCheck(64, 70, 3),
+			makeEduImprovementCheck(67, 90, 5)
+		];
+		const trimmed = recomputeEduImprovementChecks(60, fullChecks.slice(0, 1));
+		expect(trimmed.length).toBe(1);
+		expect(trimmed[0].resultingEdu).toBe(fullChecks[0].resultingEdu);
+	});
+
+	it('clamps malformed roll values into the legal range without crashing', () => {
+		const garbage = [
+			{ ...makeEduImprovementCheck(60, 80, 4), roll: 999, improvementRoll: 99 }
+		];
+		const replayed = recomputeEduImprovementChecks(60, garbage);
+		expect(replayed[0].roll).toBeLessThanOrEqual(100);
+		expect(replayed[0].roll).toBeGreaterThanOrEqual(1);
+		expect(replayed[0].improvementRoll === null || replayed[0].improvementRoll <= 10).toBe(true);
 	});
 });

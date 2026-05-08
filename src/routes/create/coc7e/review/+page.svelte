@@ -231,7 +231,7 @@
 	{/if}
 
 	<!-- Equipment -->
-	{#if char.equipment.items.length > 0 || char.equipment.weapons.length > 0}
+	{#if char.equipment.items.length > 0 || char.equipment.weapons.length > 0 || (char.equipment.assetsList ?? []).length > 0}
 		<div in:dossierFiling|global={{ delay: 720 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Equipment &amp; Finances</h2>
 			<p class="mb-2 text-sm">
@@ -253,6 +253,15 @@
 			{#if char.equipment.items.length > 0}
 				<h4 class="mt-2 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Items</h4>
 				<p class="text-sm">{char.equipment.items.map((i) => i.name).join(', ')}</p>
+			{/if}
+
+			{#if (char.equipment.assetsList ?? []).length > 0}
+				<h4 class="mt-2 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Itemized Assets</h4>
+				<ul class="text-sm">
+					{#each char.equipment.assetsList ?? [] as asset}
+						<li>{asset.name} — {asset.value.toLocaleString()}{asset.type ? ` (${asset.type})` : ''}</li>
+					{/each}
+				</ul>
 			{/if}
 		</div>
 	{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { PageProps } from './$types';
+	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 	import type { CharacteristicId } from '$lib/types/common';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
@@ -19,6 +20,7 @@
 	import type { CoCSkillDefinition, WeaponDefinition } from '$lib/types/content-pack';
 	import {
 		CHARACTER_SCHEMA_VERSION,
+		type AssetItem,
 		type CharacterWeapon,
 		type CoCCharacterData,
 		type CoCSkillAllocation,
@@ -72,6 +74,7 @@
 	);
 	let diceRolling = $state(false);
 	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
+	let lastRollClearTimer: ReturnType<typeof setTimeout> | null = null;
 
 	let isDirty = $state(false);
 
@@ -86,6 +89,7 @@
 	let skillSearchQuery = $state('');
 	let equipWeaponSearchQuery = $state('');
 	let equipItemDraftName = $state('');
+	let assetDraft = $state<AssetItem>({ name: '', value: 0, type: '', description: '' });
 	let hideUncommonAndRestrictedSkills = $state(true);
 	let skillCustomizeForAdd = $state<CoCSkillDefinition | null>(null);
 	let skillCustomizeNameInput = $state('');
@@ -100,6 +104,16 @@
 	function resetEquipAddUi() {
 		equipWeaponSearchQuery = '';
 		equipItemDraftName = '';
+		assetDraft = { name: '', value: 0, type: '', description: '' };
+	}
+
+	function showTransientRollBanner(next: { title: string; detail: string }) {
+		lastRollBanner = next;
+		if (lastRollClearTimer) clearTimeout(lastRollClearTimer);
+		lastRollClearTimer = setTimeout(() => {
+			lastRollBanner = null;
+			lastRollClearTimer = null;
+		}, 3500);
 	}
 
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
@@ -529,10 +543,10 @@
 				isFumble: checked.isFumble
 			};
 			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
-			lastRollBanner = {
+			showTransientRollBanner({
 				title: `${labelShort}: ${outcomeDescription(checked)}`,
 				detail: `Rolled ${rawRoll}`
-			};
+			});
 			await persistInvestigator();
 		} finally {
 			diceRolling = false;
@@ -575,10 +589,10 @@
 				isFumble: checked.isFumble
 			};
 			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
-			lastRollBanner = {
+			showTransientRollBanner({
 				title: `${labelShort}: ${outcomeDescription(checked)}`,
 				detail: `Rolled ${rawRoll}`
-			};
+			});
 			await persistInvestigator();
 		} finally {
 			diceRolling = false;
@@ -593,7 +607,7 @@
 		if (diceRolling) return;
 		const plan = planWeaponDamageRoll(segment.trim(), char.derivedStats.damageBonus);
 		if (!plan.ok) {
-			lastRollBanner = { title: `${weapon.name} — damage`, detail: plan.reason };
+			showTransientRollBanner({ title: `${weapon.name} — damage`, detail: plan.reason });
 			return;
 		}
 
@@ -616,10 +630,10 @@
 				detail: plan.breakdownText
 			};
 			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
-			lastRollBanner = {
+			showTransientRollBanner({
 				title: `${labelPieces}: ${plan.total}`,
 				detail: plan.breakdownText
-			};
+			});
 			await persistInvestigator();
 		} finally {
 			diceRolling = false;
@@ -739,6 +753,39 @@
 		});
 	}
 
+	function addAssetDraft() {
+		const name = assetDraft.name.trim();
+		if (!name || !editChar) return;
+		const row: AssetItem = {
+			name,
+			value: Math.max(0, assetDraft.value || 0),
+			type: assetDraft.type.trim(),
+			description: assetDraft.description?.trim() || undefined
+		};
+		mutateEditChar((c) => ({
+			...c,
+			equipment: { ...c.equipment, assetsList: [...(c.equipment.assetsList ?? []), row] }
+		}));
+		assetDraft = { name: '', value: 0, type: '', description: '' };
+	}
+
+	function removeAssetAt(index: number) {
+		mutateEditChar((c) => ({
+			...c,
+			equipment: {
+				...c.equipment,
+				assetsList: (c.equipment.assetsList ?? []).filter((_, i) => i !== index)
+			}
+		}));
+	}
+
+	function updateAssetAt(index: number, patch: Partial<AssetItem>) {
+		mutateEditChar((c) => {
+			const assetsList = (c.equipment.assetsList ?? []).map((asset, i) => i === index ? { ...asset, ...patch } : asset);
+			return { ...c, equipment: { ...c.equipment, assetsList } };
+		});
+	}
+
 	function addCommonEquipmentItem(itemName: string) {
 		if (!editChar) return;
 		if (editChar.equipment.items.some((i) => i.name === itemName)) return;
@@ -847,6 +894,7 @@
 							<input
 								id="edit-age"
 								type="number"
+								use:preventNumberWheel
 								min="15"
 								max="89"
 								value={editChar.age}
@@ -1024,18 +1072,18 @@
 				{/if}
 			</div>
 
-			{#if diceRolling}
-				<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">
-					Rolling…
-				</div>
-			{/if}
-
-			{#if lastRollBanner}
-				<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]/30 px-3 py-2 text-sm">
-					<p class="font-semibold">{lastRollBanner.title}</p>
-					<p class="text-xs text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</p>
-				</div>
-			{/if}
+			<div class="min-h-16">
+				{#if diceRolling}
+					<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">
+						Rolling…
+					</div>
+				{:else if lastRollBanner}
+					<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]/30 px-3 py-2 text-sm">
+						<p class="font-semibold">{lastRollBanner.title}</p>
+						<p class="text-xs text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</p>
+					</div>
+				{/if}
+			</div>
 
 			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
 				{#each [
@@ -1149,6 +1197,7 @@
 									</button>
 									<input
 										type="number"
+										use:preventNumberWheel
 										min="0"
 										max="99"
 										value={v}
@@ -1342,6 +1391,7 @@
 								</button>
 								<input
 									type="number"
+									use:preventNumberWheel
 									min="0"
 									max="99"
 									value={skill.total}
@@ -1591,6 +1641,7 @@
 									Qty
 									<input
 										type="number"
+										use:preventNumberWheel
 										min="0"
 										value={item.quantity}
 										oninput={(e) => {
@@ -1619,8 +1670,90 @@
 						{/each}
 					</ul>
 				{/if}
+
+				<h3 class="mb-2 mt-6 text-sm font-semibold" data-heading>Assets</h3>
+				{#if (editChar.equipment.assetsList ?? []).length > 0}
+					<div class="mb-3 space-y-2 text-sm">
+						{#each editChar.equipment.assetsList ?? [] as asset, ai (ai)}
+							<div class="grid gap-2 rounded-md border border-[var(--color-border)]/40 p-2 sm:grid-cols-[1fr_7rem_9rem_auto]">
+								<input
+									type="text"
+									value={asset.name}
+									oninput={(e) => updateAssetAt(ai, { name: (e.currentTarget as HTMLInputElement).value })}
+									aria-label="Asset name"
+									class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+								/>
+								<input
+									type="number"
+									use:preventNumberWheel
+									min="0"
+									value={asset.value}
+									oninput={(e) => updateAssetAt(ai, { value: parseInt((e.currentTarget as HTMLInputElement).value) || 0 })}
+									aria-label="Asset value"
+									class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+								/>
+								<input
+									type="text"
+									value={asset.type}
+									oninput={(e) => updateAssetAt(ai, { type: (e.currentTarget as HTMLInputElement).value })}
+									aria-label="Asset type"
+									class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+								/>
+								<button
+									type="button"
+									onclick={() => removeAssetAt(ai)}
+									class="cursor-pointer rounded border border-[var(--color-border)] px-2 py-1 text-[10px] font-semibold uppercase hover:bg-[var(--color-destructive)]/15"
+								>
+									Remove
+								</button>
+								<input
+									type="text"
+									value={asset.description ?? ''}
+									oninput={(e) => updateAssetAt(ai, { description: (e.currentTarget as HTMLInputElement).value })}
+									placeholder="Description"
+									class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs sm:col-span-4"
+								/>
+							</div>
+						{/each}
+					</div>
+				{/if}
+				<div class="grid gap-2 rounded-md border border-[var(--color-border)]/40 p-2 sm:grid-cols-[1fr_7rem_9rem_auto]">
+					<input
+						type="text"
+						bind:value={assetDraft.name}
+						placeholder="Asset name"
+						class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+					/>
+					<input
+						type="number"
+						use:preventNumberWheel
+						min="0"
+						bind:value={assetDraft.value}
+						placeholder="Value"
+						class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+					/>
+					<input
+						type="text"
+						bind:value={assetDraft.type}
+						placeholder="Type"
+						class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs"
+					/>
+					<button
+						type="button"
+						onclick={addAssetDraft}
+						class="cursor-pointer rounded border border-[var(--color-border)] px-2 py-1 text-xs hover:bg-[var(--color-accent)]"
+					>
+						Add asset
+					</button>
+					<input
+						type="text"
+						bind:value={assetDraft.description}
+						placeholder="Description"
+						class="rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-xs sm:col-span-4"
+					/>
+				</div>
 		</div>
-	{:else if playMode && (char.equipment.items.length > 0 || char.equipment.weapons.length > 0)}
+	{:else if playMode && (char.equipment.items.length > 0 || char.equipment.weapons.length > 0 || (char.equipment.assetsList ?? []).length > 0)}
 		<!-- Play-mode equipment: weapon damage segments become roll buttons. Default render is in SheetReadOnly. -->
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Equipment</h2>
@@ -1680,6 +1813,23 @@
 
 				{#if char.equipment.items.length > 0}
 					<p class="text-sm">{char.equipment.items.map((i) => i.name).join(', ')}</p>
+				{/if}
+
+				{#if (char.equipment.assetsList ?? []).length > 0}
+					<div class="mt-3">
+						<h3 class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Itemized Assets</h3>
+						<ul class="space-y-1 text-sm">
+							{#each char.equipment.assetsList ?? [] as asset}
+								<li>
+									<span class="font-medium">{asset.name}</span>
+									<span class="text-[var(--color-muted-foreground)]">
+										{asset.value.toLocaleString()}{asset.type ? ` · ${asset.type}` : ''}
+										{asset.description ? ` · ${asset.description}` : ''}
+									</span>
+								</li>
+							{/each}
+						</ul>
+					</div>
 				{/if}
 		</div>
 	{/if}

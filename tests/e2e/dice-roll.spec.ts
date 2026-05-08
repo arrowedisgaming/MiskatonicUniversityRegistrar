@@ -10,7 +10,10 @@ test('characteristic dice results reveal after the roll animation completes', as
 
 	await expect(page.getByRole('button', { name: 'Reroll Standard Dice' })).toBeVisible();
 	await expect(page.locator('table')).toBeVisible();
-	await expect(page.getByRole('button', { name: 'Roll Luck' })).toBeVisible();
+	// Luck auto-rolls after characteristics complete (reconcileAutomaticRolls),
+	// so the button surfaces as "Reroll" rather than "Roll Luck" by the time the
+	// roll completes.
+	await expect(page.getByRole('button', { name: 'Reroll Luck' })).toBeVisible();
 });
 
 test('dice animation toggle skips the roll delay', async ({ page }) => {

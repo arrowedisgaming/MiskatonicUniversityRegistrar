@@ -183,10 +183,11 @@ describe('buildDocDefinition', () => {
 		expect(json).not.toContain('Computer Use');
 	});
 
-	it('marks Spot Hidden as occupation skill via filled marker', () => {
+	it('marks Spot Hidden as an occupation skill in bold', () => {
 		const json = JSON.stringify(doc);
-		// "● Spot Hidden" — the filled circle marker
-		expect(json).toMatch(/●\\?\s?Spot Hidden/);
+		// Renders as "• Spot Hidden" with bold:true on the cell. The bullet
+		// is in Roboto's glyph set; the older filled-circle marker tofu'd.
+		expect(json).toMatch(/"text":"• Spot Hidden"[^}]*?"bold":true/);
 	});
 
 	it('keeps attribute tracker boxes compact and visually centered', () => {

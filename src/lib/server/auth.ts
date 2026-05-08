@@ -101,9 +101,11 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 		},
 		callbacks: {
 			async jwt({ token, user, account, profile }) {
-				// Only resolve the DB row id on initial sign-in (when account is present).
-				// On subsequent token refreshes we just keep the id we already stored.
-				if (account && !token.id) {
+				// Resolve the DB row id whenever Auth.js gives us an account (initial
+				// sign-in / provider re-entry). Some providers/adapters may prefill a
+				// token id before this callback, but investigator ownership must use the
+				// local users.id value returned by our account-linking logic.
+				if (account) {
 					if (account.provider === 'credentials' && user?.id) {
 						token.id = user.id;
 						return token;

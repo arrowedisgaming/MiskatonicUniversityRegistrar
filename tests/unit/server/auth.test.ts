@@ -34,6 +34,21 @@ function freshDb(): TestDb {
 		);
 		CREATE UNIQUE INDEX accounts_provider_idx
 			ON accounts (provider, provider_account_id);
+		CREATE TABLE investigators (
+			id text PRIMARY KEY NOT NULL,
+			user_id text NOT NULL,
+			name text NOT NULL DEFAULT '',
+			era text NOT NULL DEFAULT '1920s',
+			mode text NOT NULL DEFAULT 'standard',
+			occupation text NOT NULL DEFAULT '',
+			data text NOT NULL,
+			is_draft integer NOT NULL DEFAULT 1,
+			is_archived integer NOT NULL DEFAULT 0,
+			share_id text,
+			is_public integer NOT NULL DEFAULT 0,
+			created_at integer NOT NULL,
+			updated_at integer NOT NULL
+		);
 	`);
 	return drizzle(sqlite, { schema });
 }
@@ -158,6 +173,50 @@ describe('findOrLinkOAuthAccount', () => {
 		expect(second!.id).toBe(first!.id);
 		const rows = await db.select().from(schema.users).all();
 		expect(rows).toHaveLength(1);
+	});
+
+	it('keeps saved investigator ownership stable across repeated OAuth sign-ins', async () => {
+		const first = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-stable-owner',
+			email: 'owner@example.com',
+			emailVerified: true,
+			name: 'Owner',
+			image: null
+		});
+		expect(first).not.toBeNull();
+
+		const now = new Date();
+		await db.insert(schema.investigators).values({
+			id: 'investigator-owned-by-google',
+			userId: first!.id,
+			name: 'Stable Investigator',
+			era: '1920s',
+			mode: 'standard',
+			occupation: 'professor',
+			data: '{}',
+			isDraft: false,
+			isArchived: false,
+			createdAt: now,
+			updatedAt: now
+		});
+
+		const second = await findOrLinkOAuthAccount(db, {
+			provider: 'google',
+			providerAccountId: 'google-stable-owner',
+			email: 'owner@example.com',
+			emailVerified: true,
+			name: 'Owner Again',
+			image: null
+		});
+
+		expect(second!.id).toBe(first!.id);
+		const visibleRows = await db
+			.select()
+			.from(schema.investigators)
+			.where(eq(schema.investigators.userId, second!.id))
+			.all();
+		expect(visibleRows.map((row) => row.id)).toEqual(['investigator-owned-by-google']);
 	});
 
 	it('merges into an existing email-bearing user only when the new provider reports the email verified', async () => {

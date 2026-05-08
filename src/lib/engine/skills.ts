@@ -130,7 +130,8 @@ export function validateSkillAllocation(
 	totalOccupationPoints: number,
 	totalPersonalPoints: number,
 	creditRatingRange: { min: number; max: number },
-	eligibleOccupationSkillIds?: Set<string>
+	eligibleOccupationSkillIds?: Set<string>,
+	options: { maxSkillTotal?: number } = {}
 ): {
 	valid: boolean;
 	errors: string[];
@@ -142,6 +143,7 @@ export function validateSkillAllocation(
 	const errors: string[] = [];
 	let occupationPointsUsed = 0;
 	let personalPointsUsed = 0;
+	const maxSkillTotal = options.maxSkillTotal ?? 99;
 
 	for (const skill of skills) {
 		for (const alloc of skill.allocations) {
@@ -158,9 +160,8 @@ export function validateSkillAllocation(
 			}
 		}
 
-		// No individual skill can exceed 99
-		if (skill.total > 99) {
-			errors.push(`${skill.skillId} exceeds maximum of 99 (${skill.total})`);
+		if (skill.skillId !== 'cthulhu-mythos' && skill.total > maxSkillTotal) {
+			errors.push(`${skill.skillId} exceeds maximum of ${maxSkillTotal} (${skill.total})`);
 		}
 	}
 

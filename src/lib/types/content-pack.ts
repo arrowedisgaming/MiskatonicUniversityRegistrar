@@ -13,6 +13,8 @@ export interface CoCContentPack {
 		skills: string;
 		occupations: string;
 		equipment: string;
+		names?: string;
+		backstoryTables?: string;
 	};
 	eras: EraDefinition[];
 	characteristicMethods: CharacteristicMethod[];
@@ -147,4 +149,17 @@ export interface WeaponDefinition {
 	attacksPerRound: string;
 	ammo?: number;
 	malfunction?: number | null;
+}
+
+export interface NameTableEntry {
+	era: string;
+	region: string;
+	gender: string;
+	given: string[];
+	family: string[];
+}
+
+export interface BackstoryTableEntry {
+	field: string;
+	entries: string[];
 }

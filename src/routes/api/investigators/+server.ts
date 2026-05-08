@@ -50,7 +50,7 @@ export const POST: RequestHandler = async (event) => {
 	const char = parsed.data.character as unknown as import('$lib/types/character').CoCCharacterData;
 
 	if (!char.isDraft) {
-		const ruleCheck = validateFinalInvestigator(char);
+		const ruleCheck = validateFinalInvestigator(char, { phase: 'creation' });
 		if (!ruleCheck.valid) {
 			throw error(400, `Game-rule violation: ${ruleCheck.errors.join('; ')}`);
 		}

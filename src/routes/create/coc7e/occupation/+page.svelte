@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { filterOccupationsByEra, getOccupationSkillLists, INTERPERSONAL_SKILLS, isCustomOccupation } from '$lib/engine/occupation-filter';
 	import { calculateOccupationSkillPoints, calculatePersonalInterestPoints } from '$lib/engine/skills';
@@ -259,6 +260,7 @@
 						<input
 							id="custom-occ-points"
 							type="number"
+							use:preventNumberWheel
 							min="0"
 							max="9999"
 							bind:value={customSkillPoints}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS, ROLL_3D6, ROLL_2D6_PLUS_6 } from '$lib/types/common';
 	import type { CharacteristicId, Era, Mode } from '$lib/types/common';
@@ -12,14 +13,15 @@
 		fifthValue
 	} from '$lib/engine/characteristics';
 	import { calculateHP, calculateMP, calculateStartingSanity, calculateDamageBonusAndBuild, calculateMoveRate, getAgeModifier } from '$lib/engine/derived-stats';
-	import { roll3d6x5, roll2d6plus6x5, rollLuck } from '$lib/engine/dice';
+	import { roll3d6x5, roll2d6plus6x5, rollLuck, rollDie } from '$lib/engine/dice';
 	import { showDiceRoll } from '$lib/stores/dice-rolls';
 	import type { DiceGroup } from '$lib/dice/protocol';
 	import {
 		applyAgeAdjustments,
 		physicalDeductionTargets,
 		requiredPhysicalDeduction,
-		rollEduImprovementCheck,
+		makeEduImprovementCheck,
+		recomputeEduImprovementChecks,
 		makeYouthLuckAdjustment,
 		type PhysicalDeductions
 	} from '$lib/engine/age-adjustments';
@@ -43,18 +45,23 @@
 	let luckAdjustment = $state<LuckAdjustment | null>($wizard.character.characteristics.luckAdjustment ?? null);
 	let luck = $state<{ max: number; current: number; rolls: number[] | null; rollSets?: number[][] | null; reason?: string | null }>({ ...$wizard.character.derivedStats.luck });
 	let diceRolling = $state(false);
+	let autoRolling = $state(false);
 
 	const quickFireValues = [40, 50, 50, 50, 60, 60, 70, 80];
 	const methodOptions = data.contentPack.characteristicMethods;
+	const rollOneByOneOrder: CharacteristicId[] = ['str', 'con', 'siz', 'dex', 'app', 'int', 'pow', 'edu'];
 
 	let ageModifier = $derived(getAgeModifier(age, data.contentPack.ageModifiers));
 	let ageResult = $derived(applyAgeAdjustments(baseValues, age, data.contentPack.ageModifiers, physicalDeductions, eduChecks, luckAdjustment));
+	let eduBaseForChecks = $derived(applyAgeAdjustments(baseValues, age, data.contentPack.ageModifiers, physicalDeductions, [], luckAdjustment).values.edu);
 	let values = $derived(ageResult.values);
+	let hasAnyValues = $derived(Object.values(baseValues).some((v) => v > 0));
 	let hasValues = $derived(Object.values(baseValues).every((v) => v > 0));
 	let deductionTargets = $derived(physicalDeductionTargets(ageModifier));
 	let requiredDeduction = $derived(requiredPhysicalDeduction(ageModifier));
 	let deductionTotal = $derived(Object.values(physicalDeductions).reduce((sum, value) => sum + Math.max(0, value ?? 0), 0));
 	let requiredEduChecks = $derived(ageModifier?.eduImprovementChecks ?? 0);
+	let nextStatToRoll = $derived(rollOneByOneOrder.find((id) => baseValues[id] <= 0) ?? null);
 
 	// Derived stats (auto-calculated)
 	let hp = $derived(hasValues ? calculateHP(values.con, values.siz) : 0);
@@ -74,13 +81,28 @@
 	let quickFireValid = $derived(method !== 'quick-fire' || JSON.stringify(Object.values(baseValues).sort((a, b) => a - b)) === JSON.stringify(quickFireValues));
 	let canProceed = $derived(hasValues && luck.max > 0 && ageResult.errors.length === 0 && pointBuyValid && quickFireValid && mode === 'standard');
 
-	function resetAgeState() {
+	function resetAgeStateForCharacteristicChange() {
 		physicalDeductions = {};
 		eduChecks = [];
 		luckAdjustment = null;
-		if (age >= 15 && age <= 19) {
+		luck = { max: 0, current: 0, rolls: null, rollSets: null, reason: null };
+	}
+
+	async function handleAgeChanged() {
+		const targets = new Set(deductionTargets);
+		physicalDeductions = Object.fromEntries(
+			Object.entries(physicalDeductions).filter(([key]) => targets.has(key as CharacteristicId))
+		) as PhysicalDeductions;
+		if (eduChecks.length > requiredEduChecks) {
+			eduChecks = recomputeEduImprovementChecks(eduBaseForChecks, eduChecks.slice(0, requiredEduChecks));
+		}
+		if (age < 15 || age > 19) {
+			luckAdjustment = null;
+			if (luck.rollSets) luck = { max: 0, current: 0, rolls: null, rollSets: null, reason: null };
+		} else if (!luckAdjustment) {
 			luck = { max: 0, current: 0, rolls: null, rollSets: null, reason: null };
 		}
+		await reconcileAutomaticRolls();
 	}
 
 	async function animateDice(groups: DiceGroup[], label: string): Promise<void> {
@@ -102,7 +124,22 @@
 		method = 'roll';
 		baseValues = rollResultsToValues(results);
 		rolls = rollResultsToRolls(results);
-		resetAgeState();
+		resetAgeStateForCharacteristicChange();
+		await reconcileAutomaticRolls();
+	}
+
+	async function rollNextStat() {
+		if (!nextStatToRoll) return;
+		const char = nextStatToRoll;
+		const is3d6 = ROLL_3D6.includes(char);
+		const result = is3d6 ? roll3d6x5() : roll2d6plus6x5();
+		await animateDice([{ count: result.rolls.length, sides: 6, results: result.rolls }], CHARACTERISTIC_LABELS[char]);
+		method = 'roll';
+		baseValues[char] = result.total;
+		baseValues = { ...baseValues };
+		rolls = { ...((rolls ?? {}) as Record<CharacteristicId, number[]>), [char]: result.rolls };
+		resetAgeStateForCharacteristicChange();
+		await reconcileAutomaticRolls();
 	}
 
 	async function rerollSingle(char: CharacteristicId) {
@@ -112,13 +149,15 @@
 		baseValues[char] = result.total;
 		baseValues = { ...baseValues };
 		if (rolls) rolls[char] = result.rolls;
-		resetAgeState();
+		resetAgeStateForCharacteristicChange();
+		await reconcileAutomaticRolls();
 	}
 
-	function setBaseValue(char: CharacteristicId, value: number) {
+	async function setBaseValue(char: CharacteristicId, value: number) {
 		baseValues[char] = Math.max(0, Math.min(99, value || 0));
 		baseValues = { ...baseValues };
-		resetAgeState();
+		resetAgeStateForCharacteristicChange();
+		await reconcileAutomaticRolls();
 	}
 
 	async function setMethod(nextMethod: CharacteristicMethodId) {
@@ -138,7 +177,8 @@
 			baseValues = rollResultsToValues(rolledResults);
 			rolls = rollResultsToRolls(rolledResults);
 		}
-		resetAgeState();
+		resetAgeStateForCharacteristicChange();
+		await reconcileAutomaticRolls();
 	}
 
 	async function rollLuckDice() {
@@ -165,19 +205,36 @@
 	async function rollNextEduCheck() {
 		if (eduChecks.length >= requiredEduChecks) return;
 		const currentEdu = eduChecks.length === 0
-			? values.edu
+			? eduBaseForChecks
 			: eduChecks[eduChecks.length - 1].resultingEdu;
-		const check = rollEduImprovementCheck(currentEdu);
-		const groups: DiceGroup[] = [{ count: 1, sides: 100, results: [check.roll] }];
-		if (check.improvementRoll !== null) {
-			groups.push({ count: 1, sides: 10, results: [check.improvementRoll] });
+		const roll = rollDie(100);
+		await animateDice([{ count: 1, sides: 100, results: [roll] }], 'EDU check');
+		const improvementRoll = roll > currentEdu ? rollDie(10) : null;
+		if (improvementRoll !== null) {
+			await animateDice([{ count: 1, sides: 10, results: [improvementRoll] }], 'EDU improvement');
 		}
-		await animateDice(groups, 'EDU check');
+		const check = makeEduImprovementCheck(currentEdu, roll, improvementRoll);
 		eduChecks = [...eduChecks, check];
 	}
 
-	function clearEduChecks() {
-		eduChecks = [];
+	async function reconcileAutomaticRolls() {
+		if (autoRolling || !hasValues) return;
+		autoRolling = true;
+		try {
+			if (eduChecks.length > requiredEduChecks) {
+				eduChecks = recomputeEduImprovementChecks(eduBaseForChecks, eduChecks.slice(0, requiredEduChecks));
+			}
+			while (eduChecks.length < requiredEduChecks) {
+				await rollNextEduCheck();
+			}
+			if (age >= 15 && age <= 19) {
+				if (!luckAdjustment) await rollLuckDice();
+			} else if (luck.max <= 0 || luck.rollSets) {
+				await rollLuckDice();
+			}
+		} finally {
+			autoRolling = false;
+		}
 	}
 
 	function proceed() {
@@ -218,12 +275,12 @@
 	<div>
 		<h1 class="text-2xl font-bold" data-heading>Characteristics</h1>
 		<p class="mt-1 text-sm text-[var(--color-muted-foreground)]">
-			Choose an era, age, and generation method. Age adjustments are applied before occupation
-			and skills are calculated.
+			Choose an era and generation method, then roll or enter characteristics. Age adjustments
+			are applied after the characteristic values are known.
 		</p>
 	</div>
 
-	<div class="grid gap-4 md:grid-cols-3">
+	<div class="grid gap-4 md:grid-cols-2">
 		<div>
 			<label for="era" class="mb-1 block text-sm font-medium">Era</label>
 			<select id="era" bind:value={era}
@@ -244,11 +301,6 @@
 				<p class="mt-1 text-xs text-[var(--color-warning)]">Pulp creation is gated until archetypes, talents, and Pulp-specific rules are implemented.</p>
 			{/if}
 		</div>
-		<div>
-			<label for="age" class="mb-1 block text-sm font-medium">Age</label>
-			<input id="age" type="number" min="15" max="89" bind:value={age} oninput={resetAgeState}
-				class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm" />
-		</div>
 	</div>
 
 	<div>
@@ -264,6 +316,12 @@
 				class="rounded-md border border-[var(--color-primary)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-50">
 				{diceRolling ? 'Rolling...' : hasValues ? 'Reroll Standard Dice' : 'Roll Dice'}
 			</button>
+			{#if nextStatToRoll && !diceRolling}
+				<button type="button" onclick={rollNextStat}
+					class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)] disabled:opacity-50">
+					Roll Next: {CHARACTERISTIC_LABELS[nextStatToRoll]}
+				</button>
+			{/if}
 		</div>
 		{#if method === 'point-buy'}
 			<p class="mt-1 text-xs text-[var(--color-muted-foreground)]">Point buy total: {pointBuyTotal}/460.</p>
@@ -276,7 +334,7 @@
 		{/if}
 	</div>
 
-	{#if hasValues}
+	{#if hasAnyValues}
 		<!-- Characteristics table -->
 		<div class="overflow-x-auto">
 			<table class="w-full text-sm">
@@ -301,6 +359,7 @@
 							<td class="py-2 pr-4 text-center">
 								<input
 									type="number"
+									use:preventNumberWheel
 									min="0"
 									max="99"
 									value={baseValues[char]}
@@ -332,12 +391,30 @@
 			</table>
 		</div>
 
+		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+			<label for="age" class="mb-1 block text-sm font-medium">Age</label>
+			<input
+				id="age"
+				type="number"
+				use:preventNumberWheel
+				min="15"
+				max="89"
+				bind:value={age}
+				oninput={() => void handleAgeChanged()}
+				class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+			/>
+			<p class="mt-2 text-xs text-[var(--color-muted-foreground)]">
+				Age can reduce physical characteristics, adjust appearance or education, and trigger
+				EDU improvement checks.
+			</p>
+		</div>
+
 		{#if requiredDeduction > 0 || requiredEduChecks > 0}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 				<h2 class="mb-2 font-semibold" data-heading>Age Adjustments</h2>
 				{#if requiredDeduction > 0}
 					<p class="mb-2 text-xs text-[var(--color-muted-foreground)]">
-						Distribute {requiredDeduction} point{requiredDeduction === 1 ? '' : 's'} among {deductionTargets.map((target) => target.toUpperCase()).join(', ')}.
+						Apply {requiredDeduction} age-deduction point{requiredDeduction === 1 ? '' : 's'} among {deductionTargets.map((target) => target.toUpperCase()).join(', ')}.
 						Used: {deductionTotal}/{requiredDeduction}
 					</p>
 					<div class="flex flex-wrap gap-3">
@@ -346,6 +423,7 @@
 								<span class="mr-1 uppercase">{target}</span>
 								<input
 									type="number"
+									use:preventNumberWheel
 									min="0"
 									value={physicalDeductions[target] ?? 0}
 									oninput={(e) => { physicalDeductions[target] = parseInt((e.currentTarget as HTMLInputElement).value) || 0; physicalDeductions = { ...physicalDeductions }; }}
@@ -358,20 +436,32 @@
 
 				{#if requiredEduChecks > 0}
 					<div class="mt-3">
-						<div class="flex items-center gap-2">
-							<button type="button" onclick={rollNextEduCheck} disabled={eduChecks.length >= requiredEduChecks || diceRolling}
-								class="rounded-md bg-[var(--color-secondary)] px-3 py-1.5 text-sm font-medium text-[var(--color-secondary-foreground)] disabled:opacity-50">
-								{diceRolling ? 'Rolling...' : 'Roll EDU Check'}
-							</button>
-							<button type="button" onclick={clearEduChecks} class="text-xs text-[var(--color-muted-foreground)] hover:underline">Clear</button>
-							<span class="text-xs text-[var(--color-muted-foreground)]">{eduChecks.length}/{requiredEduChecks}</span>
+						<div class="flex items-baseline justify-between">
+							<p class="text-xs uppercase tracking-wide text-[var(--color-muted-foreground)]">
+								EDU Improvement {requiredEduChecks === 1 ? 'Check' : 'Checks'}
+							</p>
+							{#if eduChecks.length > 0 && eduChecks.length === requiredEduChecks}
+								<p class="text-xs text-[var(--color-muted-foreground)]">
+									{eduBaseForChecks} → <span class="font-semibold text-[var(--color-foreground)]">{eduChecks[eduChecks.length - 1].resultingEdu}</span>
+								</p>
+							{/if}
 						</div>
 						{#if eduChecks.length > 0}
-							<ul class="mt-2 space-y-1 text-xs text-[var(--color-muted-foreground)]">
+							<ul class="mt-1 space-y-0.5 text-xs text-[var(--color-muted-foreground)]">
 								{#each eduChecks as check, i}
-									<li>Check {i + 1}: rolled {check.roll}; {check.success ? `+${check.improvement} EDU` : 'no improvement'}.</li>
+									<li class="flex items-center justify-between gap-3 border-b border-[var(--color-border)]/30 py-1 last:border-b-0">
+										<span>
+											<span class="font-medium text-[var(--color-foreground)]">{i + 1}.</span>
+											rolled <span class="tabular-nums">{check.roll}</span>
+										</span>
+										<span class="tabular-nums {check.success ? 'text-[var(--color-foreground)]' : ''}">
+											{check.success ? `+${check.improvement} EDU` : 'no improvement'}
+										</span>
+									</li>
 								{/each}
 							</ul>
+						{:else if diceRolling || autoRolling}
+							<p class="mt-1 text-xs text-[var(--color-muted-foreground)]">Rolling…</p>
 						{/if}
 					</div>
 				{/if}
@@ -407,7 +497,7 @@
 						class="rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium
 							text-[var(--color-primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-50"
 					>
-						{diceRolling ? 'Rolling...' : age >= 15 && age <= 19 ? 'Roll Luck Twice' : luck.max > 0 ? 'Reroll' : 'Roll Luck'}
+						{diceRolling ? 'Rolling...' : age >= 15 && age <= 19 ? 'Roll Luck Twice' : luck.max > 0 ? 'Reroll Luck' : 'Roll Luck'}
 					</button>
 				</div>
 			</div>

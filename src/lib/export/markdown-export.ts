@@ -11,6 +11,10 @@ function getEraLabel(era: string, contentPack: CoCContentPack): string {
 	return contentPack.eras.find((e) => e.id === era)?.name ?? era;
 }
 
+function getEraCurrencySymbol(era: string, contentPack: CoCContentPack): string {
+	return contentPack.eras.find((e) => e.id === era)?.currencySymbol ?? '$';
+}
+
 export function exportToMarkdown(character: CoCCharacterData, occupationName: string, contentPack: CoCContentPack): string {
 	const c = character;
 	const lines: string[] = [];
@@ -115,10 +119,11 @@ export function exportToMarkdown(character: CoCCharacterData, occupationName: st
 	}
 
 	// Equipment
-	if (c.equipment.items.length > 0 || c.equipment.weapons.length > 0) {
+	if (c.equipment.items.length > 0 || c.equipment.weapons.length > 0 || (c.equipment.assetsList ?? []).length > 0) {
+		const currencySymbol = getEraCurrencySymbol(c.era, contentPack);
 		lines.push('## Equipment');
 		lines.push('');
-		lines.push(`**Living Standard:** ${c.equipment.livingStandard} · **Spending Level:** $${c.equipment.spendingLevel.toLocaleString()} · **Cash:** $${c.equipment.cash.toLocaleString()} · **Assets:** ${c.equipment.assetsLabel}`);
+		lines.push(`**Living Standard:** ${c.equipment.livingStandard} · **Spending Level:** ${currencySymbol}${c.equipment.spendingLevel.toLocaleString()} · **Cash:** ${currencySymbol}${c.equipment.cash.toLocaleString()} · **Assets:** ${c.equipment.assetsLabel}`);
 		lines.push('');
 
 		if (c.equipment.weapons.length > 0) {
@@ -137,6 +142,17 @@ export function exportToMarkdown(character: CoCCharacterData, occupationName: st
 			lines.push('');
 			for (const item of c.equipment.items) {
 				lines.push(`- ${item.name}${item.quantity > 1 ? ` (×${item.quantity})` : ''}`);
+			}
+			lines.push('');
+		}
+
+		if ((c.equipment.assetsList ?? []).length > 0) {
+			lines.push('### Assets');
+			lines.push('');
+			lines.push('| Asset | Value | Type | Notes |');
+			lines.push('|---|---:|---|---|');
+			for (const asset of c.equipment.assetsList ?? []) {
+				lines.push(`| ${asset.name} | ${currencySymbol}${asset.value.toLocaleString()} | ${asset.type} | ${asset.description ?? ''} |`);
 			}
 			lines.push('');
 		}

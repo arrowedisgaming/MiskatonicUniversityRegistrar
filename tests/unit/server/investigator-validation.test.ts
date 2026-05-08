@@ -152,4 +152,57 @@ describe('validateFinalInvestigator', () => {
 		const result = validateFinalInvestigator(char);
 		expect(result.valid).toBe(false);
 	});
+
+	it('enforces the 90 skill cap during creation finalization', () => {
+		const { char } = buildValidFinal();
+		char.skills.push({
+			skillId: 'library-use',
+			customName: null,
+			baseValue: 91,
+			allocations: [],
+			isOccupation: false,
+			total: 91,
+			half: 45,
+			fifth: 18
+		});
+
+		const result = validateFinalInvestigator(char, { phase: 'creation' });
+		expect(result.valid).toBe(false);
+		if (!result.valid) expect(result.errors.some((e) => e.includes('maximum of 90'))).toBe(true);
+	});
+
+	it('allows post-creation sheet edits up to 99', () => {
+		const { char } = buildValidFinal();
+		char.skills.push({
+			skillId: 'library-use',
+			customName: null,
+			baseValue: 99,
+			allocations: [],
+			isOccupation: false,
+			total: 99,
+			half: 49,
+			fifth: 19
+		});
+
+		const result = validateFinalInvestigator(char, { phase: 'play' });
+		expect(result.valid).toBe(true);
+	});
+
+	it('rejects a finalized investigator carrying blank-name weapon rows', () => {
+		const { char } = buildValidFinal();
+		char.equipment.weapons.push({
+			name: '   ',
+			damage: '1d6',
+			range: 'touch',
+			attacksPerRound: '1',
+			ammo: null,
+			malfunction: null
+		});
+
+		const result = validateFinalInvestigator(char);
+		expect(result.valid).toBe(false);
+		if (!result.valid) {
+			expect(result.errors.some((e) => /blank weapon row/i.test(e))).toBe(true);
+		}
+	});
 });

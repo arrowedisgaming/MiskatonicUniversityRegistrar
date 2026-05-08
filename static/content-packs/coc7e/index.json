@@ -9,7 +9,9 @@
 	"files": {
 		"skills": "skills.json",
 		"occupations": "occupations.json",
-		"equipment": "equipment.json"
+		"equipment": "equipment.json",
+		"names": "names.json",
+		"backstoryTables": "backstory-tables.json"
 	},
 	"eras": [
 		{

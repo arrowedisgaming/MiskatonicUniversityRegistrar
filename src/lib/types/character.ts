@@ -3,7 +3,7 @@ import type { CharacteristicMethodId } from './content-pack';
 import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 
 /** Schema version for character data migration */
-export const CHARACTER_SCHEMA_VERSION = 4;
+export const CHARACTER_SCHEMA_VERSION = 5;
 
 /** Play-mode percentile d100 checks (Characteristics & skills). */
 export interface PlayRollHistoryPercentileEntry {
@@ -113,6 +113,7 @@ export interface EduImprovementCheck {
 	improvementRoll: number | null;
 	improvement: number;
 	resultingEdu: number;
+	source?: 'rolled' | 'manual';
 }
 
 export interface LuckAdjustment {
@@ -186,6 +187,7 @@ export interface BackstoryData {
 export interface EquipmentData {
 	items: EquipmentItem[];
 	weapons: CharacterWeapon[];
+	assetsList: AssetItem[];
 	cash: number;
 	assets: number;
 	assetsLabel: string;
@@ -206,6 +208,13 @@ export interface CharacterWeapon {
 	attacksPerRound: string;
 	ammo: number | null;
 	malfunction: number | null;
+}
+
+export interface AssetItem {
+	name: string;
+	value: number;
+	type: string;
+	description?: string;
 }
 
 /** Factory for a blank character */
@@ -259,6 +268,7 @@ export function createBlankCharacter(): CoCCharacterData {
 		equipment: {
 			items: [],
 			weapons: [],
+			assetsList: [],
 			cash: 0,
 			assets: 0,
 			assetsLabel: '',

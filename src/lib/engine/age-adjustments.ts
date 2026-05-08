@@ -115,7 +115,12 @@ export function applyAgeAdjustments(
 	};
 }
 
-export function makeEduImprovementCheck(currentEdu: number, roll: number, improvementRoll: number | null): EduImprovementCheck {
+export function makeEduImprovementCheck(
+	currentEdu: number,
+	roll: number,
+	improvementRoll: number | null,
+	source: EduImprovementCheck['source'] = 'rolled'
+): EduImprovementCheck {
 	const success = roll > currentEdu;
 	const improvement = success ? improvementRoll ?? 0 : 0;
 	return {
@@ -123,7 +128,8 @@ export function makeEduImprovementCheck(currentEdu: number, roll: number, improv
 		success,
 		improvementRoll: success ? improvementRoll : null,
 		improvement,
-		resultingEdu: Math.min(99, currentEdu + improvement)
+		resultingEdu: Math.min(99, currentEdu + improvement),
+		source
 	};
 }
 
@@ -131,6 +137,25 @@ export function rollEduImprovementCheck(currentEdu: number): EduImprovementCheck
 	const roll = rollDie(100);
 	const improvementRoll = roll > currentEdu ? rollDie(10) : null;
 	return makeEduImprovementCheck(currentEdu, roll, improvementRoll);
+}
+
+export function recomputeEduImprovementChecks(
+	startingEdu: number,
+	checks: EduImprovementCheck[]
+): EduImprovementCheck[] {
+	let currentEdu = startingEdu;
+	return checks.map((check) => {
+		const next = makeEduImprovementCheck(
+			currentEdu,
+			Math.max(1, Math.min(100, Math.trunc(check.roll || 1))),
+			check.improvementRoll === null
+				? null
+				: Math.max(1, Math.min(10, Math.trunc(check.improvementRoll || 1))),
+			check.source ?? 'rolled'
+		);
+		currentEdu = next.resultingEdu;
+		return next;
+	});
 }
 
 export function makeYouthLuckAdjustment(firstRolls: number[], secondRolls: number[]): LuckAdjustment {

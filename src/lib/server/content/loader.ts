@@ -3,23 +3,36 @@
  * Server-side only.
  */
 
-import type { CoCContentPack, CoCSkillDefinition, CoCOccupationDefinition, CoCEquipmentPack } from '$lib/types/content-pack';
+import type {
+	BackstoryTableEntry,
+	CoCContentPack,
+	CoCEquipmentPack,
+	CoCOccupationDefinition,
+	CoCSkillDefinition,
+	NameTableEntry
+} from '$lib/types/content-pack';
 import {
+	backstoryTablesSchema,
 	contentPackSchema,
 	skillsSchema,
 	occupationsSchema,
-	equipmentSchema
+	equipmentSchema,
+	namesSchema
 } from '$lib/schemas/content-pack.schema';
 import contentPack from '../../../../static/content-packs/coc7e/index.json';
 import skills from '../../../../static/content-packs/coc7e/skills.json';
 import occupations from '../../../../static/content-packs/coc7e/occupations.json';
 import equipment from '../../../../static/content-packs/coc7e/equipment.json';
+import names from '../../../../static/content-packs/coc7e/names.json';
+import backstoryTables from '../../../../static/content-packs/coc7e/backstory-tables.json';
 
 // Singleton cache
 let cachedPack: CoCContentPack | null = null;
 let cachedSkills: CoCSkillDefinition[] | null = null;
 let cachedOccupations: CoCOccupationDefinition[] | null = null;
 let cachedEquipment: CoCEquipmentPack | null = null;
+let cachedNames: NameTableEntry[] | null = null;
+let cachedBackstoryTables: BackstoryTableEntry[] | null = null;
 
 function parseOrThrow<T>(label: string, parsed: { success: true; data: unknown } | { success: false; error: { issues: { path: PropertyKey[]; message: string }[] } }): T {
 	if (!parsed.success) {
@@ -66,12 +79,31 @@ export function getEquipment(): CoCEquipmentPack {
 	return cachedEquipment;
 }
 
+export function getNames(): NameTableEntry[] {
+	if (!cachedNames) {
+		cachedNames = parseOrThrow<NameTableEntry[]>('names.json', namesSchema.safeParse(names));
+	}
+	return cachedNames;
+}
+
+export function getBackstoryTables(): BackstoryTableEntry[] {
+	if (!cachedBackstoryTables) {
+		cachedBackstoryTables = parseOrThrow<BackstoryTableEntry[]>(
+			'backstory-tables.json',
+			backstoryTablesSchema.safeParse(backstoryTables)
+		);
+	}
+	return cachedBackstoryTables;
+}
+
 /** Load everything needed for the wizard */
 export function loadWizardData() {
 	return {
 		contentPack: getContentPack(),
 		skills: getSkills(),
 		occupations: getOccupations(),
-		equipment: getEquipment()
+		equipment: getEquipment(),
+		names: getNames(),
+		backstoryTables: getBackstoryTables()
 	};
 }

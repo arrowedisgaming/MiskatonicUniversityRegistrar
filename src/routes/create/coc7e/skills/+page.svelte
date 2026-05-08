@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import {
 		calculateOccupationSkillPoints,
@@ -23,6 +24,7 @@
 	};
 
 	const char = $wizard.character;
+	const CREATION_SKILL_CAP = 90;
 	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
 	const isCustomOcc = isCustomOccupation(char.occupation?.occupationId ?? '');
 
@@ -141,6 +143,14 @@
 	function getTotal(skill: CoCSkillDefinition): number {
 		const alloc = getAlloc(skill.id);
 		return getBase(skill) + alloc.occupation + alloc.personal;
+	}
+
+	function maxOccupationAllocation(base: number, alloc: { occupation: number; personal: number }): number {
+		return Math.max(0, Math.min(alloc.occupation + Math.max(0, remainingOcc), CREATION_SKILL_CAP - base - alloc.personal));
+	}
+
+	function maxPersonalAllocation(base: number, alloc: { occupation: number; personal: number }): number {
+		return Math.max(0, Math.min(alloc.personal + Math.max(0, remainingPersonal), CREATION_SKILL_CAP - base - alloc.occupation));
 	}
 
 	// Point tracking
@@ -284,7 +294,8 @@
 					totalPersonalPoints,
 					// Custom occupations have no credit rating constraint — accept any 0–99.
 					occupation?.creditRating ?? { min: 0, max: 99 },
-					eligibleOccupationSkillIds
+					eligibleOccupationSkillIds,
+					{ maxSkillTotal: CREATION_SKILL_CAP }
 				)
 			: null
 	);
@@ -311,7 +322,7 @@
 	// (incomplete but proceedable — e.g. Credit Rating outside occupation range,
 	// or unspent points). Hard blockers keep the button disabled; soft warnings
 	// turn the button amber and let the player advance after acknowledging them.
-	const HARD_ERROR_PATTERNS = /overspent|exceeds maximum of 99|not eligible|cannot receive personal/i;
+	const HARD_ERROR_PATTERNS = /overspent|exceeds maximum of 90|not eligible|cannot receive personal/i;
 	let validationErrors = $derived(validation?.errors ?? []);
 	let hardValidationErrors = $derived(validationErrors.filter((e) => HARD_ERROR_PATTERNS.test(e)));
 	let softValidationErrors = $derived(validationErrors.filter((e) => !HARD_ERROR_PATTERNS.test(e)));
@@ -437,8 +448,11 @@
 
 	<!-- Occupation choice slots (only for standard occupations with defined choices) -->
 	{#if !isCustomOcc && occupation && ((occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0)}
-		<div class="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-			<h2 class="text-sm font-semibold" data-heading>Occupation Skill Choices</h2>
+		<details class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+			<summary class="cursor-pointer text-sm font-semibold">
+				Occupation Skill Choices ({selectedInterpersonal.length + selectedCombat.length + selectedScience.length + selectedAny.length}/{(occupation.interpersonalChoiceCount ?? 0) + (occupation.combatChoiceCount ?? 0) + (occupation.scienceChoiceCount ?? 0) + (occupation.personalChoiceCount ?? 0)})
+			</summary>
+			<div class="mt-3 space-y-3">
 			{#if (occupation.interpersonalChoiceCount ?? 0) > 0}
 				<div>
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Interpersonal ({selectedInterpersonal.length}/{occupation.interpersonalChoiceCount})</p>
@@ -491,40 +505,41 @@
 					</div>
 				</div>
 			{/if}
-		</div>
+			</div>
+		</details>
 	{/if}
 
-	{#if choiceErrors.length > 0 || hardValidationErrors.length > 0}
-		<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
-			<p class="mb-1 font-semibold">Resolve before continuing</p>
-			<ul class="space-y-1">
-				{#each choiceErrors as error}
-					<li>{error}</li>
-				{/each}
-				{#each hardValidationErrors as error}
-					<li>{error}</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
-
-	{#if softValidationErrors.length > 0 || hasUnspent}
-		<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
-			<p class="mb-1 font-semibold">You can continue, but&hellip;</p>
-			<ul class="space-y-1">
-				{#if hasUnspentOcc}
-					<li>{remainingOcc} occupation point{remainingOcc === 1 ? '' : 's'} unspent.</li>
-				{/if}
-				{#if hasUnspentPersonal}
-					<li>{remainingPersonal} personal interest point{remainingPersonal === 1 ? '' : 's'} unspent.</li>
-				{/if}
-				{#each softValidationErrors as error}
-					<li>{error}</li>
-				{/each}
-			</ul>
-			<p class="mt-2 text-xs opacity-80">Skill points cannot be added later — only earned through play.</p>
-		</div>
-	{/if}
+	<div class="min-h-24">
+		{#if choiceErrors.length > 0 || hardValidationErrors.length > 0}
+			<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
+				<p class="mb-1 font-semibold">Resolve before continuing</p>
+				<ul class="space-y-1">
+					{#each choiceErrors as error}
+						<li>{error}</li>
+					{/each}
+					{#each hardValidationErrors as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+			</div>
+		{:else if softValidationErrors.length > 0 || hasUnspent}
+			<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
+				<p class="mb-1 font-semibold">You can continue, but&hellip;</p>
+				<ul class="space-y-1">
+					{#if hasUnspentOcc}
+						<li>{remainingOcc} occupation point{remainingOcc === 1 ? '' : 's'} unspent.</li>
+					{/if}
+					{#if hasUnspentPersonal}
+						<li>{remainingPersonal} personal interest point{remainingPersonal === 1 ? '' : 's'} unspent.</li>
+					{/if}
+					{#each softValidationErrors as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+				<p class="mt-2 text-xs opacity-80">Skill points cannot be added later — only earned through play.</p>
+			</div>
+		{/if}
+	</div>
 
 	<!-- Skills table. The thead sticks just below the budget+filters block so the
 	     column labels stay visible while scrolling. `theadTopPx` is the measured
@@ -568,8 +583,9 @@
 						<td class="py-1.5 pr-2 text-center">
 							<input
 								type="number"
+								use:preventNumberWheel
 								min="0"
-								max={isOcc ? Math.min(99, alloc.occupation + Math.max(0, remainingOcc)) : 0}
+								max={isOcc ? maxOccupationAllocation(base, alloc) : 0}
 								value={alloc.occupation}
 								disabled={occColumnLocked}
 								title={occColumnLocked && isOcc ? 'No occupation points remaining — reduce another skill to free points' : undefined}
@@ -590,8 +606,9 @@
 						<td class="py-1.5 pr-2 text-center">
 							<input
 								type="number"
+								use:preventNumberWheel
 								min="0"
-								max={Math.min(99, alloc.personal + Math.max(0, remainingPersonal))}
+								max={maxPersonalAllocation(base, alloc)}
 								value={alloc.personal}
 								disabled={personalColumnLocked}
 								title={personalColumnLocked ? 'No personal interest points remaining — reduce another skill to free points' : undefined}
@@ -628,7 +645,7 @@
 						<td class="py-1.5 pr-2 text-center text-[var(--color-muted-foreground)]">{def.baseValue}</td>
 						<td class="py-1.5 pr-2 text-center">
 							<input
-								type="number" min="0" value={alloc.occupation}
+								type="number" use:preventNumberWheel min="0" max={isOcc ? maxOccupationAllocation(def.baseValue, alloc) : 0} value={alloc.occupation}
 								disabled={occColumnLocked}
 								oninput={(e) => {
 									const input = e.currentTarget as HTMLInputElement;
@@ -642,7 +659,7 @@
 						</td>
 						<td class="py-1.5 pr-2 text-center">
 							<input
-								type="number" min="0" value={alloc.personal}
+								type="number" use:preventNumberWheel min="0" max={maxPersonalAllocation(def.baseValue, alloc)} value={alloc.personal}
 								disabled={personalColumnLocked}
 								oninput={(e) => {
 									const input = e.currentTarget as HTMLInputElement;
@@ -690,7 +707,8 @@
 					<label for="new-skill-base" class="block text-xs uppercase text-[var(--color-muted-foreground)] mb-1">Base %</label>
 					<input
 						id="new-skill-base"
-						type="number" min="0" max="99"
+						type="number" min="0" max={CREATION_SKILL_CAP}
+						use:preventNumberWheel
 						bind:value={newCustomSkillBase}
 						class="w-full rounded border border-[var(--color-border)] bg-[var(--color-background)]
 							px-2 py-1.5 text-sm text-center

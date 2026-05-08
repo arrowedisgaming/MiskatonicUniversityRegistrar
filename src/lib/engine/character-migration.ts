@@ -27,6 +27,9 @@ export function migrateCharacterData(raw: unknown): CoCCharacterData {
 	}
 
 	if (character.equipment) {
+		character.equipment.items ??= [];
+		character.equipment.weapons ??= [];
+		character.equipment.assetsList ??= [];
 		const oldSpending = character.equipment.spendingLevel;
 		character.equipment.livingStandard ??= typeof oldSpending === 'string' && LIVING_STANDARDS.has(oldSpending)
 			? oldSpending

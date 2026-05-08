@@ -51,6 +51,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-05-08
+
+### Added
+- Dice rolls can now be skipped by clicking/tapping the overlay or pressing Enter, Space, or Escape — keyboard-accessible via a focusable skip button covering the overlay.
+- Characteristics can be rolled one at a time in tabletop order ("Roll Next: STR" → "Roll Next: CON" → …), with Luck and age-dependent EDU improvement checks rolling automatically once the prerequisite inputs are known.
+- Equipment step adds inline custom weapons (editable name/damage/range/attacks) and an itemized assets list (name, value, type, description), both round-tripped through PDF, Markdown, JSON exports, and the read-only sheet.
+- Content packs now have optional `names.json` and `backstory-tables.json` extension points. The backstory step exposes Random Name, per-field Roll, and "Fill all empty" controls when table data is present; ships empty by default for legal/content reasons.
+
+### Changed
+- Skills creation now caps ordinary skills at 90 (Cthulhu Mythos exempt). Post-creation sheet edits keep the play-mode 99 cap; the validator takes a `phase: 'creation' | 'play'` option.
+- The skills step keeps budget/search/filter controls sticky while moving Occupation Skill Choices into a compact collapsible panel and reserving space for the warning area, so number-input buttons no longer move under the cursor.
+- The age input moves below the characteristics table to match the rule book's order; characteristic rerolls and base-value edits no longer wipe age-derived state unconditionally — EDU checks and Luck are reconciled to the new bracket instead of reset.
+- Dice animation is faster (settle ~1.0–1.3s on 1080p), the green radial roll glow has been removed, the dice surface is now mahogany with marble-textured cosmic dice, and the dice fade out cleanly on completion.
+- Number inputs across the wizard and sheet no longer change value from mouse-wheel scrolling while focused.
+- Play-mode roll banners reserve layout space and auto-clear after 3.5s to keep controls from jumping while rolling.
+- PDF skill list uses bold for occupation skills and a Roboto-supported bullet for all rows, replacing geometric-circle glyphs that rendered as missing-glyph "tofu".
+- PDF and Markdown exports now use the era-specific currency symbol consistently for cash, spending level, and asset values.
+
+### Fixed
+- OAuth re-entry now always resolves the local user id through the account-linking path, preventing investigator ownership from drifting to a provider/token id when signing out and back in with the same Google or Discord account.
+- Wizard layout server-load now forwards `names` and `backstoryTables` to the page so advancing past occupation/skills no longer crashes the backstory step.
+- Successful EDU improvement checks roll the d100 check and improvement d10 as clearly separate dice phases, fixing the "3 dice" visual confusion at age-bracket transitions.
+- Finalizing an investigator now rejects blank-name custom weapon rows with a clear remove-or-name message instead of persisting empty rows.
+- Skipping a dice roll while another is queued no longer flickers the overlay closed over the next roll — `runRoll` now bails on every async checkpoint when a newer roll has taken over.
+
+### Migration
+- Character data `schemaVersion` bumps 4 → 5. Existing characters auto-migrate with an empty `equipment.assetsList`. No data loss; migration is idempotent.
+
 ## [0.14.0] - 2026-05-08
 
 ### Added
