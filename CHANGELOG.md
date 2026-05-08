@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-05-08
+
+### Added
+- **Play Mode now shows all skills.** Previously only skills with non-base allocations appeared in Play Mode; uninvested skills (e.g. Climb 20%) were invisible. Play Mode now displays every era-appropriate skill — allocated ones at their current value, unallocated ones at their base value. Unallocated specializations (Art/Craft, Other Language, etc.) are still omitted since they require a player-named specialty before there is a meaningful roll target. Applies to all eras: 1920s Classic, Gaslight, and Pulp.
+- Read-only sheet view now shows a note beneath the skills list explaining that only non-base skills appear there, with a prompt to enter Play Mode to see and roll all skills.
+
+### Changed
+- Characteristics wizard era dropdown now shows only 1920s Classic and Gaslight — Modern is hidden until that era is supported.
+- Characteristics wizard generation method dropdown now shows only Roll — other methods (Point Buy, Arrange Rolls, etc.) are hidden until they are fully supported.
+
 ## [0.12.0] - 2026-05-06
 
 ### Added

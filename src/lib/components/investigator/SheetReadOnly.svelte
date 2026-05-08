@@ -99,6 +99,9 @@
 				</div>
 			{/each}
 		</div>
+		<p class="mt-3 text-xs text-[var(--color-muted-foreground)]">
+			Only non-base skills are shown here. Enter Play Mode to see and roll all skills.
+		</p>
 	</div>
 {/if}
 

@@ -11,6 +11,7 @@
 		resolveSkillBaseValue
 	} from '$lib/engine/skills';
 	import {
+		buildPlayModeSkills,
 		filterSkillDefsForSheetAddPicker,
 		shouldShowInvestigatorSkillOnSheet,
 		skillDefMatchesSheetAddSearch
@@ -763,6 +764,9 @@
 
 	// Read/play: highest total first. Edit mode: stable document order so rows don't jump while typing.
 	const sortedSkills = $derived.by(() => {
+		if (playMode) {
+			return buildPlayModeSkills(char, data.skills).sort((a, b) => b.total - a.total);
+		}
 		const skills = editMode && editChar ? editChar.skills : char.skills;
 		const visible = skills.filter(shouldShowInvestigatorSkillOnSheet).slice();
 		if (editMode && editChar) return visible;
@@ -1204,7 +1208,7 @@
 	{/if}
 
 	<!-- Skills (edit/play modes; default rendered by SheetReadOnly) -->
-	{#if (editMode && editChar) || (playMode && sortedSkills.length > 0)}
+	{#if (editMode && editChar) || playMode}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
 			{#if editMode && editChar}

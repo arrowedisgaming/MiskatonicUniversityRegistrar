@@ -228,7 +228,7 @@
 			<label for="era" class="mb-1 block text-sm font-medium">Era</label>
 			<select id="era" bind:value={era}
 				class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm">
-				{#each data.contentPack.eras as eraOption}
+				{#each data.contentPack.eras.filter((e) => e.id !== 'modern') as eraOption}
 					<option value={eraOption.id}>{eraOption.name}</option>
 				{/each}
 			</select>
@@ -256,7 +256,7 @@
 		<div class="flex flex-wrap items-center gap-2">
 			<select id="method" value={method} disabled={diceRolling} onchange={(e) => setMethod((e.currentTarget as HTMLSelectElement).value as CharacteristicMethodId)}
 				class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm">
-				{#each methodOptions as option}
+				{#each methodOptions.filter((o) => o.id === 'roll') as option}
 					<option value={option.id}>{option.name}</option>
 				{/each}
 			</select>

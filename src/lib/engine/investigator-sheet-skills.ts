@@ -2,8 +2,9 @@
  * Investigator sheet visibility and add-skill-picker filtering (pure, no UI).
  */
 
-import type { CoCSkillAllocation } from '$lib/types/character';
+import type { CoCCharacterData, CoCSkillAllocation } from '$lib/types/character';
 import type { CoCSkillDefinition } from '$lib/types/content-pack';
+import { resolveSkillBaseValue, createSkillAllocation } from './skills';
 
 export function shouldShowInvestigatorSkillOnSheet(skill: CoCSkillAllocation): boolean {
 	if (skill.isOccupation) return true;
@@ -13,6 +14,32 @@ export function shouldShowInvestigatorSkillOnSheet(skill: CoCSkillAllocation): b
 		skill.total === skill.baseValue &&
 		skill.allocations.length === 0
 	);
+}
+
+/**
+ * Build the full skill list for Play Mode: every era-appropriate skill at its
+ * current value (or base value if never allocated). Unallocated specializations
+ * are omitted — a player must pick a specialty before there's anything to roll.
+ */
+export function buildPlayModeSkills(
+	character: CoCCharacterData,
+	allDefs: CoCSkillDefinition[]
+): CoCSkillAllocation[] {
+	const eraDefs = allDefs.filter(
+		(d) => d.eras.includes('all') || d.eras.includes(character.era)
+	);
+	// Use a Set (not Map) so duplicate customizable skills (e.g. two Language (Other)
+	// rows with the same skillId but different customName) are all preserved.
+	const allocatedIds = new Set(character.skills.map((s) => s.skillId));
+
+	const result: CoCSkillAllocation[] = [...character.skills];
+	for (const def of eraDefs) {
+		if (allocatedIds.has(def.id)) continue;
+		if (def.isSpecialization) continue;
+		const base = resolveSkillBaseValue(def, character.characteristics.values);
+		result.push(createSkillAllocation(def.id, base, [], false));
+	}
+	return result;
 }
 
 export function skillDefMatchesInvestigatorEra(def: CoCSkillDefinition, era: string): boolean {
