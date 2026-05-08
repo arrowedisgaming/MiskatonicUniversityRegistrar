@@ -11,9 +11,9 @@
 		validateSkillAllocation
 	} from '$lib/engine/skills';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
-	import { getSkillsByGroup, INTERPERSONAL_SKILLS } from '$lib/engine/occupation-filter';
+	import { getSkillsByGroup, INTERPERSONAL_SKILLS, isCustomOccupation } from '$lib/engine/occupation-filter';
 	import type { CoCContentPack, CoCOccupationDefinition, CoCSkillDefinition } from '$lib/types/content-pack';
-	import type { CoCSkillAllocation, SkillPointAllocation } from '$lib/types/character';
+	import type { CoCSkillAllocation, CustomSkillDef, SkillPointAllocation } from '$lib/types/character';
 	import type { CharacteristicId } from '$lib/types/common';
 
 	const data = page.data as {
@@ -24,22 +24,31 @@
 
 	const char = $wizard.character;
 	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
+	const isCustomOcc = isCustomOccupation(char.occupation?.occupationId ?? '');
 
 	// Redirect if no occupation selected (e.g. direct URL access)
-	if (!occupation && typeof window !== 'undefined') {
+	if (!occupation && !isCustomOcc && typeof window !== 'undefined') {
 		goto(WIZARD_STEPS[1].path);
 	}
 
-	const totalOccPoints = occupation
-		? calculateOccupationSkillPoints(
-				occupation.skillPointFormula,
-				char.characteristics.values,
-				char.occupation?.formulaChoices
-			)
-		: 0;
+	const occupationDisplayName = isCustomOcc
+		? (char.occupation?.customName ?? 'Custom Occupation')
+		: occupation?.name ?? 'Occupation';
+
+	const totalOccPoints = isCustomOcc
+		? (char.occupation?.customSkillPoints ?? 0)
+		: occupation
+			? calculateOccupationSkillPoints(
+					occupation.skillPointFormula,
+					char.characteristics.values,
+					char.occupation?.formulaChoices
+				)
+			: 0;
 	const totalPersonalPoints = calculatePersonalInterestPoints(char.characteristics.values.int);
 
-	const requiredOccSkillIds = new Set(occupation?.occupationSkills.map((s) => s.skillId) ?? []);
+	const requiredOccSkillIds = isCustomOcc
+		? new Set<string>(char.occupation?.customOccupationSkills ?? [])
+		: new Set(occupation?.occupationSkills.map((s) => s.skillId) ?? []);
 
 	// All allocatable skills (exclude Cthulhu Mythos)
 	const allSkills = data.skills.filter((s) => !s.noPointAllocation && s.eras.some((era) => era === 'all' || era === char.era));
@@ -52,6 +61,14 @@
 	// Track point allocations per skill: { skillId: { occupation: number, personal: number } }
 	type PointMap = Record<string, { occupation: number; personal: number }>;
 
+	// Custom skill definitions (homebrew / supplement skills not in content pack)
+	let customSkillDefs = $state<CustomSkillDef[]>(char.customSkillDefs ?? []);
+	// New custom skill form
+	let newCustomSkillName = $state('');
+	let newCustomSkillBase = $state(0);
+	let newCustomSkillIsOccupation = $state(false);
+	let showAddCustomSkill = $state(false);
+
 	// Initialize from existing character data or empty
 	let pointAllocations = $state<PointMap>(initializeFromCharacter());
 	let selectedInterpersonal = $state<string[]>(initialChoiceIds('interpersonal'));
@@ -60,12 +77,28 @@
 	let selectedAny = $state<string[]>(initialChoiceIds('any'));
 
 	let eligibleOccupationSkillIds = $derived.by(() => {
+		if (isCustomOcc) {
+			const tagged = char.occupation?.customOccupationSkills ?? [];
+			if (tagged.length > 0) {
+				// Player tagged specific occupation skills — those + occupation-flagged custom defs + credit-rating
+				const ids = new Set(tagged);
+				ids.add('credit-rating');
+				for (const def of customSkillDefs) if (def.isOccupation) ids.add(def.id);
+				return ids;
+			}
+			// No skills tagged → any content-pack skill eligible; custom defs by their own flag
+			const ids = new Set(allSkills.map((s) => s.id));
+			for (const def of customSkillDefs) if (def.isOccupation) ids.add(def.id);
+			return ids;
+		}
 		const ids = new Set(requiredOccSkillIds);
 		ids.add('credit-rating');
 		for (const id of selectedInterpersonal) ids.add(id);
 		for (const id of selectedCombat) ids.add(id);
 		for (const id of selectedScience) ids.add(id);
 		for (const id of selectedAny) ids.add(id);
+		// Custom skill defs: eligible only if the player marked them as occupation skills
+		for (const def of customSkillDefs) if (def.isOccupation) ids.add(def.id);
 		return ids;
 	});
 
@@ -170,31 +203,63 @@
 		};
 	}
 
+	function addCustomSkill() {
+		const name = newCustomSkillName.trim();
+		if (!name) return;
+		const id = `custom-${crypto.randomUUID().slice(0, 8)}`;
+		customSkillDefs = [...customSkillDefs, { id, name, baseValue: newCustomSkillBase, isOccupation: newCustomSkillIsOccupation }];
+		pointAllocations = { ...pointAllocations, [id]: { occupation: 0, personal: 0 } };
+		newCustomSkillName = '';
+		newCustomSkillBase = 0;
+		newCustomSkillIsOccupation = false;
+		showAddCustomSkill = false;
+	}
+
+	function removeCustomSkill(id: string) {
+		customSkillDefs = customSkillDefs.filter((d) => d.id !== id);
+		const next = { ...pointAllocations };
+		delete next[id];
+		pointAllocations = next;
+	}
+
 	function buildSkillAllocations(): CoCSkillAllocation[] {
 		const result: CoCSkillAllocation[] = [];
+
+		// Content-pack skills
 		for (const skill of allSkills) {
 			const alloc = getAlloc(skill.id);
 			if (alloc.occupation === 0 && alloc.personal === 0 && !eligibleOccupationSkillIds.has(skill.id)) continue;
 
 			const allocations: SkillPointAllocation[] = [];
 			if (alloc.occupation > 0) {
-				allocations.push({
-					points: alloc.occupation,
-					source: 'occupation',
-					sourceLabel: occupation?.name ?? 'Occupation'
-				});
+				allocations.push({ points: alloc.occupation, source: 'occupation', sourceLabel: occupationDisplayName });
 			}
 			if (alloc.personal > 0) {
-				allocations.push({
-					points: alloc.personal,
-					source: 'personal-interest',
-					sourceLabel: 'Personal Interest'
-				});
+				allocations.push({ points: alloc.personal, source: 'personal-interest', sourceLabel: 'Personal Interest' });
 			}
 
 			const base = getBase(skill);
 			result.push(createSkillAllocation(skill.id, base, allocations, eligibleOccupationSkillIds.has(skill.id)));
 		}
+
+		// Custom skills — always include once defined, even with zero allocation,
+		// so the definition survives round-trips through the character JSON.
+		for (const def of customSkillDefs) {
+			const alloc = getAlloc(def.id);
+
+			const allocations: SkillPointAllocation[] = [];
+			if (alloc.occupation > 0) {
+				allocations.push({ points: alloc.occupation, source: 'occupation', sourceLabel: occupationDisplayName });
+			}
+			if (alloc.personal > 0) {
+				allocations.push({ points: alloc.personal, source: 'personal-interest', sourceLabel: 'Personal Interest' });
+			}
+
+			// Occupation flag: respect the player's explicit choice on the skill def,
+			// or promote if occupation points were actually spent on it.
+			result.push(createSkillAllocation(def.id, def.baseValue, allocations, (def.isOccupation ?? false) || alloc.occupation > 0));
+		}
+
 		return result;
 	}
 
@@ -212,18 +277,20 @@
 	}
 
 	let validation = $derived(
-		occupation
+		(occupation || isCustomOcc)
 			? validateSkillAllocation(
 					buildSkillAllocations(),
 					totalOccPoints,
 					totalPersonalPoints,
-					occupation.creditRating,
+					// Custom occupations have no credit rating constraint — accept any 0–99.
+					occupation?.creditRating ?? { min: 0, max: 99 },
 					eligibleOccupationSkillIds
 				)
 			: null
 	);
 
 	let choiceErrors = $derived.by(() => {
+		if (isCustomOcc) return []; // Custom occupation has no choice constraints
 		const errors: string[] = [];
 		if ((occupation?.interpersonalChoiceCount ?? 0) !== selectedInterpersonal.length) {
 			errors.push(`Choose ${occupation?.interpersonalChoiceCount} interpersonal skill${occupation?.interpersonalChoiceCount === 1 ? '' : 's'}.`);
@@ -296,14 +363,15 @@
 		if (!canProceed) return;
 		wizard.updateCharacter((c) => ({
 			...c,
-			skills: buildSkillAllocations()
+			skills: buildSkillAllocations(),
+			customSkillDefs: [...customSkillDefs]
 		}));
 		wizard.completeStep(2);
 		goto(WIZARD_STEPS[3].path);
 	}
 </script>
 
-{#if occupation}
+{#if occupation || isCustomOcc}
 <div class="space-y-6">
 	<div>
 		<h1 class="text-2xl font-bold" data-heading>Skills</h1>
@@ -367,8 +435,8 @@
 		</div>
 	</div>
 
-	<!-- Occupation choice slots -->
-	{#if (occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0}
+	<!-- Occupation choice slots (only for standard occupations with defined choices) -->
+	{#if !isCustomOcc && occupation && ((occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0)}
 		<div class="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<h2 class="text-sm font-semibold" data-heading>Occupation Skill Choices</h2>
 			{#if (occupation.interpersonalChoiceCount ?? 0) > 0}
@@ -542,8 +610,124 @@
 						<td class="py-1.5 text-center text-[var(--color-muted-foreground)]">{fifthValue(total)}</td>
 					</tr>
 				{/each}
+			<!-- Custom skill rows -->
+				{#each customSkillDefs as def (def.id)}
+					{@const alloc = getAlloc(def.id)}
+					{@const total = def.baseValue + alloc.occupation + alloc.personal}
+					{@const isOcc = eligibleOccupationSkillIds.has(def.id)}
+					{@const occColumnLocked = !isOcc || (alloc.occupation === 0 && remainingOcc <= 0)}
+					{@const personalColumnLocked = alloc.personal === 0 && remainingPersonal <= 0}
+					<tr class="border-b border-[var(--color-border)]/30 bg-[var(--color-accent)]/20">
+						<td class="py-1.5 pr-2">
+							<span class="font-medium">{def.name}</span>
+							<span class="ml-1 rounded bg-[var(--color-muted-foreground)]/20 px-1 text-[10px] text-[var(--color-muted-foreground)]">custom</span>
+							{#if isOcc}
+								<span class="ml-1 rounded bg-[var(--color-primary)]/20 px-1 text-[10px] text-[var(--color-primary)]">OCC</span>
+							{/if}
+						</td>
+						<td class="py-1.5 pr-2 text-center text-[var(--color-muted-foreground)]">{def.baseValue}</td>
+						<td class="py-1.5 pr-2 text-center">
+							<input
+								type="number" min="0" value={alloc.occupation}
+								disabled={occColumnLocked}
+								oninput={(e) => {
+									const input = e.currentTarget as HTMLInputElement;
+									setOccPoints(def.id, parseInt(input.value) || 0);
+									input.value = String((pointAllocations[def.id] ?? { occupation: 0, personal: 0 }).occupation);
+								}}
+								class="w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)]
+									px-1.5 py-0.5 text-center text-sm
+									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:opacity-30 disabled:cursor-not-allowed"
+							/>
+						</td>
+						<td class="py-1.5 pr-2 text-center">
+							<input
+								type="number" min="0" value={alloc.personal}
+								disabled={personalColumnLocked}
+								oninput={(e) => {
+									const input = e.currentTarget as HTMLInputElement;
+									setPersonalPoints(def.id, parseInt(input.value) || 0);
+									input.value = String((pointAllocations[def.id] ?? { occupation: 0, personal: 0 }).personal);
+								}}
+								class="w-16 rounded border border-[var(--color-border)] bg-[var(--color-card)]
+									px-1.5 py-0.5 text-center text-sm
+									focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:opacity-30 disabled:cursor-not-allowed"
+							/>
+						</td>
+						<td class="py-1.5 pr-2 text-center font-bold {total > 89 ? 'text-[var(--color-warning)]' : ''}">{total}</td>
+						<td class="py-1.5 pr-2 text-center text-[var(--color-muted-foreground)]">{halfValue(total)}</td>
+						<td class="py-1.5 text-center">
+							<button
+								type="button"
+								onclick={() => removeCustomSkill(def.id)}
+								class="text-[var(--color-muted-foreground)] hover:text-[var(--color-destructive)] text-xs"
+								title="Remove custom skill"
+							>✕</button>
+						</td>
+					</tr>
+				{/each}
 			</tbody>
 		</table>
+	</div>
+
+	<!-- Add custom skill -->
+	<div>
+		{#if showAddCustomSkill}
+			<div class="flex items-end gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+				<div class="flex-1">
+					<label for="new-skill-name" class="block text-xs uppercase text-[var(--color-muted-foreground)] mb-1">Skill Name</label>
+					<input
+						id="new-skill-name"
+						type="text"
+						bind:value={newCustomSkillName}
+						placeholder="e.g. Occult Lore"
+						class="w-full rounded border border-[var(--color-border)] bg-[var(--color-background)]
+							px-2 py-1.5 text-sm placeholder:text-[var(--color-muted-foreground)]
+							focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+					/>
+				</div>
+				<div class="w-24">
+					<label for="new-skill-base" class="block text-xs uppercase text-[var(--color-muted-foreground)] mb-1">Base %</label>
+					<input
+						id="new-skill-base"
+						type="number" min="0" max="99"
+						bind:value={newCustomSkillBase}
+						class="w-full rounded border border-[var(--color-border)] bg-[var(--color-background)]
+							px-2 py-1.5 text-sm text-center
+							focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+					/>
+				</div>
+				<button
+					type="button"
+					aria-pressed={newCustomSkillIsOccupation}
+					onclick={() => (newCustomSkillIsOccupation = !newCustomSkillIsOccupation)}
+					class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors
+						{newCustomSkillIsOccupation
+							? 'bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)] ring-1 ring-[var(--color-ring)]'
+							: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
+				>Occupation Skill</button>
+				<button
+					type="button"
+					onclick={addCustomSkill}
+					disabled={!newCustomSkillName.trim()}
+					class="rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium
+						text-[var(--color-primary-foreground)] hover:opacity-90 disabled:opacity-50"
+				>Add</button>
+				<button
+					type="button"
+					onclick={() => { showAddCustomSkill = false; newCustomSkillName = ''; newCustomSkillBase = 0; newCustomSkillIsOccupation = false; }}
+					class="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]"
+				>Cancel</button>
+			</div>
+		{:else}
+			<button
+				type="button"
+				onclick={() => (showAddCustomSkill = true)}
+				class="text-sm text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] underline-offset-2 hover:underline"
+			>
+				+ Add Custom Skill
+			</button>
+		{/if}
 	</div>
 
 	<!-- Navigation -->

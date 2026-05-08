@@ -176,7 +176,23 @@ export function buildSkillRows(
 		});
 	}
 
-	const all = [...nonSpec, ...specRows];
+	// Custom skill defs (homebrew / supplement skills not in the content pack)
+	const customRows: SkillRow[] = [];
+	for (const def of character.customSkillDefs ?? []) {
+		const allocation = allocByDefId.get(def.id) ?? null;
+		const value = allocation ? allocation.total : def.baseValue;
+		customRows.push({
+			key: def.id,
+			displayName: def.name,
+			value,
+			isOccupation: allocation?.isOccupation ?? false,
+			isImproved: value > def.baseValue,
+			category: 'other',
+			isBlankSlot: false
+		});
+	}
+
+	const all = [...nonSpec, ...specRows, ...customRows];
 	all.sort((a, b) => {
 		if (a.category !== b.category) return a.category.localeCompare(b.category);
 		if (a.isBlankSlot !== b.isBlankSlot) return a.isBlankSlot ? 1 : -1;

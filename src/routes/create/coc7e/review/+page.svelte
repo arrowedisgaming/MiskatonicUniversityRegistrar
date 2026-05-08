@@ -4,17 +4,22 @@
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
-	import type { CoCOccupationDefinition } from '$lib/types/content-pack';
+	import type { CoCOccupationDefinition, CoCSkillDefinition, CoCContentPack } from '$lib/types/content-pack';
 	import { onMount } from 'svelte';
 	import { dossierFiling } from '$lib/transitions/eerie';
 	import { triggerEldritchFlash } from '$lib/stores/atmosphere';
+	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
+	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
 
 	const data = page.data as {
 		occupations: CoCOccupationDefinition[];
+		skills: CoCSkillDefinition[];
+		contentPack: CoCContentPack;
 	};
 
 	const char = $wizard.character;
 	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
+	const occupationName = char.occupation?.customName ?? occupation?.name ?? 'Custom Occupation';
 
 	// Validation
 	let warnings = $derived.by(() => {
@@ -33,9 +38,17 @@
 		return w;
 	});
 
-	// Skills grouped by occupation vs personal
-	let occSkills = $derived(char.skills.filter((s) => s.isOccupation).sort((a, b) => b.total - a.total));
-	let otherSkills = $derived(char.skills.filter((s) => !s.isOccupation && s.allocations.length > 0).sort((a, b) => b.total - a.total));
+	// All allocated skills (plus any custom defs even at zero allocation), sorted alphabetically.
+	const customDefIds = new Set((char.customSkillDefs ?? []).map((d) => d.id));
+	let allSkills = $derived(
+		char.skills
+			.filter((s) => s.isOccupation || s.allocations.length > 0 || customDefIds.has(s.skillId))
+			.slice()
+			.sort((a, b) =>
+				resolveSkillDisplayName(a.skillId, char.customSkillDefs ?? [], data.skills)
+					.localeCompare(resolveSkillDisplayName(b.skillId, char.customSkillDefs ?? [], data.skills))
+			)
+	);
 
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
@@ -108,7 +121,7 @@
 	<div in:dossierFiling|global={{ delay: 120 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<h2 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h2>
 		<p class="text-sm text-[var(--color-muted-foreground)]">
-			{occupation?.name ?? 'No occupation'} &middot;
+			{occupationName} &middot;
 			Age {char.age} &middot;
 			{char.era} Era
 		</p>
@@ -178,37 +191,24 @@
 	</div>
 
 	<!-- Skills -->
-	{#if char.skills.length > 0}
+	{#if allSkills.length > 0}
 		<div in:dossierFiling|global={{ delay: 480 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
-
-			{#if occSkills.length > 0}
-				<h4 class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Occupation Skills</h4>
-				<div class="mb-3 grid gap-1 sm:grid-cols-2">
-					{#each occSkills as skill}
-						<div class="flex justify-between text-sm">
-							<span>{skill.skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</span>
-							<span class="font-bold">{skill.total}%
-								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
-							</span>
-						</div>
-					{/each}
-				</div>
-			{/if}
-
-			{#if otherSkills.length > 0}
-				<h4 class="mb-1 text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Personal Interest Skills</h4>
-				<div class="grid gap-1 sm:grid-cols-2">
-					{#each otherSkills as skill}
-						<div class="flex justify-between text-sm">
-							<span>{skill.skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</span>
-							<span class="font-bold">{skill.total}%
-								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
-							</span>
-						</div>
-					{/each}
-				</div>
-			{/if}
+			<div class="grid gap-1 sm:grid-cols-2">
+				{#each allSkills as skill}
+					<div class="flex justify-between text-sm">
+						<span>
+							{resolveSkillDisplayName(skill.skillId, char.customSkillDefs ?? [], data.skills)}
+							{#if skill.isOccupation}
+								<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
+							{/if}
+						</span>
+						<span class="font-bold tabular-nums">{skill.total}%
+							<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
+						</span>
+					</div>
+				{/each}
+			</div>
 		</div>
 	{/if}
 
@@ -270,6 +270,20 @@
 			{#if saveError}
 				<span id="save-error" role="alert" class="text-sm text-[var(--color-destructive)]">{saveError}</span>
 			{/if}
+			<a
+				href="/create/coc7e/draft"
+				class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+					text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
+			>
+				Try Play Mode
+			</a>
+			<PDFExportButton
+				character={char}
+				{occupationName}
+				skills={data.skills}
+				occupations={data.occupations}
+				contentPack={data.contentPack}
+			/>
 			<button
 				type="button"
 				onclick={saveInvestigator}

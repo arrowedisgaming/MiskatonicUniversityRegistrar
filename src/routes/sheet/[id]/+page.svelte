@@ -33,6 +33,7 @@
 		splitDamageSegments
 	} from '$lib/engine/weapon-damage-roll';
 	import { BACKSTORY_KEYS, BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
+	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
 	import ShareDialog from '$lib/components/investigator/ShareDialog.svelte';
 	import SheetReadOnly from '$lib/components/investigator/SheetReadOnly.svelte';
@@ -469,7 +470,7 @@
 	}
 
 	function skillDisplayName(skillId: string): string {
-		return skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+		return resolveSkillDisplayName(skillId, char.customSkillDefs ?? [], data.skills);
 	}
 
 	function skillRowLabel(skill: CoCSkillAllocation): string {
@@ -762,10 +763,12 @@
 			.slice(0, SHEET_ADD_SKILL_MATCH_LIMIT);
 	});
 
-	// Read/play: highest total first. Edit mode: stable document order so rows don't jump while typing.
+	// Play: alphabetical by display name. Read: highest total first. Edit: stable order so rows don't jump.
 	const sortedSkills = $derived.by(() => {
 		if (playMode) {
-			return buildPlayModeSkills(char, data.skills).sort((a, b) => b.total - a.total);
+			return buildPlayModeSkills(char, data.skills).sort((a, b) =>
+				skillDisplayName(a.skillId).localeCompare(skillDisplayName(b.skillId))
+			);
 		}
 		const skills = editMode && editChar ? editChar.skills : char.skills;
 		const visible = skills.filter(shouldShowInvestigatorSkillOnSheet).slice();

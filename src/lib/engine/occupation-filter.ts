@@ -4,6 +4,7 @@
  */
 
 import type { CoCOccupationDefinition, CoCSkillDefinition } from '$lib/types/content-pack';
+import type { CustomSkillDef } from '$lib/types/character';
 
 /** Filter occupations to those available in the given era */
 export function filterOccupationsByEra(
@@ -50,6 +51,27 @@ export const INTERPERSONAL_SKILLS = ['charm', 'fast-talk', 'intimidate', 'persua
 
 /** Combat skill groups for occupation choice slots */
 export const COMBAT_SKILL_GROUPS = ['fighting', 'firearms'];
+
+/** True when the occupation slot represents a player-defined custom occupation */
+export function isCustomOccupation(occupationId: string): boolean {
+	return occupationId === 'custom';
+}
+
+/**
+ * Resolve the display name of a skill, checking custom defs before the content pack.
+ * Falls back to prettifying the skillId if neither source has the skill.
+ */
+export function resolveSkillDisplayName(
+	skillId: string,
+	customSkillDefs: CustomSkillDef[],
+	allSkills: CoCSkillDefinition[]
+): string {
+	const custom = customSkillDefs.find((d) => d.id === skillId);
+	if (custom) return custom.name;
+	const pack = allSkills.find((s) => s.id === skillId);
+	if (pack) return pack.name;
+	return skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+}
 
 /** Get all skill definitions that match a specialization group */
 export function getSkillsByGroup(

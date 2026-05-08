@@ -5,7 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [To Do]
+### Feedback from Reddit 
+- I'd like an option to roll every stat one by one from the beginning, to emulate the table top, I can't read 24 dice at once.
+
+- Click again during rolling to skip the dice animation, for when you want to just go fast.
+
+- Age choice should probably be after characteristics, right before Age adjustments. That way it follow the order of the book and you don't have to go up and down when you are doing the age adjustments and decide to change the age.
+
+- You should be able to input the EDU checks manually, for use flexibility.
+
+- The way Age Adjustments are phrased right now make it seem like a bonus instead of a drawback.
+
+- Right now EDU checks resets if you change the age at all. Ideally it stays the same until you cross a threshold, then it adds other check or removes the extra check, depending on the age, without resetting.
+
+- Small bug: if you change the age to cross the a threshold (e.g. 39 to 40), the first EDU roll shows 3 dice instead of 2 (1 10s die, 2 units die).
+
+- Depending on your Occupation, the "Occupation Skill Choices" + warnings take enough space that you can see the skill list while using the search and filters at all in a 1080p screen (though you can see some in a 4k screen). The search and filters do move with you, but a first time user will think that the search is not working for a minute.
+
+- When the warnings change they move the skill list up or down, so if you were adjusting a number the button runs away from the cursor.
+
+- Option to add custom weapons during creation/wizard
+
+- The whole layout jumps around when you because of the "Rolling..." roll and the last roll just stays there forever.
+
+- remove green faded circle when you roll.
+
+- Make the dice roll faster.
+
+- Edu improvement and luck rolls should roll automatically. There's no choice to be made there, they can be rolled simultaneously with the characteristic rolls.
+
+- Disable scrolling affecting the up/down arrows.
+
+- Maximum skill should not be 99.
+
+- Add rolling for backstory entries.
+
+- Add section for assets.
+
+- Are you considering adding in random name (certainly), and possibly backstory generation?
+
+- I like the dice rolling, and the over all look and functionality currently mind you.
+
+- I signed in with Google saved and investigator, sign out and back in and it wasn't there anymore.
+
 ## [Unreleased]
+
+## [0.14.0] - 2026-05-08
+
+### Added
+- **PDF export from wizard review — no sign-in required.** The "Export PDF" button now appears on the Review step alongside "Save Investigator", generating a PDF from the in-progress character in localStorage without requiring authentication.
+- **Era filter chips on occupation picker.** Era labels (1920s, Gaslight, Modern, etc.) now appear as clickable chips above the occupation list, letting players browse occupations across eras. The chip for the character's own era is pre-selected; switching eras deselects any occupation that isn't available in the new era.
+- **Custom occupations.** A "Custom Occupation" entry at the bottom of the occupation list lets players enter a name, point budget, and optionally tag which content-pack skills belong to the occupation. Tagged skills are the only ones eligible for occupation points (like a normal occupation); leaving the tag list empty allows any skill. Custom occupation data is stored in the character, not the content pack.
+- **Custom skills.** An "+ Add Custom Skill" button on the skills step lets players define homebrew or supplement skills (name + base value). An "Occupation Skill" toggle button marks the new skill as eligible for occupation points. Custom skills appear inline with a "custom" badge, can receive occupation and personal interest points like any other skill, and can be removed at will. Works for any occupation, not just custom ones.
+- **Alphabetical skill ordering.** Skills are now sorted alphabetically on the Review page, Play Mode sheet, and Draft play mode — replacing the previous ad-hoc ordering.
+- **Draft play mode — no sign-in required.** A "Try Play Mode" link on the Review step opens a full play-mode page (`/create/coc7e/draft`) sourcing data from localStorage. Includes stat trackers (HP/MP/Sanity/Luck with +/- controls), clickable characteristics and skills for percentile rolls, roll history, PDF export, and "Edit" links back to each wizard step. Stat changes and roll history persist back to the wizard state. Only "Save" and "Share" require signing in.
+
+### Changed
+- `SheetReadOnly` now resolves custom skill names from `character.customSkillDefs` via `resolveSkillDisplayName`.
+
+### Technical
+- `CoCCharacterData` gains a `customSkillDefs: CustomSkillDef[]` field (schema version bumped 3 → 4; migration adds `[]` for existing characters).
+- `OccupationData` gains optional `customName`, `customSkillPoints`, and `customOccupationSkills` fields for custom occupations.
+- `CustomSkillDef` gains optional `isOccupation` flag so the player's choice at add-time is the authoritative record; server validation uses this field rather than the allocation-level flag to prevent crafted payloads from bypassing occupation-point budgets.
+- New engine utilities in `occupation-filter.ts`: `isCustomOccupation()`, `resolveSkillDisplayName()`.
+- New wrapper `calculateOccupationPoints()` in `skills.ts` handles custom occupation point budgets alongside formula-based calculations.
 
 ## [0.13.0] - 2026-05-08
 
@@ -373,7 +437,10 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.8.0...v0.9.0

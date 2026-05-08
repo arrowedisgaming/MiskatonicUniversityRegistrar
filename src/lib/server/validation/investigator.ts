@@ -18,6 +18,7 @@ import {
 } from '$lib/engine/skills';
 import { calculateAllDerived } from '$lib/engine/derived-stats';
 import { describeWeaponDiceLimitViolations } from '$lib/engine/weapon-damage-roll';
+import { isCustomOccupation } from '$lib/engine/occupation-filter';
 
 export type ValidationResult = { valid: true } | { valid: false; errors: string[] };
 
@@ -29,8 +30,11 @@ export function validateFinalInvestigator(char: CoCCharacterData): ValidationRes
 		return { valid: false, errors };
 	}
 
-	const occupation = getOccupations().find((o) => o.id === char.occupation!.occupationId);
-	if (!occupation) {
+	const isCustomOcc = isCustomOccupation(char.occupation.occupationId);
+	const occupation = isCustomOcc
+		? null
+		: getOccupations().find((o) => o.id === char.occupation!.occupationId);
+	if (!isCustomOcc && !occupation) {
 		errors.push(`Unknown occupation: ${char.occupation.occupationId}`);
 		return { valid: false, errors };
 	}
@@ -44,35 +48,60 @@ export function validateFinalInvestigator(char: CoCCharacterData): ValidationRes
 	}
 	if (errors.length > 0) return { valid: false, errors };
 
-	const totalOccupationPoints = calculateOccupationSkillPoints(
-		occupation.skillPointFormula,
-		characteristics,
-		char.occupation.formulaChoices as Record<string, CharacteristicId>
-	);
+	const totalOccupationPoints = isCustomOcc
+		? (char.occupation.customSkillPoints ?? 0)
+		: calculateOccupationSkillPoints(
+				occupation!.skillPointFormula,
+				characteristics,
+				char.occupation.formulaChoices as Record<string, CharacteristicId>
+			);
 	const totalPersonalPoints = calculatePersonalInterestPoints(characteristics.int);
 	if (!Number.isFinite(totalOccupationPoints) || !Number.isFinite(totalPersonalPoints)) {
 		errors.push('Skill point budget could not be computed — check formula choices');
 		return { valid: false, errors };
 	}
 
-	// Eligible occupation-skill set:
-	//  - explicit required + listed-optional skills from the occupation
-	//  - Credit Rating (always payable from occupation points)
-	//  - any skill the player has marked isOccupation: true (their chosen slot picks
-	//    for personalChoiceCount / interpersonalChoiceCount / combatChoiceCount /
-	//    scienceChoiceCount). The total point budget still bounds abuse.
-	const eligible = new Set<string>([
-		...occupation.occupationSkills.map((s) => s.skillId),
-		'credit-rating'
-	]);
-	for (const skill of char.skills) {
-		if (skill.isOccupation) eligible.add(skill.skillId);
+	// Eligible occupation-skill set.
+	// Authority for custom-skill eligibility is customSkillDefs[].isOccupation (written at
+	// creation time), never the allocation-level isOccupation flag from the same payload.
+	const customDefIds = new Set(char.customSkillDefs.map((d) => d.id));
+	const eligibleCustomDefs = new Set(
+		char.customSkillDefs.filter((d) => d.isOccupation).map((d) => d.id)
+	);
+
+	const eligible = new Set<string>();
+	if (isCustomOcc) {
+		const tagged = char.occupation.customOccupationSkills ?? [];
+		if (tagged.length > 0) {
+			// Tagged mode: only the tagged skill ids + credit-rating + custom defs marked occupation
+			for (const s of tagged) eligible.add(s);
+			eligible.add('credit-rating');
+			for (const id of eligibleCustomDefs) eligible.add(id);
+		} else {
+			// Open mode: every skill the player allocated to is eligible
+			for (const skill of char.skills) eligible.add(skill.skillId);
+			for (const id of eligibleCustomDefs) eligible.add(id);
+		}
+	} else {
+		for (const s of occupation!.occupationSkills) eligible.add(s.skillId);
+		eligible.add('credit-rating');
+		// Trust isOccupation for content-pack skills (personal choice-slot picks);
+		// for homebrew custom defs, rely on customSkillDefs[].isOccupation instead.
+		for (const skill of char.skills) {
+			if (skill.isOccupation && !customDefIds.has(skill.skillId)) {
+				eligible.add(skill.skillId);
+			}
+		}
+		for (const id of eligibleCustomDefs) eligible.add(id);
 	}
+
+	// Custom occupations have no credit rating constraint — accept any value 0–99.
+	const creditRatingRange = isCustomOcc ? { min: 0, max: 99 } : occupation!.creditRating;
 	const skillCheck = validateSkillAllocation(
 		char.skills,
 		totalOccupationPoints,
 		totalPersonalPoints,
-		occupation.creditRating,
+		creditRatingRange,
 		eligible
 	);
 

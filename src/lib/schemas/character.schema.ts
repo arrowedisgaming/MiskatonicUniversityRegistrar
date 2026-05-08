@@ -131,9 +131,18 @@ export const cocCharacterDataSchema = z.object({
 		// Keys are formula-term indices ("0", "1", ...); values must be one of the
 		// eight characteristic IDs so calculateOccupationSkillPoints cannot receive
 		// undefined → NaN and silently bypass the budget check.
-		formulaChoices: z.record(z.string().max(20), characteristicId)
+		formulaChoices: z.record(z.string().max(20), characteristicId),
+		customName: z.string().max(200).optional(),
+		customSkillPoints: z.number().int().min(0).max(9999).optional(),
+		customOccupationSkills: z.array(z.string().min(1).max(100)).max(100).optional()
 	}).nullable(),
 	skills: z.array(skillAllocation).max(200),
+	customSkillDefs: z.array(z.object({
+		id: z.string().min(1).max(100),
+		name: z.string().min(1).max(200),
+		baseValue: z.number().int().min(0).max(99),
+		isOccupation: z.boolean().optional()
+	})).max(50).default([]),
 	backstory: z.object({
 		personalDescription: z.string().max(BACKSTORY_FIELD_MAX).default(''),
 		ideologyBeliefs: z.string().max(BACKSTORY_FIELD_MAX),

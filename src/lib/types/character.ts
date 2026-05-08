@@ -3,7 +3,7 @@ import type { CharacteristicMethodId } from './content-pack';
 import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 
 /** Schema version for character data migration */
-export const CHARACTER_SCHEMA_VERSION = 3;
+export const CHARACTER_SCHEMA_VERSION = 4;
 
 /** Play-mode percentile d100 checks (Characteristics & skills). */
 export interface PlayRollHistoryPercentileEntry {
@@ -67,6 +67,9 @@ export interface CoCCharacterData {
 
 	// Skills with auditable allocations
 	skills: CoCSkillAllocation[];
+
+	// Homebrew / supplement skill definitions (not in content pack)
+	customSkillDefs: CustomSkillDef[];
 
 	// Backstory
 	backstory: BackstoryData;
@@ -132,6 +135,20 @@ export interface OccupationData {
 	occupationId: string;
 	/** If the occupation formula has a choice (e.g. STR or DEX), which was picked */
 	formulaChoices: Record<string, CharacteristicId>;
+	/** Display name for custom occupations (occupationId === 'custom') */
+	customName?: string;
+	/** User-entered skill point budget for custom occupations */
+	customSkillPoints?: number;
+	/** Skills the player tagged as occupation skills for custom occupations */
+	customOccupationSkills?: string[];
+}
+
+/** User-defined skill not in the content pack (homebrew / supplements) */
+export interface CustomSkillDef {
+	id: string;
+	name: string;
+	baseValue: number;
+	isOccupation?: boolean;
 }
 
 export interface CoCSkillAllocation {
@@ -225,6 +242,7 @@ export function createBlankCharacter(): CoCCharacterData {
 		},
 		occupation: null,
 		skills: [],
+		customSkillDefs: [],
 		backstory: {
 			personalDescription: '',
 			ideologyBeliefs: '',

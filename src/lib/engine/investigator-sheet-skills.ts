@@ -20,6 +20,7 @@ export function shouldShowInvestigatorSkillOnSheet(skill: CoCSkillAllocation): b
  * Build the full skill list for Play Mode: every era-appropriate skill at its
  * current value (or base value if never allocated). Unallocated specializations
  * are omitted — a player must pick a specialty before there's anything to roll.
+ * Custom skill defs (homebrew) are appended if not already in character.skills.
  */
 export function buildPlayModeSkills(
 	character: CoCCharacterData,
@@ -39,6 +40,14 @@ export function buildPlayModeSkills(
 		const base = resolveSkillBaseValue(def, character.characteristics.values);
 		result.push(createSkillAllocation(def.id, base, [], false));
 	}
+
+	// Append custom skill defs that weren't captured in character.skills
+	// (e.g. custom skills with zero allocation that weren't saved pre-fix).
+	for (const customDef of character.customSkillDefs ?? []) {
+		if (allocatedIds.has(customDef.id)) continue;
+		result.push(createSkillAllocation(customDef.id, customDef.baseValue, [], false));
+	}
+
 	return result;
 }
 

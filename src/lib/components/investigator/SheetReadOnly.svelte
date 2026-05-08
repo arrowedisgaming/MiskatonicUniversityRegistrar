@@ -2,9 +2,11 @@
 	import { ALL_CHARACTERISTICS } from '$lib/types/common';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
 	import { shouldShowInvestigatorSkillOnSheet } from '$lib/engine/investigator-sheet-skills';
+	import { createSkillAllocation } from '$lib/engine/skills';
 	import type { CoCCharacterData, CoCSkillAllocation } from '$lib/types/character';
 	import type { CoCSkillDefinition, CoCOccupationDefinition } from '$lib/types/content-pack';
 	import { BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
+	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
 
 	type Props = {
 		character: CoCCharacterData;
@@ -12,17 +14,19 @@
 		occupations: CoCOccupationDefinition[];
 	};
 
-	// `skills` and `occupations` are accepted for API symmetry with future
-	// extensions (e.g. resolving skill display names from content-pack defs).
-	// Currently only the character payload is needed for the read-only render.
-	let { character }: Props = $props();
+	let { character, skills }: Props = $props();
 
-	const sortedSkills = $derived(
-		character.skills
-			.filter(shouldShowInvestigatorSkillOnSheet)
-			.slice()
-			.sort((a, b) => b.total - a.total)
-	);
+	const sortedSkills = $derived.by(() => {
+		const existing = character.skills.filter(shouldShowInvestigatorSkillOnSheet);
+		const existingIds = new Set(existing.map((s) => s.skillId));
+		// Custom skill defs that didn't make it into character.skills (e.g. zero-
+		// allocation saves from before the fix) are synthesised here so they always
+		// appear on the sheet.
+		const extra: CoCSkillAllocation[] = (character.customSkillDefs ?? [])
+			.filter((d) => !existingIds.has(d.id))
+			.map((d) => createSkillAllocation(d.id, d.baseValue, [], false));
+		return [...existing, ...extra].sort((a, b) => b.total - a.total);
+	});
 
 	function backstoryLabel(key: string): string {
 		return (
@@ -31,7 +35,7 @@
 	}
 
 	function skillDisplayName(skillId: string): string {
-		return skillId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+		return resolveSkillDisplayName(skillId, character.customSkillDefs ?? [], skills);
 	}
 
 	function skillRowLabel(skill: CoCSkillAllocation): string {

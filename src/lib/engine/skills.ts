@@ -5,7 +5,7 @@
 
 import type { CharacteristicId } from '$lib/types/common';
 import type { SkillPointFormula, CoCSkillDefinition } from '$lib/types/content-pack';
-import type { CoCSkillAllocation, SkillPointAllocation } from '$lib/types/character';
+import type { CoCSkillAllocation, OccupationData, SkillPointAllocation } from '$lib/types/character';
 import { halfValue, fifthValue } from './characteristics';
 
 /**
@@ -36,6 +36,22 @@ export function calculateOccupationSkillPoints(
 	}
 
 	return total;
+}
+
+/**
+ * Calculate occupation skill points, handling custom occupations.
+ * Custom occupations store a user-entered point budget instead of a formula.
+ */
+export function calculateOccupationPoints(
+	occupation: OccupationData,
+	formula: SkillPointFormula | null,
+	characteristics: Record<CharacteristicId, number>
+): number {
+	if (occupation.occupationId === 'custom') {
+		return occupation.customSkillPoints ?? 0;
+	}
+	if (!formula) return 0;
+	return calculateOccupationSkillPoints(formula, characteristics, occupation.formulaChoices);
 }
 
 /**
@@ -160,21 +176,19 @@ export function validateSkillAllocation(
 		);
 	}
 
-	// Validate Credit Rating is within occupation range
+	// Validate Credit Rating is within occupation range.
+	// A total of 0 is only invalid when the occupation minimum is > 0.
 	const creditRating = skills.find((s) => s.skillId === 'credit-rating');
-	if (!creditRating || creditRating.total === 0) {
-		errors.push(`Credit Rating must be between ${creditRatingRange.min} and ${creditRatingRange.max}`);
-	} else {
-		if (creditRating.total < creditRatingRange.min) {
-			errors.push(
-				`Credit Rating ${creditRating.total} is below occupation minimum of ${creditRatingRange.min}`
-			);
-		}
-		if (creditRating.total > creditRatingRange.max) {
-			errors.push(
-				`Credit Rating ${creditRating.total} exceeds occupation maximum of ${creditRatingRange.max}`
-			);
-		}
+	const crTotal = creditRating?.total ?? 0;
+	if (crTotal < creditRatingRange.min) {
+		errors.push(
+			crTotal === 0 && creditRatingRange.min > 0
+				? `Credit Rating must be between ${creditRatingRange.min} and ${creditRatingRange.max}`
+				: `Credit Rating ${crTotal} is below occupation minimum of ${creditRatingRange.min}`
+		);
+	}
+	if (crTotal > creditRatingRange.max) {
+		errors.push(`Credit Rating ${crTotal} exceeds occupation maximum of ${creditRatingRange.max}`);
 	}
 
 	return {
