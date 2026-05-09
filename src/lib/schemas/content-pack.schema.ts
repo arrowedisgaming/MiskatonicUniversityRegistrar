@@ -16,7 +16,7 @@ const eraDefinition = z.object({
 });
 
 const characteristicMethod = z.object({
-	id: z.enum(['roll', 'arrange-rolls', 'point-buy', 'quick-fire', 'low-roll-modifier', 'human-potential']),
+	id: z.enum(['point-buy', 'quick-fire', 'roll']),
 	name: z.string().min(1),
 	description: z.string()
 });

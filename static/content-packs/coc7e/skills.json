@@ -88,7 +88,7 @@
 	},
 	{
 		"id": "art-craft-custom",
-		"name": "Art/Craft (Other)",
+		"name": "Art/Craft (Any)",
 		"baseValue": 5,
 		"category": "practical",
 		"isSpecialization": true,
@@ -275,7 +275,7 @@
 	},
 	{
 		"id": "fighting-custom",
-		"name": "Fighting (Other)",
+		"name": "Fighting (Any)",
 		"baseValue": 5,
 		"category": "combat",
 		"isSpecialization": true,
@@ -347,7 +347,7 @@
 	},
 	{
 		"id": "firearms-custom",
-		"name": "Firearms (Other)",
+		"name": "Firearms (Any)",
 		"baseValue": 5,
 		"category": "combat",
 		"isSpecialization": true,
@@ -435,7 +435,7 @@
 	},
 	{
 		"id": "language-other",
-		"name": "Language (Other)",
+		"name": "Language (Any)",
 		"baseValue": 1,
 		"category": "academic",
 		"isSpecialization": true,
@@ -498,7 +498,7 @@
 	},
 	{
 		"id": "lore-custom",
-		"name": "Lore (Other)",
+		"name": "Lore (Any)",
 		"baseValue": 1,
 		"category": "academic",
 		"isSpecialization": true,
@@ -767,7 +767,7 @@
 	},
 	{
 		"id": "science-custom",
-		"name": "Science (Other)",
+		"name": "Science (Any)",
 		"baseValue": 1,
 		"category": "academic",
 		"isSpecialization": true,
@@ -857,7 +857,7 @@
 	},
 	{
 		"id": "survival-custom",
-		"name": "Survival (Other)",
+		"name": "Survival (Any)",
 		"baseValue": 10,
 		"category": "practical",
 		"isSpecialization": true,

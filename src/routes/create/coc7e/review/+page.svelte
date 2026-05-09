@@ -86,10 +86,19 @@
 			}
 
 			const { id } = (await response.json()) as { id: string };
-			// Only update wizard state after successful save
+			// Only update wizard state after successful save.
+			//
+			// Order matters: navigate to the new sheet *before* clearing the
+			// wizard. `wizard.reset()` flips $wizard.active to false, and the
+			// WizardShell deep-link guard ($effect that watches !$wizard.active
+			// while on a step route) immediately calls wizard.start() and
+			// redirects to /characteristics — yanking the user back to the
+			// beginning of the wizard before the /sheet navigation lands.
+			// Awaiting the goto first means by the time reset runs, we've left
+			// the wizard layout entirely so no guard is mounted to react.
 			wizard.completeStep(5);
+			await goto(`/sheet/${id}`);
 			wizard.reset();
-			goto(`/sheet/${id}`);
 		} catch {
 			saveError = 'Failed to save investigator. Please try again.';
 			saving = false;

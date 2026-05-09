@@ -87,6 +87,10 @@
 	const SHEET_ADD_WEAPON_MATCH_LIMIT = 15;
 
 	let skillSearchQuery = $state('');
+	// Independent of skillSearchQuery (which is the edit-mode add-skill picker
+	// search). This one filters the live skill list shown in Play Mode so the
+	// player can quickly find a skill to roll.
+	let playSkillSearch = $state('');
 	let equipWeaponSearchQuery = $state('');
 	let equipItemDraftName = $state('');
 	let assetDraft = $state<AssetItem>({ name: '', value: 0, type: '', description: '' });
@@ -138,6 +142,7 @@
 	function startEdit() {
 		// Avoid overlapping with play-mode interactions.
 		playMode = false;
+		playSkillSearch = '';
 		editError = null;
 		editChar = ensureBackstoryShape(cloneCharacter(char));
 		editMode = true;
@@ -823,6 +828,21 @@
 		return visible.sort((a, b) => b.total - a.total);
 	});
 
+	// Live name filter for the play-mode skill list. Match against display
+	// name (which already accounts for custom-skill defs and customName labels)
+	// so a player typing "rifle" finds "Firearms (Rifle)" / "Firearms (Any)"
+	// labelled with a Rifle resolution.
+	const playFilteredSkills = $derived.by(() => {
+		if (!playMode) return sortedSkills;
+		const q = playSkillSearch.trim().toLowerCase();
+		if (!q) return sortedSkills;
+		return sortedSkills.filter((s) => {
+			const name = skillDisplayName(s.skillId).toLowerCase();
+			const custom = (s.customName ?? '').toLowerCase();
+			return name.includes(q) || custom.includes(q);
+		});
+	});
+
 	function trackerWidthPct(current: number, max: number): number {
 		if (!Number.isFinite(max) || max <= 0) return 0;
 		return Math.max(0, Math.min(100, (current / max) * 100));
@@ -1058,7 +1078,7 @@
 
 	<!-- In-Play Tracking -->
 	{#if playMode}
-		<section aria-labelledby="in-play-heading" class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-4 space-y-4">
+		<section aria-labelledby="in-play-heading" class="rounded-md border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-3 space-y-3">
 			<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
 				<h2 id="in-play-heading" class="text-sm font-semibold uppercase tracking-wider text-[var(--color-primary)]">In-Play Tracking</h2>
 				{#if isDirty}
@@ -1072,7 +1092,7 @@
 				{/if}
 			</div>
 
-			<div class="min-h-16">
+			<div class="min-h-0">
 				{#if diceRolling}
 					<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">
 						Rolling…
@@ -1085,7 +1105,7 @@
 				{/if}
 			</div>
 
-			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+			<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				{#each [
 					{ label: 'HP', stat: 'hp' as const, current: currentHP, max: char.derivedStats.hp.max, color: 'var(--color-destructive)' },
 					{ label: 'MP', stat: 'mp' as const, current: currentMP, max: char.derivedStats.mp.max, color: 'var(--color-primary)' },
@@ -1093,25 +1113,25 @@
 					{ label: 'Luck', stat: 'luck' as const, current: currentLuck, max: char.derivedStats.luck.max, color: 'var(--color-foreground)' }
 				] as tracker}
 					<div class="text-center">
-						<span class="text-xs uppercase text-[var(--color-muted-foreground)]">{tracker.label}</span>
-						<div class="flex items-center justify-center gap-2">
+						<span class="text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">{tracker.label}</span>
+						<div class="mt-1 flex items-center justify-center gap-3">
 							<button
 								type="button"
 								onclick={() => adjust(tracker.stat, -1)}
-								class="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] text-lg font-bold hover:bg-[var(--color-accent)]"
+								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-xl font-bold hover:bg-[var(--color-accent)]"
 							>−</button>
-							<span class="min-w-[3rem] text-center text-2xl font-bold">{tracker.current}</span>
+							<span class="min-w-[3.5rem] text-center text-4xl font-bold leading-none">{tracker.current}</span>
 							<button
 								type="button"
 								onclick={() => adjust(tracker.stat, 1)}
-								class="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] text-lg font-bold hover:bg-[var(--color-accent)]"
+								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-xl font-bold hover:bg-[var(--color-accent)]"
 							>+</button>
 						</div>
 						<span class="text-xs text-[var(--color-muted-foreground)]">/ {tracker.max}</span>
 						<!-- Progress bar -->
-						<div class="mx-auto mt-1 h-1.5 w-full max-w-[80px] rounded-full bg-[var(--color-muted)]">
+						<div class="mx-auto mt-1.5 h-2 w-full max-w-[140px] rounded-full bg-[var(--color-muted)]">
 							<div
-								class="h-1.5 rounded-full transition-all"
+								class="h-2 rounded-full transition-all"
 								style="width: {trackerWidthPct(tracker.current, tracker.max)}%; background-color: {tracker.color}"
 							></div>
 						</div>
@@ -1262,7 +1282,23 @@
 	<!-- Skills (edit/play modes; default rendered by SheetReadOnly) -->
 	{#if (editMode && editChar) || playMode}
 		<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
+			<div class="mb-3 flex items-center justify-between gap-3">
+				<h2 class="font-semibold" data-heading>
+					Skills
+					{#if playMode}
+						<span class="text-xs font-normal text-[var(--color-muted-foreground)]">— click to roll</span>
+					{/if}
+				</h2>
+				{#if playMode}
+					<input
+						type="text"
+						placeholder="Search…"
+						bind:value={playSkillSearch}
+						aria-label="Filter skills"
+						class="w-44 rounded-md border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] sm:w-56"
+					/>
+				{/if}
+			</div>
 			{#if editMode && editChar}
 				<div class="mb-4 space-y-3 rounded-md border border-[var(--color-border)]/50 bg-[var(--color-background)]/40 p-3">
 					<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -1368,7 +1404,7 @@
 				</div>
 			{/if}
 			<div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
-				{#each sortedSkills as skill}
+				{#each playMode ? playFilteredSkills : sortedSkills as skill}
 					{#if editMode && editChar}
 						<div class="flex items-center justify-between gap-2 rounded-md border border-[var(--color-border)]/40 px-2 py-1">
 							<span class="text-sm">

@@ -48,9 +48,66 @@
 			: 0;
 	const totalPersonalPoints = calculatePersonalInterestPoints(char.characteristics.values.int);
 
-	const requiredOccSkillIds = isCustomOcc
-		? new Set<string>(char.occupation?.customOccupationSkills ?? [])
-		: new Set(occupation?.occupationSkills.map((s) => s.skillId) ?? []);
+	// The occupation's required skills as listed in the content pack. May
+	// contain customizable placeholders (e.g. "art-craft-custom") that resolve
+	// to a specific specialization via the player's pick. We keep this as the
+	// raw list for resolver UI; `requiredOccSkillIds` (below) is the post-
+	// resolution set used by allocation gating.
+	const rawOccupationSkillIds = isCustomOcc
+		? (char.occupation?.customOccupationSkills ?? [])
+		: (occupation?.occupationSkills.map((s) => s.skillId) ?? []);
+
+	// Derived: list of "(Any)" slots that need resolution + their options.
+	// Each slot's option list comes from `getSkillsByGroup` (other
+	// non-customizable specializations in the same group). The player can also
+	// pick "Custom…" to spawn a homebrew CustomSkillDef for the slot.
+	//
+	// Slot ids are `${placeholder.id}#${index}` so occupations that list the
+	// same customizable placeholder twice (e.g. Aristocrat / Gentleman with
+	// two `language-other` requirements) get two independent resolution slots
+	// instead of collapsing into one.
+	let customizableSlots = $derived.by(() => {
+		const slots: Array<{ slotId: string; placeholder: CoCSkillDefinition; options: CoCSkillDefinition[]; occurrenceIndex: number }> = [];
+		rawOccupationSkillIds.forEach((id, index) => {
+			const placeholder = data.skills.find((s) => s.id === id);
+			if (!placeholder?.isCustomizable || !placeholder.specializationGroup) return;
+			const groupSkills = getSkillsByGroup(placeholder.specializationGroup, allSkills)
+				.filter((s) => s.id !== placeholder.id);
+			slots.push({ slotId: `${placeholder.id}#${index}`, placeholder, options: groupSkills, occurrenceIndex: index });
+		});
+		return slots;
+	});
+
+	let allSlotsResolved = $derived(
+		customizableSlots.every((slot) => {
+			const r = customizableResolutions[slot.slotId];
+			return typeof r === 'string' && r.length > 0;
+		})
+	);
+
+	// Effective required-skill set: substitute every customizable slot for its
+	// resolved id (existing specialization or custom-def id). Unresolved slots
+	// are dropped so allocation gating doesn't treat the placeholder as a
+	// real allocation target. Each placeholder occurrence is keyed
+	// independently (`${id}#${index}`) so repeated requirements resolve to
+	// different specializations.
+	const requiredOccSkillIds = $derived.by(() => {
+		if (isCustomOcc) {
+			return new Set<string>(char.occupation?.customOccupationSkills ?? []);
+		}
+		const set = new Set<string>();
+		rawOccupationSkillIds.forEach((id, index) => {
+			const placeholder = data.skills.find((s) => s.id === id);
+			if (placeholder?.isCustomizable) {
+				const resolved = customizableResolutions[`${id}#${index}`];
+				if (resolved) set.add(resolved);
+				// unresolved: skip (player must resolve before proceeding)
+				return;
+			}
+			set.add(id);
+		});
+		return set;
+	});
 
 	// All allocatable skills (exclude Cthulhu Mythos)
 	const allSkills = data.skills.filter((s) => !s.noPointAllocation && s.eras.some((era) => era === 'all' || era === char.era));
@@ -73,6 +130,20 @@
 
 	// Initialize from existing character data or empty
 	let pointAllocations = $state<PointMap>(initializeFromCharacter());
+
+	// "(Any)" specialization resolutions for customizable required occupation
+	// skills. Keys are the customizable placeholder skill id (e.g.
+	// "art-craft-custom"); values are the player's chosen resolution id —
+	// either an existing specialization in the same group ("art-craft-acting")
+	// or a homebrew CustomSkillDef id created for that slot. The presence of
+	// every customizable slot in this map (with a non-empty resolution) is the
+	// proceed gate.
+	let customizableResolutions = $state<Record<string, string>>(
+		{ ...(char.occupation?.customizableResolutions ?? {}) }
+	);
+	// Per-slot UI: when the player clicks "Custom…", we open an inline name
+	// input. Tracked by slot id so multiple slots can be open simultaneously.
+	let customSlotDraft = $state<Record<string, string>>({});
 	let selectedInterpersonal = $state<string[]>(initialChoiceIds('interpersonal'));
 	let selectedCombat = $state<string[]>(initialChoiceIds('combat'));
 	let selectedScience = $state<string[]>(initialChoiceIds('science'));
@@ -178,8 +249,13 @@
 		{ id: 'other', label: 'Other' }
 	];
 
+	// Hide customizable placeholders ("Art/Craft (Any)" etc.) from the table —
+	// they aren't real allocation targets, only resolver inputs. The player
+	// allocates points to whichever specialization they resolve to.
+	let customizableSlotIds = $derived(new Set(customizableSlots.map((s) => s.slotId)));
+
 	let filteredSkills = $derived.by(() => {
-		let skills = allSkills;
+		let skills = allSkills.filter((s) => !customizableSlotIds.has(s.id));
 		if (showCategory === 'occupation') {
 			skills = skills.filter((s) => eligibleOccupationSkillIds.has(s.id));
 		} else if (showCategory !== 'all') {
@@ -225,8 +301,116 @@
 		showAddCustomSkill = false;
 	}
 
+	/**
+	 * Resolve an "(Any)" slot by picking an existing specialization. Reverts
+	 * any prior resolution for the same slot — including cleaning up the
+	 * homebrew CustomSkillDef if that prior resolution was a custom-named one
+	 * AND zeroing the now-orphaned skill's occupation allocation so points
+	 * return to the budget instead of stranding on a no-longer-eligible row.
+	 */
+	function resolveSlotWithExisting(slotId: string, existingSkillId: string) {
+		releasePriorAllocation(slotId, existingSkillId);
+		cleanupPriorResolution(slotId);
+		customizableResolutions = { ...customizableResolutions, [slotId]: existingSkillId };
+		// Discard any draft text the player may have started typing for this slot.
+		if (customSlotDraft[slotId] !== undefined) {
+			const next = { ...customSlotDraft };
+			delete next[slotId];
+			customSlotDraft = next;
+		}
+	}
+
+	/**
+	 * Resolve an "(Any)" slot by creating a homebrew CustomSkillDef. The new
+	 * def is named "<Group> (Player Input)" and inherits the placeholder's
+	 * baseValue. The slot's resolution stores the new def's id.
+	 */
+	function resolveSlotWithCustom(slotId: string, rawName: string) {
+		const slot = customizableSlots.find((s) => s.slotId === slotId);
+		if (!slot) return;
+		const trimmed = rawName.trim();
+		if (!trimmed) return;
+		// Build a label like "Art/Craft (Sculpture)" using the placeholder's
+		// base name (everything before the parenthesis) so the saved skill
+		// reads naturally on the sheet.
+		const baseLabel = slot.placeholder.name.replace(/\s*\([^)]*\)\s*$/, '');
+		const fullName = `${baseLabel} (${trimmed})`;
+		const id = `custom-${crypto.randomUUID().slice(0, 8)}`;
+		releasePriorAllocation(slotId, id);
+		cleanupPriorResolution(slotId);
+		customSkillDefs = [
+			...customSkillDefs,
+			{ id, name: fullName, baseValue: slot.placeholder.baseValue, isOccupation: true }
+		];
+		pointAllocations = { ...pointAllocations, [id]: { occupation: 0, personal: 0 } };
+		customizableResolutions = { ...customizableResolutions, [slotId]: id };
+		const nextDraft = { ...customSlotDraft };
+		delete nextDraft[slotId];
+		customSlotDraft = nextDraft;
+	}
+
+	/**
+	 * Drop any existing resolution for this slot. If it was a custom-def
+	 * resolution, also remove the def + its allocation. Used when the player
+	 * switches resolutions (existing → other existing → custom) to avoid
+	 * orphan custom defs cluttering the sheet.
+	 */
+	function cleanupPriorResolution(slotId: string) {
+		const prior = customizableResolutions[slotId];
+		if (!prior) return;
+		// Remove auto-created custom defs (id prefix "custom-"). Player-created
+		// custom skills via "Add Custom Skill" use the same prefix but the
+		// resolutions map only ever points at defs created via the resolver.
+		const isAutoCreated = prior.startsWith('custom-')
+			&& customSkillDefs.some((d) => d.id === prior);
+		if (isAutoCreated) {
+			customSkillDefs = customSkillDefs.filter((d) => d.id !== prior);
+			const nextAlloc = { ...pointAllocations };
+			delete nextAlloc[prior];
+			pointAllocations = nextAlloc;
+		}
+	}
+
+	/**
+	 * When a slot's resolution moves from one existing skill to another (e.g.
+	 * Art/Craft (Acting) → Art/Craft (Forgery)), zero the prior skill's
+	 * occupation points so they return to the budget. Without this, the
+	 * player's spent points get stranded on a row that's no longer in
+	 * `eligibleOccupationSkillIds` — its inputs disable and validation
+	 * complains, leaving the player stuck unless they manually swap back.
+	 *
+	 * Personal-interest points on the prior skill are preserved — they came
+	 * from a separate budget and don't belong to the slot.
+	 */
+	function releasePriorAllocation(slotId: string, nextResolution: string) {
+		const prior = customizableResolutions[slotId];
+		if (!prior || prior === nextResolution) return;
+		const cur = pointAllocations[prior];
+		if (cur?.occupation) {
+			pointAllocations = { ...pointAllocations, [prior]: { ...cur, occupation: 0 } };
+		}
+	}
+
+	function setCustomSlotDraft(slotId: string, value: string) {
+		customSlotDraft = { ...customSlotDraft, [slotId]: value };
+	}
+
 	function removeCustomSkill(id: string) {
 		customSkillDefs = customSkillDefs.filter((d) => d.id !== id);
+		// If this custom def was bound to a customizable slot resolution, drop
+		// the resolution too so the slot reverts to "unresolved" rather than
+		// pointing at a now-missing skill — otherwise allSlotsResolved stays
+		// true and the wizard happily proceeds without the required
+		// specialization actually being saved.
+		const nextResolutions = { ...customizableResolutions };
+		let resolutionsChanged = false;
+		for (const [slotId, resolvedId] of Object.entries(nextResolutions)) {
+			if (resolvedId === id) {
+				delete nextResolutions[slotId];
+				resolutionsChanged = true;
+			}
+		}
+		if (resolutionsChanged) customizableResolutions = nextResolutions;
 		const next = { ...pointAllocations };
 		delete next[id];
 		pointAllocations = next;
@@ -235,8 +419,11 @@
 	function buildSkillAllocations(): CoCSkillAllocation[] {
 		const result: CoCSkillAllocation[] = [];
 
-		// Content-pack skills
+		// Content-pack skills. Customizable placeholders ("(Any)" slots) are
+		// resolver inputs only — never saved as allocations themselves; their
+		// points go to the resolved specialization.
 		for (const skill of allSkills) {
+			if (customizableSlotIds.has(skill.id)) continue;
 			const alloc = getAlloc(skill.id);
 			if (alloc.occupation === 0 && alloc.personal === 0 && !eligibleOccupationSkillIds.has(skill.id)) continue;
 
@@ -330,7 +517,7 @@
 	let hasUnspentPersonal = $derived(remainingPersonal > 0);
 	let hasUnspent = $derived(hasUnspentOcc || hasUnspentPersonal);
 
-	let canProceed = $derived(hardValidationErrors.length === 0 && choiceErrors.length === 0);
+	let canProceed = $derived(hardValidationErrors.length === 0 && choiceErrors.length === 0 && allSlotsResolved);
 	let proceedWithWarning = $derived(canProceed && (hasUnspent || softValidationErrors.length > 0));
 
 	// Sticky offset chain: alpha banner (top:0) → totals+filters block → table thead.
@@ -374,6 +561,9 @@
 		if (!canProceed) return;
 		wizard.updateCharacter((c) => ({
 			...c,
+			occupation: c.occupation
+				? { ...c.occupation, customizableResolutions: { ...customizableResolutions } }
+				: c.occupation,
 			skills: buildSkillAllocations(),
 			customSkillDefs: [...customSkillDefs]
 		}));
@@ -396,6 +586,81 @@
 	     Default-open so the choices are visible on arrival; collapsing them is
 	     still useful once made. (Only rendered for standard occupations with
 	     defined choice slots — custom occupations have no choice constraints.) -->
+	<!-- "(Any)" specialization resolutions. CoC 7e occupations that list e.g.
+	     "Art/Craft (Any)" or "Firearms (Any)" require the player to pick a
+	     specific specialization from the same group OR create a custom one
+	     before allocating points. Without resolution, the placeholder skill
+	     id (e.g. "art-craft-custom") would be allocated as if it were a real
+	     skill, which doesn't match rulebook intent. This panel forces a
+	     resolution per slot before proceed is allowed. -->
+	{#if !isCustomOcc && customizableSlots.length > 0}
+		<details open class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+			<summary class="cursor-pointer text-sm font-semibold">
+				Specialization Choices ({customizableSlots.filter((s) => customizableResolutions[s.slotId]).length}/{customizableSlots.length})
+			</summary>
+			<p class="mt-2 text-xs text-[var(--color-muted-foreground)]">
+				This occupation lists "(Any)" specialization slots. Pick which specialization each slot resolves to, or create a custom one.
+			</p>
+			<div class="mt-3 space-y-3">
+				{#each customizableSlots as slot (slot.slotId)}
+					{@const resolved = customizableResolutions[slot.slotId]}
+					{@const draft = customSlotDraft[slot.slotId]}
+					{@const isCustomResolution = !!resolved && resolved.startsWith('custom-')}
+					{@const customDef = isCustomResolution ? customSkillDefs.find((d) => d.id === resolved) : undefined}
+					<div>
+						<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">{slot.placeholder.name}</p>
+						<div class="flex flex-wrap gap-1">
+							{#each slot.options as option (option.id)}
+								<button
+									type="button"
+									onclick={() => resolveSlotWithExisting(slot.slotId, option.id)}
+									class="rounded border px-2 py-1 text-xs {resolved === option.id ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}"
+								>
+									{option.specializationLabel ?? option.name}
+								</button>
+							{/each}
+							<button
+								type="button"
+								onclick={() => setCustomSlotDraft(slot.slotId, draft ?? '')}
+								class="rounded border px-2 py-1 text-xs {isCustomResolution ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}"
+							>
+								{isCustomResolution && customDef ? `Custom: ${customDef.name.replace(/^[^(]*\(([^)]+)\)$/, '$1')}` : 'Custom…'}
+							</button>
+						</div>
+						{#if draft !== undefined && !isCustomResolution}
+							<div class="mt-2 flex flex-wrap items-center gap-2">
+								<input
+									type="text"
+									placeholder="Custom specialization name"
+									value={draft}
+									oninput={(e) => setCustomSlotDraft(slot.slotId, (e.currentTarget as HTMLInputElement).value)}
+									onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); resolveSlotWithCustom(slot.slotId, draft ?? ''); } }}
+									aria-label="Custom specialization name for {slot.placeholder.name}"
+									class="flex-1 min-w-[12rem] rounded border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1 text-sm"
+								/>
+								<button
+									type="button"
+									onclick={() => resolveSlotWithCustom(slot.slotId, draft ?? '')}
+									disabled={!(draft ?? '').trim()}
+									class="rounded border border-[var(--color-primary)] bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-primary-foreground)] disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									Add
+								</button>
+								<button
+									type="button"
+									onclick={() => { const next = { ...customSlotDraft }; delete next[slot.slotId]; customSlotDraft = next; }}
+									class="text-xs text-[var(--color-muted-foreground)] underline-offset-2 hover:underline"
+								>
+									Cancel
+								</button>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</details>
+	{/if}
+
 	{#if !isCustomOcc && occupation && ((occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0)}
 		<details open class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<summary class="cursor-pointer text-sm font-semibold">
@@ -523,10 +788,15 @@
 	</div>
 
 	<div class="min-h-24">
-		{#if choiceErrors.length > 0 || hardValidationErrors.length > 0}
+		{#if choiceErrors.length > 0 || hardValidationErrors.length > 0 || !allSlotsResolved}
 			<div class="rounded-md border border-[var(--color-destructive)] bg-[var(--color-destructive)]/10 p-3 text-sm text-[var(--color-destructive)]">
 				<p class="mb-1 font-semibold">Resolve before continuing</p>
 				<ul class="space-y-1">
+					{#if !allSlotsResolved}
+						{#each customizableSlots.filter((s) => !customizableResolutions[s.slotId]) as slot}
+							<li>Pick a specialization for {slot.placeholder.name}.</li>
+						{/each}
+					{/if}
 					{#each choiceErrors as error}
 						<li>{error}</li>
 					{/each}

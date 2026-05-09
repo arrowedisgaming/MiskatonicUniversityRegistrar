@@ -36,7 +36,12 @@ const characteristicValueMap = z.object({
 });
 
 const characteristicsData = z.object({
-	method: z.enum(['roll', 'arrange-rolls', 'point-buy', 'quick-fire', 'low-roll-modifier', 'human-potential']),
+	// Accept current and legacy method ids. Legacy ids (arrange-rolls,
+	// low-roll-modifier, human-potential) are preserved verbatim in storage so
+	// the sheet view retains generation provenance. The wizard resolves legacy
+	// ids to point-buy only at edit-time via editableCharacteristicMethod() —
+	// not here, where we want the round-trip to be lossless.
+	method: z.enum(['point-buy', 'quick-fire', 'roll', 'arrange-rolls', 'low-roll-modifier', 'human-potential']),
 	values: characteristicValueMap,
 	baseValues: characteristicValueMap,
 	rolls: z.record(z.string().max(20), z.array(z.number()).max(20)).nullable(),
@@ -140,7 +145,8 @@ export const cocCharacterDataSchema = z.object({
 		formulaChoices: z.record(z.string().max(20), characteristicId),
 		customName: z.string().max(200).optional(),
 		customSkillPoints: z.number().int().min(0).max(9999).optional(),
-		customOccupationSkills: z.array(z.string().min(1).max(100)).max(100).optional()
+		customOccupationSkills: z.array(z.string().min(1).max(100)).max(100).optional(),
+		customizableResolutions: z.record(z.string().min(1).max(100), z.string().min(1).max(100)).optional()
 	}).nullable(),
 	skills: z.array(skillAllocation).max(200),
 	customSkillDefs: z.array(z.object({

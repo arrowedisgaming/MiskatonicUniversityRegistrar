@@ -1,5 +1,5 @@
 import type { CharacteristicId, Era, Mode } from './common';
-import type { CharacteristicMethodId } from './content-pack';
+import type { StoredCharacteristicMethodId } from './content-pack';
 import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 
 /** Schema version for character data migration */
@@ -86,7 +86,14 @@ export interface CoCCharacterData {
 }
 
 export interface CharacteristicsData {
-	method: CharacteristicMethodId;
+	/**
+	 * Generation method as stored in JSON. May be a current wizard-editable id
+	 * (point-buy / quick-fire / roll) or a legacy id retained for provenance
+	 * (arrange-rolls / low-roll-modifier / human-potential). The wizard
+	 * resolves legacy ids to point-buy via editableCharacteristicMethod() only
+	 * when opening the wizard for editing.
+	 */
+	method: StoredCharacteristicMethodId;
 	/** Final values after all modifiers */
 	values: Record<CharacteristicId, number>;
 	/** Values before age modifiers */
@@ -142,6 +149,15 @@ export interface OccupationData {
 	customSkillPoints?: number;
 	/** Skills the player tagged as occupation skills for custom occupations */
 	customOccupationSkills?: string[];
+	/**
+	 * Resolutions for "(Any)" specialization slots in this occupation's
+	 * required skills (e.g. Dilettante's "Art/Craft (Any)"). Keys are the
+	 * customizable skill ids ("art-craft-custom", "firearms-custom"); values
+	 * are the resolved skill ids the player picked — either an existing
+	 * specialization in the same group ("art-craft-acting", "firearms-rifle")
+	 * or the id of a homebrew CustomSkillDef the player created for that slot.
+	 */
+	customizableResolutions?: Record<string, string>;
 }
 
 /** User-defined skill not in the content pack (homebrew / supplements) */

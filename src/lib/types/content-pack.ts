@@ -41,13 +41,59 @@ export interface CharacteristicMethod {
 	description: string;
 }
 
-export type CharacteristicMethodId =
-	| 'roll'
-	| 'arrange-rolls'
-	| 'point-buy'
-	| 'quick-fire'
-	| 'low-roll-modifier'
-	| 'human-potential';
+/** Methods the wizard can currently render and edit. */
+export type CharacteristicMethodId = 'point-buy' | 'quick-fire' | 'roll';
+
+/**
+ * Method ids that previously existed in the wizard but are no longer editable
+ * directly. Preserved in storage so historical investigators retain their
+ * generation provenance — the sheet view can label them, and the user is
+ * forced through an explicit conversion when opening the wizard for editing.
+ */
+export type LegacyCharacteristicMethodId = 'arrange-rolls' | 'low-roll-modifier' | 'human-potential';
+
+/** Method id that may appear in stored character JSON (current + legacy). */
+export type StoredCharacteristicMethodId = CharacteristicMethodId | LegacyCharacteristicMethodId;
+
+export const CHARACTERISTIC_METHOD_IDS: readonly CharacteristicMethodId[] = ['point-buy', 'quick-fire', 'roll'] as const;
+
+export const LEGACY_CHARACTERISTIC_METHOD_IDS: readonly LegacyCharacteristicMethodId[] = ['arrange-rolls', 'low-roll-modifier', 'human-potential'] as const;
+
+export const STORED_CHARACTERISTIC_METHOD_IDS: readonly StoredCharacteristicMethodId[] = [
+	...CHARACTERISTIC_METHOD_IDS,
+	...LEGACY_CHARACTERISTIC_METHOD_IDS
+] as const;
+
+/** True when the value is a wizard-editable method id. */
+export function isCharacteristicMethodId(value: unknown): value is CharacteristicMethodId {
+	return value === 'point-buy' || value === 'quick-fire' || value === 'roll';
+}
+
+/** True when the value is any stored method id (current or legacy). */
+export function isStoredCharacteristicMethodId(value: unknown): value is StoredCharacteristicMethodId {
+	return isCharacteristicMethodId(value)
+		|| value === 'arrange-rolls' || value === 'low-roll-modifier' || value === 'human-potential';
+}
+
+/**
+ * Coerce any incoming value to a *stored* method id without losing legacy
+ * provenance. Truly unknown values (undefined, malformed strings, numbers)
+ * fall back to point-buy as a last-resort default. This is the boundary used
+ * by JSON migration / persistence — it never rewrites known legacy ids.
+ */
+export function normalizeStoredMethod(value: unknown): StoredCharacteristicMethodId {
+	return isStoredCharacteristicMethodId(value) ? value : 'point-buy';
+}
+
+/**
+ * Resolve any stored method to a wizard-editable id. Legacy methods that the
+ * wizard can no longer render fall back to point-buy as the editable proxy —
+ * but only at edit time; the original is preserved in storage until the user
+ * explicitly saves a new allocation.
+ */
+export function editableCharacteristicMethod(value: unknown): CharacteristicMethodId {
+	return isCharacteristicMethodId(value) ? value : 'point-buy';
+}
 
 export interface DamageBonusBuildEntry {
 	minSum: number;

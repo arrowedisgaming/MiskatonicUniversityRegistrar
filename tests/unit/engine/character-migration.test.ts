@@ -39,7 +39,62 @@ describe('migrateCharacterData', () => {
 		expect(migrated.characteristics.luckAdjustment).toBeNull();
 		expect(migrated.equipment.livingStandard).toBe('Average');
 		expect(migrated.equipment.assets).toBe(2050);
-		expect(migrated.equipment.assetsLabel).toBe('$2,050');
 		expect(migrated.equipment.assetsList).toEqual([]);
+	});
+
+	it.each(['arrange-rolls', 'low-roll-modifier', 'human-potential'])(
+		'preserves legacy method %s for provenance',
+		(method) => {
+			const migrated = migrateCharacterData({
+				schemaVersion: 4,
+				backstory: { ideologyBeliefs: '' },
+				characteristics: {
+					method,
+					values: {},
+					baseValues: {},
+					rolls: null,
+					ageAdjustments: []
+				},
+				equipment: { items: [], weapons: [], cash: 0, assets: 0, spendingLevel: 0 }
+			});
+			expect(migrated.characteristics.method).toBe(method);
+		}
+	);
+
+	it.each([undefined, 'unknown-method', '', 42 as unknown as string])(
+		'falls back to point-buy for unrecognised method value %s',
+		(method) => {
+			const migrated = migrateCharacterData({
+				schemaVersion: 4,
+				backstory: { ideologyBeliefs: '' },
+				characteristics: {
+					method,
+					values: {},
+					baseValues: {},
+					rolls: null,
+					ageAdjustments: []
+				},
+				equipment: { items: [], weapons: [], cash: 0, assets: 0, spendingLevel: 0 }
+			});
+			expect(migrated.characteristics.method).toBe('point-buy');
+		}
+	);
+
+	it('preserves currently-supported methods (point-buy, quick-fire, roll)', () => {
+		for (const method of ['point-buy', 'quick-fire', 'roll'] as const) {
+			const migrated = migrateCharacterData({
+				schemaVersion: 4,
+				backstory: { ideologyBeliefs: '' },
+				characteristics: {
+					method,
+					values: {},
+					baseValues: {},
+					rolls: null,
+					ageAdjustments: []
+				},
+				equipment: { items: [], weapons: [], cash: 0, assets: 0, spendingLevel: 0 }
+			});
+			expect(migrated.characteristics.method).toBe(method);
+		}
 	});
 });

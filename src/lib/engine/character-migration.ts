@@ -4,6 +4,7 @@
  */
 
 import { CHARACTER_SCHEMA_VERSION, type CoCCharacterData } from '$lib/types/character';
+import { normalizeStoredMethod } from '$lib/types/content-pack';
 
 type LegacyCharacter = Partial<CoCCharacterData> & Record<string, any>;
 
@@ -16,7 +17,12 @@ export function migrateCharacterData(raw: unknown): CoCCharacterData {
 	character.backstory.personalDescription ??= '';
 
 	if (character.characteristics) {
-		character.characteristics.method ??= 'roll';
+		// Preserve legacy method ids (arrange-rolls, low-roll-modifier,
+		// human-potential) so historical investigators retain their generation
+		// provenance. Only truly unrecognised values (undefined, malformed
+		// strings, numbers) fall back to point-buy. The wizard converts legacy
+		// ids to a wizard-editable proxy at edit-time, not here.
+		character.characteristics.method = normalizeStoredMethod(character.characteristics.method);
 		character.characteristics.eduImprovementChecks ??= [];
 		character.characteristics.luckAdjustment ??= null;
 	}
