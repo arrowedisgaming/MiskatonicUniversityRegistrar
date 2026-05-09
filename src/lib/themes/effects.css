@@ -76,45 +76,74 @@
 	text-shadow: 0.5px 0.5px 0 oklch(0 0 0 / 0.2);
 }
 
-/* ─── Art Deco Horizontal Rules ────────────────── */
+/* ─── Art Deco Horizontal Rules — stepped chevron lozenge ─ */
+/* Two broken rules flanking a centered diamond lozenge. The break in the rule
+   on either side of the lozenge is what makes it read as Deco (theatre-marquee
+   break) rather than as a decorated Victorian divider. */
 
 .classic-dark hr,
 .classic-light hr {
-	border: none;
-	height: 1px;
-	background: linear-gradient(
-		to right,
-		transparent,
-		var(--color-gold) 20%,
-		var(--color-gold) 80%,
-		transparent
-	);
+	border: 0;
+	height: 1.5rem;
+	background: none;
 	position: relative;
-	margin: 1.5rem 0;
+	margin: 1.5rem auto;
+	overflow: visible;
 }
 
 .classic-dark hr::before,
 .classic-light hr::before {
-	content: '◆';
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	height: 1px;
+	transform: translateY(-0.5px);
+	background: linear-gradient(
+		to right,
+		transparent,
+		var(--color-gold) 18%,
+		var(--color-gold) 38%,
+		transparent 45%,
+		transparent 55%,
+		var(--color-gold) 62%,
+		var(--color-gold) 82%,
+		transparent
+	);
+}
+
+.classic-dark hr::after,
+.classic-light hr::after {
+	content: '';
 	position: absolute;
 	left: 50%;
 	top: 50%;
-	transform: translate(-50%, -50%);
+	width: 0.875rem;
+	height: 0.875rem;
+	transform: translate(-50%, -50%) rotate(45deg);
+	border: 1px solid var(--color-gold);
 	background: var(--color-background);
-	padding: 0 0.75rem;
-	color: var(--color-gold);
-	font-size: 0.75rem;
 }
 
-/* ─── Heading Ornamental Underlines ────────────── */
+/* ─── Heading Ornamental Double-Rule ───────────── */
+/* h1/h2[data-heading] sit above paired thin gold rules. Two stacked
+   linear-gradients render crisp 1px hairlines at any DPR — one flush at the
+   bottom edge, one 4px above it. Reads as Deco frame edge. */
 
 .classic-dark h1[data-heading],
 .classic-light h1[data-heading],
 .classic-dark h2[data-heading],
 .classic-light h2[data-heading] {
-	padding-bottom: 0.35rem;
-	border-bottom: 1px solid var(--color-gold);
 	display: inline-block;
+	padding-bottom: 0.55rem;
+	border-bottom: none;
+	background-image:
+		linear-gradient(to right, transparent, var(--color-gold) 15%, var(--color-gold) 85%, transparent),
+		linear-gradient(to right, transparent, var(--color-gold) 25%, var(--color-gold) 75%, transparent);
+	background-position: bottom left, bottom 4px left;
+	background-size: 100% 1px, 100% 1px;
+	background-repeat: no-repeat;
 }
 
 /* ─── Coffee Ring Stains (Classic) ─────────────── */

@@ -30,20 +30,21 @@
 
 	--radius: 0.25rem;
 
-	/* Typography
+	/* Typography — Classic = 1925 Art Deco
 	   Classic stack lives at base + classic-* layers. Modern themes override
 	   --font-heading / --font-flavor / --font-body / --font-typed in their
 	   own files so the entire stack swaps to monospace.
-	   --font-display: engraved-Roman caps for h1 ("Miskatonic University
-	   Registrar" wordmark, page titles) — feels like a brass nameplate.
-	   --font-heading: subtitle/section headings — slightly less formal.
-	   --font-body: book-page serif for sustained reading.
-	   --font-flavor: hand-drawn italic for atmospheric copy.
-	   --font-typed: typewriter face for "values typed onto the paper form". */
-	--font-display: 'Cinzel', serif;
-	--font-heading: 'Playfair Display', serif;
-	--font-flavor: 'IM Fell English', serif;
-	--font-body: 'EB Garamond', 'Crimson Text', Georgia, serif;
+	   --font-display: theatre-marquee capitals (Limelight) — h1, nameplate.
+	   --font-heading: classical-deco hybrid (Federo) — h2/h3, sections.
+	   --font-body: clean narrow serif (Cormorant Garamond) — paragraph copy.
+	   --font-flavor: single-stroke deco script (Pompiere) — margin notes.
+	   --font-deco-alt: heavier deco (Amarante) — drop-cap, pull-quote.
+	   --font-typed: typewriter (Special Elite) — values typed onto the form. */
+	--font-display: 'Limelight', serif;
+	--font-heading: 'Federo', serif;
+	--font-flavor: 'Pompiere', cursive;
+	--font-body: 'Cormorant Garamond', Georgia, serif;
+	--font-deco-alt: 'Amarante', serif;
 	--font-typed: 'Special Elite', 'Courier New', monospace;
 }
 
@@ -54,11 +55,12 @@ h1, h2, h3, h4, h5, h6, [data-heading] {
 }
 
 /* Display-rank: h1 and any element opting in via data-display gets the
-   engraved-caps face (Cinzel in Classic). Slightly wider tracking reads as
-   inscribed lettering. */
+   theatre-marquee caps face (Limelight in Classic). Wider tracking lets the
+   geometric uppercase glyphs breathe like a marquee sign. */
 h1, [data-display] {
 	font-family: var(--font-display);
-	letter-spacing: 0.04em;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
 
 /* Flavor/decorative text */
@@ -74,11 +76,37 @@ h1, [data-display] {
 	letter-spacing: 0.01em;
 }
 
-/* Body text — slight line-height bump because EB Garamond (Classic) and the
-   Modern monospace both read more comfortably with extra leading. */
+/* Body text — slight line-height bump because Cormorant Garamond (Classic) and
+   the Modern monospace both read more comfortably with extra leading. */
 body {
 	font-family: var(--font-body);
 	background-color: var(--color-background);
 	color: var(--color-foreground);
 	line-height: 1.55;
+}
+
+/* Classic uses Cormorant Garamond (smaller x-height than EB Garamond / system
+   serifs). Bump root font-size on Classic only so every Tailwind `text-*`
+   class — which is rem-based — scales proportionally. % keeps the browser's
+   default-size accessibility setting respected. Modern (monospace) is sized
+   for 16px; leaving it alone. */
+.classic-dark,
+.classic-light {
+	font-size: 112.5%; /* 18px assuming user default 16px */
+}
+
+.classic-dark body,
+.classic-light body {
+	line-height: 1.6;
+}
+
+/* Drop-cap — opt-in via data-dropcap on a paragraph or block. First letter
+   renders in Amarante (deco alt), gold, floated. Modern overrides this rule. */
+[data-dropcap]::first-letter {
+	font-family: var(--font-deco-alt);
+	font-size: 4.25rem;
+	line-height: 1;
+	float: left;
+	padding: 0.25rem 0.5rem 0 0;
+	color: var(--color-gold);
 }

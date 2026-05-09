@@ -8,7 +8,7 @@
 	aria-live="polite"
 	class="alpha-banner sticky top-0 z-40 border-b border-[var(--color-border)] px-4 py-2"
 >
-	<div class="mx-auto max-w-6xl space-y-1 text-center text-sm text-[var(--color-muted-foreground)]">
+	<div class="mx-auto max-w-5xl space-y-1 text-center text-sm text-[var(--color-muted-foreground)]">
 		<p class="italic">
 			The Registrar's ledgers are still being inscribed &mdash; what is recorded here may be unmade
 			by deeper waters. Export your investigators, lest they be devoured.

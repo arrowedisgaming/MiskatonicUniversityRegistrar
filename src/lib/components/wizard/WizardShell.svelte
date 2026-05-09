@@ -3,6 +3,7 @@
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { announce } from '$lib/stores/announcer';
 	import { ledgerPage } from '$lib/transitions/eerie';
+	import ScrollHint from './ScrollHint.svelte';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
@@ -22,10 +23,10 @@
 	});
 </script>
 
-<div class="mx-auto max-w-5xl px-4 py-6">
+<div class="mx-auto max-w-4xl px-4 py-6">
 	<!-- Step indicator -->
 	<nav class="mb-8" aria-label="Character creation progress">
-		<ol class="flex flex-wrap items-center gap-1 sm:gap-2">
+		<ol class="flex flex-wrap items-center gap-[clamp(0.25rem,1.5vw,0.75rem)]">
 			{#each WIZARD_STEPS as step, i}
 				{@const isActive = i === currentStepIndex}
 				{@const isComplete = $wizard.completedSteps.some((s) => s === i)}
@@ -73,3 +74,5 @@
 		</div>
 	{/key}
 </div>
+
+<ScrollHint />

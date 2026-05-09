@@ -31,11 +31,11 @@
 </svelte:head>
 
 <div class="mx-auto max-w-5xl px-4 py-8">
-	<div class="mb-6 flex items-center justify-between">
+	<div class="mb-6 flex flex-wrap items-center gap-4">
 		<h1 class="text-2xl font-bold" data-heading>Your Investigators</h1>
 		<a
 			href="/create/coc7e/characteristics"
-			class="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium
+			class="ml-auto rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"
 		>
 			+ New Investigator

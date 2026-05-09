@@ -51,6 +51,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-05-08
+
+### Added
+- **Floating "scroll down" affordance on long wizard steps.** A circular gold-bordered double-chevron button at the bottom-center of the viewport appears whenever a wizard step has more than ~80 px of content below the fold, and auto-hides as the user nears the bottom (so it disappears once the Next button is visible). Click smooth-scrolls 85 % of a viewport down. Self-managing via `ResizeObserver` + scroll listener; renders on no other route. Animation respects both `prefers-reduced-motion` and the existing "reduce theme effects" toggle.
+- New `[data-dropcap]` attribute renders the first letter of an opted-in paragraph in Amarante (gold, floated, 4.25 rem) — for opening prose on home, licensing, and backstory display.
+- New `DecoCorner.svelte` component (`src/lib/components/decoration/`) — small SVG bracket with a stepped ziggurat tick, four positions, `currentColor` for tinting. Available for opt-in card decoration.
+- `--font-deco-alt` token (Amarante) added to the Classic theme stack.
+- Design synthesis at `.stitch/ART_DECO_REFRESH.md` documents the new typography contract, decorative motifs, and per-surface application rules — supersedes §1.2 and §13 of `.stitch/DESIGN.md` for the Classic era.
+
+### Changed
+- **Classic era typography is now period-correct Art Deco (1925).** Cinzel / Playfair Display / EB Garamond / IM Fell English are replaced by **Limelight** (theatre-marquee display caps), **Federo** (heading), **Cormorant Garamond** (body), **Pompiere** (flavor script), and **Amarante** (drop-cap / pull-quote). `Special Elite` is unchanged. Modern era (CRT / phosphor monospace) is untouched. The new stack pushes away from Renaissance / Victorian-revival cues toward jazz-age investigator's casefile.
+- **Classic era root font-size bumped to 112.5 %** (~18 px assuming the user default of 16 px), with body line-height bumped to 1.6, to compensate for Cormorant Garamond's smaller x-height. All rem-based Tailwind `text-*` classes scale proportionally; Modern era stays at 16 px / 1.55. Browser font-size accessibility settings still respected.
+- **Heading underlines and `<hr>` ornament refreshed for Art Deco.** `h1` / `h2[data-heading]` now sit over a paired thin / thick gold double-rule (stacked linear-gradient hairlines). `<hr>` is now a stepped chevron lozenge — broken side rules flanking a centered rotated diamond — replacing the prior single-rule + ◆ glyph.
+- **Container widths standardized.** `max-w-6xl` is gone. Header, footer, and alpha banner now cap at `max-w-5xl`. Login and the wizard layout drop to `max-w-4xl` (prose-tight). Data-dense pages (investigators list, sheet, share, draft) keep `max-w-5xl`.
+- **`justify-between` page-header rows are now `gap-4` + `ml-auto`.** Header, footer, investigators page header, draft banner / footer rows, character-sheet header, and shared-sheet header no longer fling title and actions to opposite viewport edges on wide screens. Inner card-row label / value pairs (which legitimately want `justify-between`) are unchanged.
+- **Wizard step indicator and skills grid use fluid gaps.** Wizard step gap is now `clamp(0.25rem, 1.5vw, 0.75rem)`. The read-only skills grid extends to `2xl:grid-cols-4` with `clamp(0.5rem, 2vw, 1.5rem)` column gaps so values don't drift on ultra-wide viewports.
+- Characteristics grid on the read-only sheet now collapses to 2 columns on mobile (was a fixed 4-column grid that crowded narrow screens).
+- **Skills wizard: "Occupation Skill Choices" moved above the sticky budget / filters block** and now defaults to expanded. The choices are a one-time setup decision and naturally belong before point allocation begins; placing them above the sticky block also gets them out of the way once the user starts allocating points.
+
 ## [0.14.1] - 2026-05-08
 
 ### Added

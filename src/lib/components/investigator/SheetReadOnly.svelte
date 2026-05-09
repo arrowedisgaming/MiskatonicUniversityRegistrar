@@ -48,7 +48,7 @@
 <div class="grid gap-6 lg:grid-cols-2">
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
-		<div class="grid grid-cols-4 gap-2 text-center text-sm">
+		<div class="grid grid-cols-2 gap-2 text-center text-sm sm:grid-cols-4">
 			{#each ALL_CHARACTERISTICS as statId}
 				{@const v = character.characteristics.values[statId]}
 				<div class="rounded-md border border-[var(--color-border)]/50 p-2">
@@ -85,7 +85,7 @@
 {#if sortedSkills.length > 0}
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
-		<div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+		<div class="grid gap-x-[clamp(0.5rem,2vw,1.5rem)] gap-y-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
 			{#each sortedSkills as skill (skillRowLabel(skill))}
 				<div class="flex justify-between text-sm">
 					<span>

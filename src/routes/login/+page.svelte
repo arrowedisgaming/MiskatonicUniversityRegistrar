@@ -16,7 +16,7 @@
 	<title>Sign In - Miskatonic University Registrar</title>
 </svelte:head>
 
-<div class="mx-auto flex min-h-[70vh] max-w-6xl items-center justify-center px-4 py-10">
+<div class="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center px-4 py-10">
 	<section class="w-full max-w-md rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-6 shadow-sm">
 		<div class="mb-6 text-center">
 			<div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]">

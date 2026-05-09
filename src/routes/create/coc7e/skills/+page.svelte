@@ -391,64 +391,13 @@
 		</p>
 	</div>
 
-	<!-- Sticky budget + filters block. Stays pinned just below the alpha banner
-	     (whose height is measured at runtime) while the skill list scrolls. The
-	     bind:this lets us measure this block's height so the table thead can
-	     stick directly below it. aria-live on the totals so SR users hear
-	     updates as they spend points. -->
-	<div
-		bind:this={stickyHeaderEl}
-		style="top: {stickyHeaderTopPx}px"
-		class="sticky z-20 -mx-4 space-y-3 border-b border-[var(--color-border)]/60 bg-[var(--color-background)]/92 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/80"
-	>
-		<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
-				<p class="text-lg font-bold">
-					<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
-						{remainingOcc}
-					</span>
-					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
-				</p>
-			</div>
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
-				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Personal Interest Points</span>
-				<p class="text-lg font-bold">
-					<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
-						{remainingPersonal}
-					</span>
-					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints} personal interest points remaining</span>
-				</p>
-			</div>
-		</div>
-
-		<div class="flex flex-wrap items-center gap-2">
-			{#each categories as cat}
-				<button
-					type="button"
-					onclick={() => (showCategory = cat.id)}
-					class="rounded-full px-3 py-1 text-xs font-medium transition-colors
-						{showCategory === cat.id
-							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-							: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
-				>
-					{cat.label}
-				</button>
-			{/each}
-			<input
-				type="text"
-				placeholder="Search..."
-				bind:value={searchQuery}
-				class="ml-auto rounded-md border border-[var(--color-border)] bg-[var(--color-card)]
-					px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
-					focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
-			/>
-		</div>
-	</div>
-
-	<!-- Occupation choice slots (only for standard occupations with defined choices) -->
+	<!-- Occupation choice slots — above the sticky budget/filters block so the
+	     player makes these one-time decisions before the point allocation UI.
+	     Default-open so the choices are visible on arrival; collapsing them is
+	     still useful once made. (Only rendered for standard occupations with
+	     defined choice slots — custom occupations have no choice constraints.) -->
 	{#if !isCustomOcc && occupation && ((occupation.interpersonalChoiceCount ?? 0) > 0 || (occupation.combatChoiceCount ?? 0) > 0 || (occupation.scienceChoiceCount ?? 0) > 0 || (occupation.personalChoiceCount ?? 0) > 0)}
-		<details class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+		<details open class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 			<summary class="cursor-pointer text-sm font-semibold">
 				Occupation Skill Choices ({selectedInterpersonal.length + selectedCombat.length + selectedScience.length + selectedAny.length}/{(occupation.interpersonalChoiceCount ?? 0) + (occupation.combatChoiceCount ?? 0) + (occupation.scienceChoiceCount ?? 0) + (occupation.personalChoiceCount ?? 0)})
 			</summary>
@@ -508,6 +457,61 @@
 			</div>
 		</details>
 	{/if}
+
+	<!-- Sticky budget + filters block. Stays pinned just below the alpha banner
+	     (whose height is measured at runtime) while the skill list scrolls. The
+	     bind:this lets us measure this block's height so the table thead can
+	     stick directly below it. aria-live on the totals so SR users hear
+	     updates as they spend points. -->
+	<div
+		bind:this={stickyHeaderEl}
+		style="top: {stickyHeaderTopPx}px"
+		class="sticky z-20 -mx-4 space-y-3 border-b border-[var(--color-border)]/60 bg-[var(--color-background)]/92 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/80"
+	>
+		<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
+				<p class="text-lg font-bold">
+					<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
+						{remainingOcc}
+					</span>
+					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
+				</p>
+			</div>
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Personal Interest Points</span>
+				<p class="text-lg font-bold">
+					<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
+						{remainingPersonal}
+					</span>
+					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalPersonalPoints} personal interest points remaining</span>
+				</p>
+			</div>
+		</div>
+
+		<div class="flex flex-wrap items-center gap-2">
+			{#each categories as cat}
+				<button
+					type="button"
+					onclick={() => (showCategory = cat.id)}
+					class="rounded-full px-3 py-1 text-xs font-medium transition-colors
+						{showCategory === cat.id
+							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
+							: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
+				>
+					{cat.label}
+				</button>
+			{/each}
+			<input
+				type="text"
+				placeholder="Search..."
+				bind:value={searchQuery}
+				class="ml-auto rounded-md border border-[var(--color-border)] bg-[var(--color-card)]
+					px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
+					focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+			/>
+		</div>
+	</div>
 
 	<div class="min-h-24">
 		{#if choiceErrors.length > 0 || hardValidationErrors.length > 0}

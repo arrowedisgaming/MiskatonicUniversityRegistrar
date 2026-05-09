@@ -871,7 +871,7 @@
 	{/if}
 
 	<!-- Header -->
-	<div class="flex flex-wrap items-start justify-between gap-4">
+	<div class="flex flex-wrap items-start gap-4">
 		<div class="min-w-[16rem]">
 			{#if editMode && editChar}
 				<div class="space-y-3">
@@ -998,7 +998,7 @@
 				{/if}
 			{/if}
 		</div>
-		<div class="flex flex-wrap gap-2">
+		<div class="ml-auto flex flex-wrap gap-2">
 			{#if !editMode}
 				<!-- Export buttons -->
 				<div class="flex gap-1">

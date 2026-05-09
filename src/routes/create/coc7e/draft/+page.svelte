@@ -188,11 +188,11 @@
 
 	<!-- Unsaved banner -->
 	<div class="rounded-md border border-[var(--color-warning)] bg-[var(--color-warning)]/10 p-3">
-		<div class="flex flex-wrap items-center justify-between gap-3">
+		<div class="flex flex-wrap items-center gap-3">
 			<p class="text-sm text-[var(--color-warning)]">
 				<strong>Draft — not saved.</strong> Rolls and stat changes are stored locally. Sign in to save permanently and get a share link.
 			</p>
-			<div class="flex items-center gap-2">
+			<div class="ml-auto flex items-center gap-2">
 				<a
 					href="/create/coc7e/review"
 					class="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium
@@ -369,7 +369,7 @@
 	{/if}
 
 	<!-- Footer actions -->
-	<div class="flex flex-wrap items-center justify-between gap-3 pb-4">
+	<div class="flex flex-wrap items-center gap-3 pb-4">
 		<a
 			href="/create/coc7e/review"
 			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
@@ -377,7 +377,7 @@
 		>
 			&larr; Back to Review
 		</a>
-		<div class="flex items-center gap-3">
+		<div class="ml-auto flex items-center gap-3">
 			<PDFExportButton
 				character={char}
 				{occupationName}

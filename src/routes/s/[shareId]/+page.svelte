@@ -28,7 +28,7 @@
 		</p>
 	</aside>
 
-	<div class="flex flex-wrap items-start justify-between gap-4">
+	<div class="flex flex-wrap items-start gap-4">
 		<div class="min-w-[16rem]">
 			<h1 class="text-3xl font-bold" data-heading>{character.name || 'Unnamed Investigator'}</h1>
 			<p class="text-sm text-[var(--color-muted-foreground)]">
@@ -38,7 +38,7 @@
 				<p class="text-xs text-[var(--color-muted-foreground)]">Residence: {character.residence}</p>
 			{/if}
 		</div>
-		<div class="flex flex-wrap gap-2">
+		<div class="ml-auto flex flex-wrap gap-2">
 			<PDFExportButton
 				{character}
 				occupationName={occupation?.name ?? 'Unknown'}

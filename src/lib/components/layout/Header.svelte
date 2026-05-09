@@ -20,7 +20,7 @@
 </script>
 
 <header class="border-b border-[var(--color-border)] bg-[var(--color-card)]">
-	<nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3" aria-label="Main navigation">
+	<nav class="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3" aria-label="Main navigation">
 		<a href="/" class="flex items-center gap-2 no-underline">
 			<span class="text-base font-semibold tracking-wide sm:text-lg" data-heading>
 				<span class="hidden sm:inline">Miskatonic University Registrar</span>
@@ -28,7 +28,7 @@
 			</span>
 		</a>
 
-		<div class="flex items-center gap-1 sm:gap-3">
+		<div class="ml-auto flex items-center gap-1 sm:gap-3">
 			<a
 				href="/create/coc7e/characteristics"
 				class="rounded-md px-2 py-1.5 text-xs sm:text-sm text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-accent)] transition-colors"
