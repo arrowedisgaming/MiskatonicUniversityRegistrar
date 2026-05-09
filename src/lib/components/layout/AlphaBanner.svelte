@@ -17,7 +17,7 @@
 		<p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-medium text-[var(--color-foreground)]">
 			<svg
 				aria-hidden="true"
-				class="tentacle shrink-0"
+				class="tentacle hidden shrink-0 sm:inline-block"
 				width="16"
 				height="16"
 				viewBox="0 0 16 16"
@@ -36,7 +36,7 @@
 
 			<svg
 				aria-hidden="true"
-				class="tentacle tentacle--mirror shrink-0"
+				class="tentacle tentacle--mirror hidden shrink-0 sm:inline-block"
 				width="16"
 				height="16"
 				viewBox="0 0 16 16"

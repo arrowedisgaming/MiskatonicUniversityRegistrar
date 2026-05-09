@@ -237,7 +237,7 @@
 		{#if diceRolling}
 			<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">Rolling…</div>
 		{:else if lastRollBanner}
-			<div class="rounded-md border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 px-4 py-2.5 text-sm">
+			<div class="rounded-md border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 px-4 py-2 text-sm">
 				<span class="font-semibold">{lastRollBanner.title}</span>
 				<span class="ml-2 text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</span>
 			</div>
@@ -372,7 +372,7 @@
 	<div class="flex flex-wrap items-center gap-3 pb-4">
 		<a
 			href="/create/coc7e/review"
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Back to Review
@@ -387,7 +387,7 @@
 			/>
 			<a
 				href="/login?callbackUrl=/create/coc7e/review"
-				class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-semibold
+				class="rounded-md bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold
 					text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"
 			>
 				Sign in to Save

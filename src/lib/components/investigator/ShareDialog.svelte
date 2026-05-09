@@ -150,10 +150,14 @@
 	</button>
 
 	{#if open}
+		<!-- At <sm we render the dialog as a centered fixed card (full-width
+		     within page padding) so it can't clip past the viewport when the
+		     trigger button is near the right edge. At sm:+ the original
+		     button-anchored popover is preserved. -->
 		<div
 			role="dialog"
 			aria-label="Share investigator"
-			class="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-lg"
+			class="fixed inset-x-4 top-20 z-50 w-auto rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:z-40 sm:mt-2 sm:w-[min(22rem,calc(100vw-2rem))]"
 		>
 			<div class="flex items-start justify-between gap-2">
 				<div>

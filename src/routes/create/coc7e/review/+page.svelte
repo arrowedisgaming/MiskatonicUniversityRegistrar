@@ -270,7 +270,7 @@
 	<div class="flex justify-between pt-4">
 		<a
 			href={WIZARD_STEPS[4].path}
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Equipment
@@ -281,7 +281,7 @@
 			{/if}
 			<a
 				href="/create/coc7e/draft"
-				class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+				class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 					text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 			>
 				Try Play Mode
@@ -298,7 +298,7 @@
 				onclick={saveInvestigator}
 				disabled={saving}
 				aria-describedby={saveError ? 'save-error' : undefined}
-				class="rounded-md bg-[var(--color-primary)] px-8 py-2.5 text-sm font-semibold
+				class="rounded-md bg-[var(--color-primary)] px-8 py-2 text-sm font-semibold
 					text-[var(--color-primary-foreground)] transition-colors hover:opacity-90
 					disabled:opacity-50"
 			>

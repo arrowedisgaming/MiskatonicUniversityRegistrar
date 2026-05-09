@@ -7,6 +7,7 @@
 	// expanded details) re-trigger the visibility check.
 
 	let visible = $state(false);
+	let keyboardOpen = $state(false);
 
 	function check() {
 		if (typeof window === 'undefined') return;
@@ -14,6 +15,16 @@
 		const docHeight = document.documentElement.scrollHeight;
 		const viewportHeight = window.innerHeight;
 		visible = docHeight - (scrollY + viewportHeight) > 80;
+	}
+
+	// On iOS Safari and Android Chrome, when the on-screen keyboard appears the
+	// `visualViewport.height` shrinks while `window.innerHeight` stays roughly
+	// the same. We hide the hint while the keyboard is open so it doesn't sit
+	// directly over a text/number input the user just focused.
+	function checkKeyboard() {
+		if (typeof window === 'undefined' || !window.visualViewport) return;
+		const ratio = window.visualViewport.height / window.innerHeight;
+		keyboardOpen = ratio < 0.75;
 	}
 
 	function scrollDown() {
@@ -26,19 +37,23 @@
 
 	$effect(() => {
 		check();
+		checkKeyboard();
 		window.addEventListener('scroll', check, { passive: true });
 		window.addEventListener('resize', check);
 		const ro = new ResizeObserver(check);
 		ro.observe(document.documentElement);
+		const vv = window.visualViewport;
+		vv?.addEventListener('resize', checkKeyboard);
 		return () => {
 			window.removeEventListener('scroll', check);
 			window.removeEventListener('resize', check);
 			ro.disconnect();
+			vv?.removeEventListener('resize', checkKeyboard);
 		};
 	});
 </script>
 
-{#if visible}
+{#if visible && !keyboardOpen}
 	<button
 		type="button"
 		class="scroll-hint"
@@ -62,7 +77,9 @@
 <style>
 	.scroll-hint {
 		position: fixed;
-		bottom: 1.25rem;
+		/* Respect iOS safe area; max() falls back to 1.25rem on devices where
+		   the env() value is 0 or unsupported. */
+		bottom: max(1.25rem, env(safe-area-inset-bottom));
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 30;

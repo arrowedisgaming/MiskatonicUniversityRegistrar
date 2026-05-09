@@ -45,20 +45,22 @@
 
 /* ─── Mobile touch targets ───────────────────── */
 
-/* Ensure minimum 44px touch targets on mobile.
-   Inline links inside paragraphs/list items are excluded — applying min-height
-   to them stretches text line-height and breaks inline flow. Standalone links
-   (nav items, footer links, action links) are unaffected because they're not
-   inside flowing prose. */
+/* Minimum touch target on mobile. 38px sits between WCAG AA's 24px floor and
+   WCAG AAA's 44px target — large enough to tap comfortably, small enough that
+   text buttons in dense rows (banners, card action strips) don't look hollow.
+   Material Design's 36dp guidance is the closest cousin. Inline links inside
+   paragraphs/list items are excluded — applying min-height to them stretches
+   text line-height and breaks inline flow. Standalone links (nav, footer,
+   action links) are unaffected because they're not inside flowing prose. */
 @media (max-width: 768px) {
 	button, select, [role="button"] {
-		min-height: 44px;
-		min-width: 44px;
+		min-height: 38px;
+		min-width: 38px;
 	}
 
 	a:not(:where(p a, li a, span a, [data-flavor] a)) {
-		min-height: 44px;
-		min-width: 44px;
+		min-height: 38px;
+		min-width: 38px;
 	}
 
 	input[type="number"] {

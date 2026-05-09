@@ -468,8 +468,8 @@
 		style="top: {stickyHeaderTopPx}px"
 		class="sticky z-20 -mx-4 space-y-3 border-b border-[var(--color-border)]/60 bg-[var(--color-background)]/92 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/80"
 	>
-		<div class="grid grid-cols-2 gap-4" role="status" aria-live="polite" aria-atomic="true">
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4" role="status" aria-live="polite" aria-atomic="true">
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-2 sm:p-3">
 				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Occupation Points</span>
 				<p class="text-lg font-bold">
 					<span class={remainingOcc < 0 ? 'text-[var(--color-destructive)]' : remainingOcc === 0 ? 'text-[var(--color-primary)]' : ''}>
@@ -478,7 +478,7 @@
 					<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/ {totalOccPoints} occupation points remaining</span>
 				</p>
 			</div>
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-2 sm:p-3">
 				<span class="text-xs uppercase text-[var(--color-muted-foreground)]">Personal Interest Points</span>
 				<p class="text-lg font-bold">
 					<span class={remainingPersonal < 0 ? 'text-[var(--color-destructive)]' : remainingPersonal === 0 ? 'text-[var(--color-primary)]' : ''}>
@@ -489,12 +489,21 @@
 			</div>
 		</div>
 
+		<!-- Filter pills + search. At <sm, only "All" and "Occupation" pills are
+		     shown (Occupation is the high-value filter for point allocation —
+		     it narrows the table to skills the player can spend occupation
+		     points on). The other category pills wrap awkwardly on narrow
+		     viewports without adding much value, so they hide at <sm. The
+		     search input stays visible at every width — it falls to a second
+		     row via flex-wrap when there isn't enough horizontal space. -->
 		<div class="flex flex-wrap items-center gap-2">
 			{#each categories as cat}
+				{@const isCore = cat.id === 'all' || cat.id === 'occupation'}
 				<button
 					type="button"
 					onclick={() => (showCategory = cat.id)}
 					class="rounded-full px-3 py-1 text-xs font-medium transition-colors
+						{isCore ? '' : 'hidden sm:inline-block'}
 						{showCategory === cat.id
 							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
 							: 'border border-[var(--color-border)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]'}"
@@ -554,8 +563,139 @@
 	     `overflow: auto/scroll/hidden` becomes the containing block for
 	     `position: sticky`, which breaks the thead pinning. If horizontal
 	     overflow handling is needed on narrow viewports, do it on a wrapper
-	     that doesn't contain a sticky descendant. -->
-	<div>
+	     that doesn't contain a sticky descendant.
+
+	     MOBILE: at <sm we don't render the table at all — see the card list
+	     immediately below this comment. The table wrapper is `hidden sm:block`
+	     so the sticky thead is irrelevant on mobile and we don't fight it. -->
+
+	<!-- Mobile skill cards (<sm only). Each card stacks: name + total on top,
+	     Base/Half/Fifth caption row, then two number inputs side by side. -->
+	<div class="space-y-2 sm:hidden">
+		{#each filteredSkills as skill (skill.id)}
+			{@const base = getBase(skill)}
+			{@const alloc = getAlloc(skill.id)}
+			{@const total = base + alloc.occupation + alloc.personal}
+			{@const isOcc = eligibleOccupationSkillIds.has(skill.id)}
+			{@const occColumnLocked = !isOcc || (alloc.occupation === 0 && remainingOcc <= 0)}
+			{@const personalColumnLocked = alloc.personal === 0 && remainingPersonal <= 0}
+			<div class="rounded-md border border-[var(--color-border)] px-3 py-2 {isOcc ? 'bg-[var(--color-accent)]/30' : 'bg-[var(--color-card)]'}">
+				<div class="flex items-baseline gap-2">
+					<span class="font-medium">{skill.name}</span>
+					{#if isOcc}
+						<span class="rounded bg-[var(--color-primary)]/20 px-1 text-[10px] text-[var(--color-primary)]">OCC</span>
+					{/if}
+					<span class="ml-auto text-base font-bold {total > 89 ? 'text-[var(--color-warning)]' : ''}">{total}</span>
+				</div>
+				<div class="mt-0.5 text-xs text-[var(--color-muted-foreground)]">
+					Base {base} · Half {halfValue(total)} · Fifth {fifthValue(total)}
+				</div>
+				<div class="mt-2 flex items-center gap-3">
+					<label class="flex items-center gap-1.5 text-xs">
+						<span class="uppercase text-[var(--color-muted-foreground)]">Occ</span>
+						<input
+							type="number"
+							use:preventNumberWheel
+							min="0"
+							max={isOcc ? maxOccupationAllocation(base, alloc) : 0}
+							value={alloc.occupation}
+							disabled={occColumnLocked}
+							title={occColumnLocked && isOcc ? 'No occupation points remaining — reduce another skill to free points' : undefined}
+							oninput={(e) => {
+								const input = e.currentTarget as HTMLInputElement;
+								setOccPoints(skill.id, parseInt(input.value) || 0);
+								input.value = String((pointAllocations[skill.id] ?? { occupation: 0, personal: 0 }).occupation);
+							}}
+							class="w-14 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:opacity-30"
+						/>
+					</label>
+					<label class="flex items-center gap-1.5 text-xs">
+						<span class="uppercase text-[var(--color-muted-foreground)]">Pers</span>
+						<input
+							type="number"
+							use:preventNumberWheel
+							min="0"
+							max={maxPersonalAllocation(base, alloc)}
+							value={alloc.personal}
+							disabled={personalColumnLocked}
+							title={personalColumnLocked ? 'No personal interest points remaining — reduce another skill to free points' : undefined}
+							oninput={(e) => {
+								const input = e.currentTarget as HTMLInputElement;
+								setPersonalPoints(skill.id, parseInt(input.value) || 0);
+								input.value = String((pointAllocations[skill.id] ?? { occupation: 0, personal: 0 }).personal);
+							}}
+							class="w-14 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:opacity-30"
+						/>
+					</label>
+				</div>
+			</div>
+		{/each}
+		{#each customSkillDefs as def (def.id)}
+			{@const alloc = getAlloc(def.id)}
+			{@const total = def.baseValue + alloc.occupation + alloc.personal}
+			{@const isOcc = eligibleOccupationSkillIds.has(def.id)}
+			{@const occColumnLocked = !isOcc || (alloc.occupation === 0 && remainingOcc <= 0)}
+			{@const personalColumnLocked = alloc.personal === 0 && remainingPersonal <= 0}
+			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]/20 px-3 py-2">
+				<div class="flex items-baseline gap-2">
+					<span class="font-medium">{def.name}</span>
+					<span class="rounded bg-[var(--color-muted-foreground)]/20 px-1 text-[10px] text-[var(--color-muted-foreground)]">custom</span>
+					{#if isOcc}
+						<span class="rounded bg-[var(--color-primary)]/20 px-1 text-[10px] text-[var(--color-primary)]">OCC</span>
+					{/if}
+					<span class="ml-auto text-base font-bold {total > 89 ? 'text-[var(--color-warning)]' : ''}">{total}</span>
+				</div>
+				<div class="mt-0.5 text-xs text-[var(--color-muted-foreground)]">
+					Base {def.baseValue} · Half {halfValue(total)} · Fifth {fifthValue(total)}
+				</div>
+				<div class="mt-2 flex items-center gap-3">
+					<label class="flex items-center gap-1.5 text-xs">
+						<span class="uppercase text-[var(--color-muted-foreground)]">Occ</span>
+						<input
+							type="number"
+							use:preventNumberWheel
+							min="0"
+							max={isOcc ? maxOccupationAllocation(def.baseValue, alloc) : 0}
+							value={alloc.occupation}
+							disabled={occColumnLocked}
+							oninput={(e) => {
+								const input = e.currentTarget as HTMLInputElement;
+								setOccPoints(def.id, parseInt(input.value) || 0);
+								input.value = String((pointAllocations[def.id] ?? { occupation: 0, personal: 0 }).occupation);
+							}}
+							class="w-14 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:opacity-30"
+						/>
+					</label>
+					<label class="flex items-center gap-1.5 text-xs">
+						<span class="uppercase text-[var(--color-muted-foreground)]">Pers</span>
+						<input
+							type="number"
+							use:preventNumberWheel
+							min="0"
+							max={maxPersonalAllocation(def.baseValue, alloc)}
+							value={alloc.personal}
+							disabled={personalColumnLocked}
+							oninput={(e) => {
+								const input = e.currentTarget as HTMLInputElement;
+								setPersonalPoints(def.id, parseInt(input.value) || 0);
+								input.value = String((pointAllocations[def.id] ?? { occupation: 0, personal: 0 }).personal);
+							}}
+							class="w-14 rounded border border-[var(--color-border)] bg-[var(--color-card)] px-1.5 py-0.5 text-center text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:opacity-30"
+						/>
+					</label>
+					<button
+						type="button"
+						onclick={() => removeCustomSkill(def.id)}
+						class="ml-auto text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-destructive)]"
+						title="Remove custom skill"
+					>✕</button>
+				</div>
+			</div>
+		{/each}
+	</div>
+
+	<!-- Desktop skill table (sm: and up). -->
+	<div class="hidden sm:block">
 		<table class="w-full text-sm">
 			<thead class="sticky z-10 bg-[var(--color-background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/85" style="top: {theadTopPx}px">
 				<tr class="border-b border-[var(--color-border)] text-left text-xs uppercase text-[var(--color-muted-foreground)]">
@@ -756,7 +896,7 @@
 	<div class="flex justify-between pt-4">
 		<a
 			href={WIZARD_STEPS[1].path}
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Occupation
@@ -775,7 +915,7 @@
 				onclick={proceed}
 				disabled={!canProceed}
 				aria-describedby={!canProceed ? 'skills-proceed-hint' : undefined}
-				class="rounded-md px-6 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50
+				class="rounded-md px-6 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50
 					{proceedWithWarning
 						? 'border border-[var(--color-warning)] bg-[var(--color-warning)]/15 text-[var(--color-warning)] hover:bg-[var(--color-warning)]/25'
 						: 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:opacity-90'}"

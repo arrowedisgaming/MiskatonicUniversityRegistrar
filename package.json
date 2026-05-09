@@ -1,6 +1,6 @@
 {
 	"name": "miskatonic-university-registrar",
-	"version": "0.15.0",
+	"version": "0.15.1",
 	"private": true,
 	"description": "A Call of Cthulhu 7th Edition investigator creator. SvelteKit monolith, content-pack driven, Fan Material Policy-compliant.",
 	"license": "GPL-3.0-or-later",

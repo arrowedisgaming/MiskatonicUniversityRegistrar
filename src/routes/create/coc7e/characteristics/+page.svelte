@@ -372,7 +372,7 @@
 							</td>
 							<td class="py-2 pr-4 text-center text-[var(--color-muted-foreground)]">{v ? halfValue(v) : '—'}</td>
 							<td class="py-2 pr-4 text-center text-[var(--color-muted-foreground)]">{v ? fifthValue(v) : '—'}</td>
-							<td class="py-2 pr-4 text-center font-mono text-xs text-[var(--color-muted-foreground)]">
+							<td class="whitespace-nowrap py-2 pr-4 text-center font-mono text-xs text-[var(--color-muted-foreground)]">
 								{rolls?.[char]?.join(', ') ?? '—'}
 							</td>
 							<td class="py-2">
@@ -417,10 +417,10 @@
 						Apply {requiredDeduction} age-deduction point{requiredDeduction === 1 ? '' : 's'} among {deductionTargets.map((target) => target.toUpperCase()).join(', ')}.
 						Used: {deductionTotal}/{requiredDeduction}
 					</p>
-					<div class="flex flex-wrap gap-3">
+					<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 						{#each deductionTargets as target}
-							<label class="text-sm">
-								<span class="mr-1 uppercase">{target}</span>
+							<label class="flex items-center gap-2 text-sm">
+								<span class="uppercase">{target}</span>
 								<input
 									type="number"
 									use:preventNumberWheel
@@ -557,7 +557,7 @@
 			aria-describedby={!canProceed
 				? (hasValues && (!pointBuyValid || !quickFireValid) ? 'char-proceed-warning' : 'char-proceed-hint')
 				: undefined}
-			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+			class="rounded-md bg-[var(--color-primary)] px-6 py-2 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors
 				hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 		>

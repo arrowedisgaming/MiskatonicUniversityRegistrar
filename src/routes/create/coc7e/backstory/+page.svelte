@@ -205,7 +205,7 @@
 	<div class="flex justify-between pt-4">
 		<a
 			href={WIZARD_STEPS[2].path}
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Skills
@@ -214,7 +214,7 @@
 			type="button"
 			onclick={proceed}
 			disabled={!canProceed}
-			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+			class="rounded-md bg-[var(--color-primary)] px-6 py-2 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors
 				hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 		>

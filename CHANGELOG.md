@@ -51,6 +51,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-05-09
+
+### Changed
+- **Mobile UX overhaul (under 640 px).** Targeted fixes for issues exposed after the v0.15.0 typography refresh and 112.5 % root font-size bump.
+  - **Skills wizard:** on mobile the 7-column allocation table is replaced with stacked cards (skill name + total on top, Base/Half/Fifth caption, Occupation/Personal number inputs below). Desktop table preserved at 640 px and up. Sticky budget block collapses to a single column with reduced padding. Category filter pills shrink to "All" + "Occupation" only on mobile (Occupation is the high-value filter for point allocation; the rest reappear at desktop widths).
+  - **Header:** secondary controls (3D-dice toggle, era selector, theme-effects toggle, light/dark toggle) tuck into a single "settings" disclosure popover on mobile, leaving only logo / quick-create / avatar / sign-in-out / settings gear in the top bar. "Investigators" link hides on mobile since the avatar already navigates there. Era selector buttons bumped to a larger tap-target.
+  - **Occupation wizard:** list height capped at `40vh` on mobile (was a fixed 500 px) so the preview panel is visible without scrolling past a tall list. Tapping an occupation now smooth-scrolls the preview into view, and the tapped item within the list, on mobile and tablet.
+  - **ScrollHint button:** respects iOS safe area at the bottom of the viewport, and hides itself while the on-screen keyboard is open so it doesn't sit over a focused input.
+  - **ShareDialog:** on mobile renders as a centered fixed card instead of a button-anchored popover — no more clipping past the right viewport edge.
+  - **Characteristics wizard:** dice-result cell no longer wraps mid-roll (`5, 4, 5` stays on one line). Age-deduction inputs switch from a wrapping flex row to a 2-up grid on mobile and 4-up on desktop for cleaner placement.
+  - **Alpha banner:** decorative tentacle ornaments hide on mobile so the warning text stays on a single line.
+  - **Button sizing:** global mobile touch-target floor lowered from 44 px to 38 px (still above WCAG AA's 24 px minimum, closer to Material Design's 36 dp guidance) — the previous 44 px floor was inflating dense action rows like the draft banner with hollow vertical padding. Wizard navigation buttons trimmed in proportion.
+
 ## [0.15.0] - 2026-05-08
 
 ### Added

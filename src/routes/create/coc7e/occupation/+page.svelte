@@ -78,16 +78,42 @@
 		}
 	}
 
-	function selectOccupation(occ: CoCOccupationDefinition) {
+	// Right-column preview ref — used to scroll the preview into view on mobile
+	// when the user taps an occupation. On desktop (lg:+) the list and preview
+	// sit side-by-side so no scrolling is needed; <lg they stack and the user
+	// would otherwise have to scroll past a 40-vh-tall list to see what they
+	// just selected.
+	let previewEl = $state<HTMLDivElement | null>(null);
+
+	function scrollAfterSelection(triggerButton: HTMLButtonElement | null) {
+		if (typeof window === 'undefined') return;
+		const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+		if (!isMobile) return;
+		// Nudge the tapped button into view within the scrollable list first,
+		// in case it was partially clipped at the moment of tap. This happens
+		// synchronously; iOS Safari abandons it as soon as the next programmatic
+		// scroll fires, but on Chrome/Firefox both animations queue cleanly.
+		triggerButton?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		// rAF so the preview scroll fires after Svelte commits the selection
+		// state and the preview re-renders with the new occupation's details.
+		// This is the primary affordance — it's the one that visibly completes.
+		requestAnimationFrame(() => {
+			previewEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+	}
+
+	function selectOccupation(occ: CoCOccupationDefinition, ev?: MouseEvent) {
 		selectedOccupation = occ;
 		isCustomSelected = false;
 		formulaChoices = {};
+		scrollAfterSelection((ev?.currentTarget as HTMLButtonElement) ?? null);
 	}
 
-	function selectCustomOccupation() {
+	function selectCustomOccupation(ev?: MouseEvent) {
 		selectedOccupation = null;
 		formulaChoices = {};
 		isCustomSelected = true;
+		scrollAfterSelection((ev?.currentTarget as HTMLButtonElement) ?? null);
 	}
 
 	// Selected occupation details
@@ -195,13 +221,14 @@
 	/>
 
 	<div class="grid gap-6 lg:grid-cols-[1fr_1.5fr]">
-		<!-- Occupation list -->
-		<div class="max-h-[500px] space-y-1 overflow-y-auto rounded-md border border-[var(--color-border)] p-2">
+		<!-- Occupation list. max-h-[40vh] on mobile (~280 px on iPhone SE) so the
+		     preview is visible below; lg:max-h-[500px] preserves the desktop layout. -->
+		<div class="max-h-[40vh] space-y-1 overflow-y-auto rounded-md border border-[var(--color-border)] p-2 lg:max-h-[500px]">
 			{#each filteredOccupations as occ}
 				{@const isSelected = selectedOccupation?.id === occ.id}
 				<button
 					type="button"
-					onclick={() => selectOccupation(occ)}
+					onclick={(ev) => selectOccupation(occ, ev)}
 					class="w-full rounded-md px-3 py-2 text-left text-sm transition-colors
 						{isSelected
 							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
@@ -217,7 +244,7 @@
 			<div class="mt-1 border-t border-[var(--color-border)] pt-1">
 				<button
 					type="button"
-					onclick={selectCustomOccupation}
+					onclick={(ev) => selectCustomOccupation(ev)}
 					class="w-full rounded-md px-3 py-2 text-left text-sm transition-colors
 						{isCustomSelected
 							? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
@@ -229,6 +256,9 @@
 			</div>
 		</div>
 
+		<!-- Right column: occupation preview. Wrapped so we can scrollIntoView on
+		     mobile after a list selection. -->
+		<div bind:this={previewEl} class="scroll-mt-4">
 		<!-- Custom occupation detail panel -->
 		{#if isCustomSelected}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4 space-y-4">
@@ -439,6 +469,7 @@
 				</p>
 			</div>
 		{/if}
+		</div>
 
 	</div>
 
@@ -446,7 +477,7 @@
 	<div class="flex justify-between pt-4">
 		<a
 			href={WIZARD_STEPS[0].path}
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Characteristics
@@ -460,7 +491,7 @@
 				onclick={proceed}
 				disabled={!canProceed}
 				aria-describedby={!canProceed ? 'proceed-hint' : undefined}
-				class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+				class="rounded-md bg-[var(--color-primary)] px-6 py-2 text-sm font-medium
 					text-[var(--color-primary-foreground)] transition-colors
 					hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 			>

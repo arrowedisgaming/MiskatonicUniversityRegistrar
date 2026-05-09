@@ -316,7 +316,7 @@
 	<div class="flex justify-between pt-4">
 		<a
 			href={WIZARD_STEPS[3].path}
-			class="rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium
+			class="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium
 				text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-accent)]"
 		>
 			&larr; Backstory
@@ -324,7 +324,7 @@
 		<button
 			type="button"
 			onclick={proceed}
-			class="rounded-md bg-[var(--color-primary)] px-6 py-2.5 text-sm font-medium
+			class="rounded-md bg-[var(--color-primary)] px-6 py-2 text-sm font-medium
 				text-[var(--color-primary-foreground)] transition-colors hover:opacity-90"
 		>
 			Next: Review &rarr;
