@@ -1,12 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { signOut } from '@auth/sveltekit/client';
-	import { diceRollAnimationsEnabled, toggleDiceRollAnimations } from '$lib/stores/dice-rolls';
+	import DiceSettingsPanel from '$lib/components/dice/DiceSettingsPanel.svelte';
+	import { diceRollAnimationsEnabled } from '$lib/stores/dice-rolls';
 	import { era, mode, theme, reduceEffects } from '$lib/stores/theme';
 	import { eras } from '$lib/themes/registry';
 	import { Dices, LogIn, LogOut, Settings, Sparkles } from '@lucide/svelte';
 
 	const session = $derived(page.data.session);
+
+	let diceSettingsOpen = $state(false);
+	let mobileSettingsDetailsEl = $state<HTMLDetailsElement | null>(null);
+
+	function openDiceSettingsFromMobileMenu() {
+		diceSettingsOpen = true;
+		if (mobileSettingsDetailsEl) mobileSettingsDetailsEl.open = false;
+	}
 
 	function userInitials(name?: string | null): string {
 		if (!name) return '?';
@@ -87,13 +96,17 @@
 			<div class="hidden sm:contents">
 				<button
 					type="button"
-					onclick={toggleDiceRollAnimations}
-					class="relative rounded-md p-2 transition-colors {$diceRollAnimationsEnabled
+					data-testid="dice-settings-trigger"
+					onclick={() => (diceSettingsOpen = !diceSettingsOpen)}
+					class="relative rounded-md p-2 transition-colors {diceSettingsOpen
 						? 'bg-[var(--color-accent)] text-[var(--color-foreground)]'
-						: 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]'}"
-					aria-pressed={$diceRollAnimationsEnabled}
-					aria-label={$diceRollAnimationsEnabled ? 'Disable 3D dice rolls' : 'Enable 3D dice rolls'}
-					title={$diceRollAnimationsEnabled ? 'Disable 3D dice rolls' : 'Enable 3D dice rolls'}
+						: $diceRollAnimationsEnabled
+							? 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]'
+							: 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)]'}"
+					aria-expanded={diceSettingsOpen}
+					aria-haspopup="dialog"
+					aria-label="Dice rolls and appearance settings"
+					title="Dice rolls and appearance settings"
 				>
 					<Dices size={18} aria-hidden="true" />
 					{#if !$diceRollAnimationsEnabled}
@@ -168,24 +181,25 @@
 			     Both this popover's inputs and the desktop inline ones bind to the
 			     same stores, so toggling either updates state. Native <details> for
 			     accessibility — keyboard works without extra wiring. -->
-			<details class="relative sm:hidden">
+			<details class="relative sm:hidden" bind:this={mobileSettingsDetailsEl}>
 				<summary class="flex min-h-[38px] min-w-[38px] cursor-pointer list-none items-center justify-center rounded-md p-2 text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)] [&::-webkit-details-marker]:hidden">
 					<Settings size={18} aria-hidden="true" />
 					<span class="sr-only">Settings</span>
 				</summary>
 				<div class="absolute right-0 top-full z-50 mt-1 w-60 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-2 shadow-lg">
-					<!-- Dice toggle -->
 					<button
 						type="button"
-						onclick={toggleDiceRollAnimations}
+						data-testid="dice-settings-trigger-mobile"
+						onclick={openDiceSettingsFromMobileMenu}
 						class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-sm transition-colors hover:bg-[var(--color-accent)]"
-						aria-pressed={$diceRollAnimationsEnabled}
 					>
 						<span class="flex items-center gap-2">
 							<Dices size={16} aria-hidden="true" />
-							3D dice rolls
+							Dice rolls &amp; look
 						</span>
-						<span class="text-xs text-[var(--color-muted-foreground)]">{$diceRollAnimationsEnabled ? 'On' : 'Off'}</span>
+						<span class="text-xs text-[var(--color-muted-foreground)]">
+							{$diceRollAnimationsEnabled ? '3D' : 'Off'}
+						</span>
 					</button>
 
 					<!-- Era selector -->
@@ -250,4 +264,6 @@
 			</details>
 		</div>
 	</nav>
+
+	<DiceSettingsPanel bind:open={diceSettingsOpen} />
 </header>

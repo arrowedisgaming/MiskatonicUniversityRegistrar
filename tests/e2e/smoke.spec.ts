@@ -48,6 +48,29 @@ test('licensing page loads', async ({ page }) => {
 	await expect(page.locator('h1')).toContainText('Licensing');
 });
 
+test('dice settings popover saves texture choice', async ({ page, context }) => {
+	await context.clearCookies();
+	await page.goto('/');
+
+	await page.getByTestId('dice-settings-trigger').click();
+	await expect(page.getByRole('dialog', { name: /dice rolls/i })).toBeVisible();
+
+	await page.getByRole('radio', { name: /Starfield/i }).click();
+	await expect(page.getByRole('radio', { name: /Starfield/i })).toHaveAttribute('aria-checked', 'true');
+
+	await page.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByRole('dialog', { name: /dice rolls/i })).not.toBeVisible();
+
+	const stored = await page.evaluate(() => localStorage.getItem('dice-appearance-v1'));
+	expect(stored).toBeTruthy();
+	const parsed = JSON.parse(stored!) as { texture?: string; color?: string };
+	expect(parsed.texture).toBe('stars');
+
+	await page.reload();
+	await page.getByTestId('dice-settings-trigger').click();
+	await expect(page.getByRole('radio', { name: /Starfield/i })).toHaveAttribute('aria-checked', 'true');
+});
+
 test('health endpoint returns ok', async ({ request }) => {
 	const response = await request.get('/api/health');
 	expect(response.ok()).toBeTruthy();

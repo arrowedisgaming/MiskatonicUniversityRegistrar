@@ -1,7 +1,11 @@
 <script lang="ts">
+	import { get } from 'svelte/store';
 	import { tick } from 'svelte';
+	import { buildDiceColorset } from '$lib/dice/dice-appearance';
 	import { completeDiceRoll, diceRollState, skipActiveDiceRoll } from '$lib/stores/dice-rolls';
-	import { toRendererNotation, userFacingResults, type DiceScheme } from '$lib/dice/protocol';
+	import { diceAppearance } from '$lib/stores/dice-appearance';
+	import { toRendererNotation, userFacingResults } from '$lib/dice/protocol';
+	import type { DiceThemeCustomColorset } from '@3d-dice/dice-box-threejs';
 
 	type DiceBoxInstance = {
 		initialize(): Promise<void>;
@@ -17,7 +21,7 @@
 		sounds?: boolean;
 		shadows?: boolean;
 		theme_surface?: string;
-		theme_customColorset?: DiceColorset;
+		theme_customColorset?: DiceThemeCustomColorset;
 		theme_texture?: string;
 		theme_material?: string;
 		gravity_multiplier?: number;
@@ -25,16 +29,6 @@
 		baseScale?: number;
 		strength?: number;
 		iterationLimit?: number;
-	};
-
-	type DiceColorset = {
-		name: string;
-		foreground: string;
-		background: string | string[];
-		outline: string;
-		edge: string;
-		texture: string;
-		material: string;
 	};
 
 	const OVERLAY_ID = 'dice-roll-overlay-scene';
@@ -71,7 +65,8 @@
 		visible = true;
 		const notation = toRendererNotation(active.request);
 		const displayResults = userFacingResults(active.request);
-		const scheme = active.request.scheme ?? resolveCurrentScheme();
+		const appearanceSnapshot = get(diceAppearance);
+		const colorset = buildDiceColorset(appearanceSnapshot);
 
 		if (prefersReducedMotion() || notation.results.length === 0) {
 			await runReducedMotionRoll(id, displayResults);
@@ -79,12 +74,12 @@
 		}
 
 		try {
-			const box = await getDiceBox(scheme);
+			const box = await getDiceBox(colorset);
 			// Each await is a place a skip / next-queued-roll could supersede us.
 			// If that's happened, bail BEFORE touching the shared DiceBox so we
 			// don't animate stale dice over the next roll.
 			if (runningRollId !== id) return;
-			await box.updateConfig({ theme_customColorset: colorsetForScheme(scheme) });
+			await box.updateConfig({ theme_customColorset: colorset });
 			if (runningRollId !== id) return;
 			await box.roll(notation.notation);
 			if (runningRollId !== id) return;
@@ -101,7 +96,7 @@
 		completeDiceRoll(id);
 	}
 
-	async function getDiceBox(scheme: DiceScheme): Promise<DiceBoxInstance> {
+	async function getDiceBox(colorset: DiceThemeCustomColorset): Promise<DiceBoxInstance> {
 		if (diceBox) return diceBox;
 		if (initializing) return initializing;
 
@@ -119,7 +114,7 @@
 				theme_surface: 'mahogany',
 				// `texture` and `material` come from theme_customColorset; setting
 				// them at the top level here would be redundant — the colorset wins.
-				theme_customColorset: colorsetForScheme(scheme),
+				theme_customColorset: colorset,
 				gravity_multiplier: 500,
 				light_intensity: 0.8,
 				baseScale: 85,
@@ -146,34 +141,6 @@
 		fallbackVisible = false;
 		visible = false;
 		completeDiceRoll(id);
-	}
-
-	function resolveCurrentScheme(): DiceScheme {
-		return document.documentElement.classList.contains('modern') ? 'modern' : 'classic';
-	}
-
-	function colorsetForScheme(scheme: DiceScheme): DiceColorset {
-		if (scheme === 'modern') {
-			return {
-				name: 'miskatonic-modern',
-				foreground: '#ffe9b5',
-				background: ['#1a0f2c', '#2b1a4a', '#432663', '#6a3f8a'],
-				outline: '#0a0514',
-				edge: '#f4b84a',
-				texture: 'marble',
-				material: 'glass'
-			};
-		}
-
-		return {
-			name: 'miskatonic-classic',
-			foreground: '#f4e3ae',
-			background: ['#0c1a30', '#162a4d', '#1f3a6a', '#3a2a5e'],
-			outline: '#040814',
-			edge: '#c89b3c',
-			texture: 'marble',
-			material: 'glass'
-		};
 	}
 
 	function prefersReducedMotion(): boolean {

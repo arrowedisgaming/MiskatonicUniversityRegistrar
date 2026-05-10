@@ -51,6 +51,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-10
+
+### Added
+- **Dice rolls popover** from the header dice icon: **3D dice** vs **No dice** (skips the 3D overlay), plus surface pattern and face tint when 3D is on. **Save** / **Cancel** commit or discard changes so you stay on the same page. Preferences persist in `localStorage`. Static **`/assets/dice-three/`** assets from `@3d-dice/dice-box-threejs` are shipped under `static/`. Old URL `/settings/dice` redirects home. Playwright smoke covers the popover (`tests/e2e/smoke.spec.ts`); see `tests/manual/dice-appearance.md` if browsers are not installed locally.
+
+### Changed
+- **Dice look presets:** Face tints are now **Nautical ink**, **Parchment bone**, and **Arcade neon** (replacing the old purple jewel). Surface patterns are **Polished stone**, **Woodgrain**, and **Starfield** (replacing metal) so the three textures read more differently in motion; starfield uses the engine's non-metallic dice shading. Stored `metal` / `midnight` values migrate to **stars** / **neon**.
+- **Surface pattern descriptions** in the popover are now terse one-liners (e.g. "Cool, marbled veins.") so the radio cards stay scannable.
+
+### Fixed
+- **Keyboard focus is now trapped in the dice settings dialog.** The popover declares `aria-modal="true"`, so focus now moves into the dialog on open, cycles between Save / Cancel / radios on Tab, and restores to the dice icon on close. Previously Tab leaked through to the page controls behind the backdrop.
+- **Updated the dice-animation-toggle E2E** (`tests/e2e/dice-roll.spec.ts`) for the new popover flow now that the header dice button opens a dialog instead of toggling directly.
+
 ## [0.16.1] - 2026-05-10
 
 ### Changed

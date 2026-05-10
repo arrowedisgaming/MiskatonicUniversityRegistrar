@@ -1,5 +1,5 @@
 declare module '@3d-dice/dice-box-threejs' {
-	interface DiceBoxThreeConfig {
+	export interface DiceBoxThreeConfig {
 		assetPath?: string;
 		framerate?: number;
 		sounds?: boolean;
@@ -26,6 +26,9 @@ declare module '@3d-dice/dice-box-threejs' {
 		iterationLimit?: number;
 		onRollComplete?: (result: unknown) => void;
 	}
+
+	/** Non-null dice theme from `theme_customColorset` — reuse for builders to avoid drift. */
+	export type DiceThemeCustomColorset = NonNullable<DiceBoxThreeConfig['theme_customColorset']>;
 
 	export default class DiceBoxThree {
 		constructor(selector: string, config?: DiceBoxThreeConfig);

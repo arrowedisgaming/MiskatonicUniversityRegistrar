@@ -20,10 +20,13 @@ test('characteristic dice results reveal after the roll animation completes', as
 
 test('dice animation toggle skips the roll delay', async ({ page }) => {
 	await page.goto('/create/coc7e/characteristics');
-	await page.getByRole('button', { name: 'Disable 3D dice rolls' }).click();
 
-	await expect(page.getByRole('button', { name: 'Enable 3D dice rolls' })).toBeVisible();
+	// Open the dice settings popover, switch to "No dice", and save.
+	await page.getByTestId('dice-settings-trigger').click();
+	await page.getByRole('radio', { name: 'No dice' }).click();
+	await page.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByRole('dialog', { name: /dice rolls/i })).not.toBeVisible();
+
 	await page.getByRole('button', { name: 'Roll All', exact: true }).click();
-
 	await expect(page.getByRole('button', { name: 'Reroll All' })).toBeVisible();
 });
