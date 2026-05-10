@@ -97,7 +97,7 @@ function specGroupLabel(def: CoCSkillDefinition): string {
  * - Specialization groups collapse to (allocations + 1 blank fillable slot).
  * - Derived base computation for skills with `derivedBase`.
  * - Occupation marker from allocation flag OR occupation definition's skill list.
- * - Sorted by category then display name; blank slots sort to end of category.
+ * - Sorted by displayed name so the printed columns read alphabetically.
  */
 export function buildSkillRows(
 	character: CoCCharacterData,
@@ -194,9 +194,10 @@ export function buildSkillRows(
 
 	const all = [...nonSpec, ...specRows, ...customRows];
 	all.sort((a, b) => {
-		if (a.category !== b.category) return a.category.localeCompare(b.category);
+		const byName = a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' });
+		if (byName !== 0) return byName;
 		if (a.isBlankSlot !== b.isBlankSlot) return a.isBlankSlot ? 1 : -1;
-		return a.displayName.localeCompare(b.displayName);
+		return a.key.localeCompare(b.key);
 	});
 	return all;
 }

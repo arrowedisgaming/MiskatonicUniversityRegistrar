@@ -51,6 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-05-10
+
+### Changed
+- **PDF skill list now reads alphabetically across categories.** The one-page investigator-sheet PDF previously sorted skills by category-then-name, which meant a player scanning for "Spot Hidden" mid-game had to know which category it lived in (mental? practical?) before they could find it. The skill table now sorts strictly by displayed name (case-insensitive), so columns read A→Z top-to-bottom, left-to-right regardless of category. Specialization blank fill-in slots still follow their resolved-name allocations within the alphabetical sequence.
+
 ## [0.16.0] - 2026-05-09
 
 ### Added

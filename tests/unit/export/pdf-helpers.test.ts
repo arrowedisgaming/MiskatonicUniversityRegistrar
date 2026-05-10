@@ -128,9 +128,10 @@ describe('findOccupation / getOccupationSkillIds', () => {
 });
 
 describe('distributeIntoColumns', () => {
-	it('splits items so column 1 >= column 2 >= column 3', () => {
-		const cols = distributeIntoColumns([1, 2, 3, 4, 5, 6, 7], 3);
+	it('fills columns top-to-bottom before continuing left-to-right', () => {
+		const cols = distributeIntoColumns(['A', 'B', 'C', 'D', 'E', 'F', 'G'], 3);
 		expect(cols.map((c) => c.length)).toEqual([3, 3, 1]);
+		expect(cols).toEqual([['A', 'B', 'C'], ['D', 'E', 'F'], ['G']]);
 	});
 	it('handles empty input', () => {
 		expect(distributeIntoColumns([], 3)).toEqual([[], [], []]);
@@ -202,6 +203,11 @@ describe('buildSkillRows', () => {
 		const rows = buildSkillRows(character, skills, occupation);
 		expect(rows.find((r) => r.key === 'dodge')?.value).toBe(35);
 		expect(rows.find((r) => r.key === 'language-own')?.value).toBe(75);
+	});
+
+	it('sorts printable rows alphabetically by displayed name across categories', () => {
+		const rows = buildSkillRows(character, skills, occupation).filter((r) => !r.isBlankSlot);
+		expect(rows.map((r) => r.displayName)).toEqual(['Dodge', 'Language (Own)', 'Spot Hidden']);
 	});
 
 	it('collapses specialization groups into one blank slot when no allocations', () => {
