@@ -21,7 +21,7 @@ test('licensing page carries Chaosium disclaimer linked from every page', async 
 	await expect(main).toContainText('Chaosium');
 });
 
-test('landing page footer links to GitHub and shows app version', async ({ page }) => {
+test('landing page footer links to GitHub and Ko-fi, and shows app version', async ({ page }) => {
 	await page.goto('/');
 	const footer = page.locator('footer');
 
@@ -29,6 +29,10 @@ test('landing page footer links to GitHub and shows app version', async ({ page 
 	await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
 		'href',
 		'https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar'
+	);
+	await expect(footer.getByRole('link', { name: 'Ko-fi' })).toHaveAttribute(
+		'href',
+		'https://ko-fi.com/arrowedisgaming'
 	);
 });
 

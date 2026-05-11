@@ -1,5 +1,6 @@
 <script lang="ts">
 	const repositoryUrl = 'https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar';
+	const koFiUrl = 'https://ko-fi.com/arrowedisgaming';
 </script>
 
 <footer class="border-t border-[var(--color-border)] bg-[var(--color-card)] px-4 py-6">
@@ -13,6 +14,14 @@
 				class="underline hover:text-[var(--color-foreground)]"
 			>
 				GitHub
+			</a>
+			<a
+				href={koFiUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="underline hover:text-[var(--color-foreground)]"
+			>
+				Ko-fi
 			</a>
 			<a
 				href="/licensing"

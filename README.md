@@ -6,6 +6,7 @@ A Call of Cthulhu 7th Edition investigator creator. Roll up a 1920s occult inves
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2-FF3E00.svg)](https://kit.svelte.dev/)
 [![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00.svg)](https://svelte.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg)](https://www.typescriptlang.org/)
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/arrowedisgaming)
 
 > **Unofficial Fan Content.** Not approved or endorsed by Chaosium. Call of Cthulhu is a registered trademark of Chaosium Inc. See [Legal](#legal) below.
 
