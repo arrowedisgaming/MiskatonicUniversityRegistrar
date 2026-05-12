@@ -24,6 +24,12 @@
 				Ko-fi
 			</a>
 			<a
+				href="/privacy"
+				class="underline hover:text-[var(--color-foreground)]"
+			>
+				Privacy
+			</a>
+			<a
 				href="/licensing"
 				class="underline hover:text-[var(--color-foreground)]"
 			>

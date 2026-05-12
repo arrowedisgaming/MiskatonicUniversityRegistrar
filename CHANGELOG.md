@@ -51,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.17.2] - 2026-05-12
+
+### Added
+- Dedicated `/privacy` page documenting Google and Discord sign-in data handling (scopes, usage, sharing, storage, retention, deletion) for Google OAuth verification compliance. Also discloses the Google Fonts CDN as a sub-processor and clarifies that the in-app character-removal action is archive (with full deletion via email request).
+- Footer link to the new Privacy page alongside the existing Licensing & Legal link.
+
 ## [0.17.1] - 2026-05-11
 
 ### Added
