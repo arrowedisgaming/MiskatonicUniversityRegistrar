@@ -10,6 +10,10 @@
 	import { triggerEldritchFlash } from '$lib/stores/atmosphere';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
 	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
+	import { browser } from '$app/environment';
+	import { sortSkillsForDisplay, type SkillSortDirection, type SkillSortMode } from '$lib/engine/skill-sort';
+	import SkillSortControls from '$lib/components/skills/SkillSortControls.svelte';
+	import type { CoCSkillAllocation } from '$lib/types/character';
 
 	const data = page.data as {
 		occupations: CoCOccupationDefinition[];
@@ -20,6 +24,22 @@
 	const char = $wizard.character;
 	const occupation = data.occupations.find((o) => o.id === char.occupation?.occupationId);
 	const occupationName = char.occupation?.customName ?? occupation?.name ?? 'Custom Occupation';
+
+	const SORT_KEY = 'mur.skillSort.review';
+	let skillSortMode = $state<SkillSortMode>('alphabetical');
+	let skillSortDirection = $state<SkillSortDirection>('asc');
+
+	if (browser) {
+		try {
+			const saved = JSON.parse(localStorage.getItem(SORT_KEY) ?? 'null') as
+				| { mode?: SkillSortMode; direction?: SkillSortDirection }
+				| null;
+			if (saved?.mode === 'alphabetical' || saved?.mode === 'rating') skillSortMode = saved.mode;
+			if (saved?.direction === 'asc' || saved?.direction === 'desc') skillSortDirection = saved.direction;
+		} catch {
+			// Keep defaults.
+		}
+	}
 
 	// Validation
 	let warnings = $derived.by(() => {
@@ -41,17 +61,27 @@
 	// All allocated skills (plus any custom defs even at zero allocation), sorted alphabetically.
 	const customDefIds = new Set((char.customSkillDefs ?? []).map((d) => d.id));
 	let allSkills = $derived(
-		char.skills
-			.filter((s) => s.isOccupation || s.allocations.length > 0 || customDefIds.has(s.skillId))
-			.slice()
-			.sort((a, b) =>
-				resolveSkillDisplayName(a.skillId, char.customSkillDefs ?? [], data.skills)
-					.localeCompare(resolveSkillDisplayName(b.skillId, char.customSkillDefs ?? [], data.skills))
-			)
+		sortSkillsForDisplay(
+			char.skills.filter((s) => s.isOccupation || s.allocations.length > 0 || customDefIds.has(s.skillId)),
+			skillSortMode,
+			skillSortDirection,
+			skillRowLabel
+		)
 	);
 
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
+
+	function skillRowLabel(skill: CoCSkillAllocation): string {
+		const base = resolveSkillDisplayName(skill.skillId, char.customSkillDefs ?? [], data.skills);
+		return skill.customName?.trim() ? `${base} (${skill.customName})` : base;
+	}
+
+	function updateSort(next: { mode: SkillSortMode; direction: SkillSortDirection }) {
+		skillSortMode = next.mode;
+		skillSortDirection = next.direction;
+		if (browser) localStorage.setItem(SORT_KEY, JSON.stringify(next));
+	}
 
 	// Sanity arrives late and wrong: brief eldritch flash timed to coincide with the
 	// Derived Attributes card settling in. The atmosphere store no-ops under reduced
@@ -202,12 +232,20 @@
 	<!-- Skills -->
 	{#if allSkills.length > 0}
 		<div in:dossierFiling|global={{ delay: 480 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-			<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
+			<div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+				<h2 class="font-semibold" data-heading>Skills</h2>
+				<SkillSortControls
+					mode={skillSortMode}
+					direction={skillSortDirection}
+					idPrefix="review-skill-sort"
+					onChange={updateSort}
+				/>
+			</div>
 			<div class="grid gap-1 sm:grid-cols-2">
 				{#each allSkills as skill}
 					<div class="flex justify-between text-sm">
 						<span>
-							{resolveSkillDisplayName(skill.skillId, char.customSkillDefs ?? [], data.skills)}
+							{skillRowLabel(skill)}
 							{#if skill.isOccupation}
 								<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
 							{/if}

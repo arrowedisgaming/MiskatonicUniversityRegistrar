@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
+	import { browser } from '$app/environment';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
 	import type { CharacteristicId } from '$lib/types/common';
@@ -11,6 +12,9 @@
 	import { evaluateCoC7ePercentileCheck } from '$lib/engine/coc-percentile-check';
 	import { buildPlayModeSkills } from '$lib/engine/investigator-sheet-skills';
 	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
+	import { sortSkillsForDisplay, type SkillSortDirection, type SkillSortMode } from '$lib/engine/skill-sort';
+	import { clampLuckCurrent } from '$lib/engine/luck';
+	import SkillSortControls from '$lib/components/skills/SkillSortControls.svelte';
 	import type { CoCOccupationDefinition, CoCSkillDefinition, CoCContentPack } from '$lib/types/content-pack';
 	import type { CoCSkillAllocation, PlayRollHistoryEntry } from '$lib/types/character';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
@@ -46,25 +50,45 @@
 	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
 	let lastRollClearTimer: ReturnType<typeof setTimeout> | null = null;
 
-	// All skills including base/unallocated ones (full play-mode list), sorted alphabetically
+	const SORT_KEY = 'mur.skillSort.draft.play';
+	let skillSortMode = $state<SkillSortMode>('rating');
+	let skillSortDirection = $state<SkillSortDirection>('desc');
+	if (browser) {
+		try {
+			const saved = JSON.parse(localStorage.getItem(SORT_KEY) ?? 'null') as
+				| { mode?: SkillSortMode; direction?: SkillSortDirection }
+				| null;
+			if (saved?.mode === 'alphabetical' || saved?.mode === 'rating') skillSortMode = saved.mode;
+			if (saved?.direction === 'asc' || saved?.direction === 'desc') skillSortDirection = saved.direction;
+		} catch {
+			// Keep defaults.
+		}
+	}
+
+	// All skills including base/unallocated ones (full play-mode list).
 	const sortedSkills = $derived(
-		buildPlayModeSkills(char, data.skills).sort((a, b) =>
-			skillLabel(a).localeCompare(skillLabel(b))
-		)
+		sortSkillsForDisplay(buildPlayModeSkills(char, data.skills), skillSortMode, skillSortDirection, skillLabel)
 	);
 
 	let skillSearch = $state('');
 	const filteredSkills = $derived(
 		skillSearch
 			? sortedSkills.filter((s) => {
-					const name = resolveSkillDisplayName(s.skillId, char.customSkillDefs ?? [], data.skills);
+					const name = skillLabel(s);
 					return name.toLowerCase().includes(skillSearch.toLowerCase());
 				})
 			: sortedSkills
 	);
 
 	function skillLabel(skill: CoCSkillAllocation): string {
-		return resolveSkillDisplayName(skill.skillId, char.customSkillDefs ?? [], data.skills);
+		const base = resolveSkillDisplayName(skill.skillId, char.customSkillDefs ?? [], data.skills);
+		return skill.customName?.trim() ? `${base} (${skill.customName})` : base;
+	}
+
+	function updateSort(next: { mode: SkillSortMode; direction: SkillSortDirection }) {
+		skillSortMode = next.mode;
+		skillSortDirection = next.direction;
+		if (browser) localStorage.setItem(SORT_KEY, JSON.stringify(next));
 	}
 
 	function persistToWizard() {
@@ -75,7 +99,7 @@
 				hp: { ...c.derivedStats.hp, current: currentHP },
 				mp: { ...c.derivedStats.mp, current: currentMP },
 				sanity: { ...c.derivedStats.sanity, current: currentSanity },
-				luck: { ...c.derivedStats.luck, current: currentLuck }
+				luck: { ...c.derivedStats.luck, current: clampLuckCurrent(currentLuck) }
 			},
 			playRollHistory: playRollHistory.slice(0, ROLL_HISTORY_KEEP)
 		}));
@@ -250,7 +274,7 @@
 			{ label: 'Hit Points', current: currentHP, max: char.derivedStats.hp.max, set: (v: number) => { currentHP = clampTracker(v, 0, char.derivedStats.hp.max); persistToWizard(); } },
 			{ label: 'Magic Points', current: currentMP, max: char.derivedStats.mp.max, set: (v: number) => { currentMP = clampTracker(v, 0, char.derivedStats.mp.max); persistToWizard(); } },
 			{ label: 'Sanity', current: currentSanity, max: char.derivedStats.sanity.max, set: (v: number) => { currentSanity = clampTracker(v, 0, char.derivedStats.sanity.max); persistToWizard(); } },
-			{ label: 'Luck', current: currentLuck, max: char.derivedStats.luck.max, set: (v: number) => { currentLuck = clampTracker(v, 0, char.derivedStats.luck.max); persistToWizard(); } }
+			{ label: 'Luck', current: currentLuck, max: 99, set: (v: number) => { currentLuck = clampLuckCurrent(v); persistToWizard(); } }
 		] as tracker}
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-3">
 				<span class="block text-xs uppercase text-[var(--color-muted-foreground)]">{tracker.label}</span>
@@ -261,7 +285,7 @@
 						class="h-7 w-7 rounded border border-[var(--color-border)] text-sm font-bold hover:bg-[var(--color-accent)]"
 					>−</button>
 					<span class="flex-1 text-center text-lg font-bold">
-						{tracker.current}<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/{tracker.max}</span>
+						{tracker.current}{#if tracker.label !== 'Luck'}<span class="text-sm font-normal text-[var(--color-muted-foreground)]">/{tracker.max}</span>{/if}
 					</span>
 					<button
 						type="button"
@@ -305,14 +329,22 @@
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 		<div class="mb-3 flex items-center justify-between gap-3">
 			<h2 class="font-semibold" data-heading>Skills <span class="text-xs font-normal text-[var(--color-muted-foreground)]">— click to roll</span></h2>
-			<input
-				type="text"
-				placeholder="Search..."
-				bind:value={skillSearch}
-				class="rounded-md border border-[var(--color-border)] bg-[var(--color-background)]
-					px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
-					focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
-			/>
+			<div class="flex flex-wrap items-end justify-end gap-2">
+				<SkillSortControls
+					mode={skillSortMode}
+					direction={skillSortDirection}
+					idPrefix="draft-skill-sort"
+					onChange={updateSort}
+				/>
+				<input
+					type="text"
+					placeholder="Search..."
+					bind:value={skillSearch}
+					class="rounded-md border border-[var(--color-border)] bg-[var(--color-background)]
+						px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)]
+						focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)]"
+				/>
+			</div>
 		</div>
 		<div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
 			{#each filteredSkills as skill (skill.skillId)}

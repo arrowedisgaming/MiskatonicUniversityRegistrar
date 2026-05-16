@@ -3,10 +3,13 @@
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
 	import { shouldShowInvestigatorSkillOnSheet } from '$lib/engine/investigator-sheet-skills';
 	import { createSkillAllocation } from '$lib/engine/skills';
+	import { browser } from '$app/environment';
+	import { sortSkillsForDisplay, type SkillSortDirection, type SkillSortMode } from '$lib/engine/skill-sort';
 	import type { CoCCharacterData, CoCSkillAllocation } from '$lib/types/character';
 	import type { CoCSkillDefinition, CoCOccupationDefinition } from '$lib/types/content-pack';
 	import { BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
 	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
+	import SkillSortControls from '$lib/components/skills/SkillSortControls.svelte';
 
 	type Props = {
 		character: CoCCharacterData;
@@ -15,6 +18,22 @@
 	};
 
 	let { character, skills }: Props = $props();
+
+	const SORT_KEY = 'mur.skillSort.read';
+	let skillSortMode = $state<SkillSortMode>('rating');
+	let skillSortDirection = $state<SkillSortDirection>('desc');
+
+	if (browser) {
+		try {
+			const saved = JSON.parse(localStorage.getItem(SORT_KEY) ?? 'null') as
+				| { mode?: SkillSortMode; direction?: SkillSortDirection }
+				| null;
+			if (saved?.mode === 'alphabetical' || saved?.mode === 'rating') skillSortMode = saved.mode;
+			if (saved?.direction === 'asc' || saved?.direction === 'desc') skillSortDirection = saved.direction;
+		} catch {
+			// Keep defaults.
+		}
+	}
 
 	const sortedSkills = $derived.by(() => {
 		const existing = character.skills.filter(shouldShowInvestigatorSkillOnSheet);
@@ -25,8 +44,14 @@
 		const extra: CoCSkillAllocation[] = (character.customSkillDefs ?? [])
 			.filter((d) => !existingIds.has(d.id))
 			.map((d) => createSkillAllocation(d.id, d.baseValue, [], false));
-		return [...existing, ...extra].sort((a, b) => b.total - a.total);
+		return sortSkillsForDisplay([...existing, ...extra], skillSortMode, skillSortDirection, skillRowLabel);
 	});
+
+	function updateSort(next: { mode: SkillSortMode; direction: SkillSortDirection }) {
+		skillSortMode = next.mode;
+		skillSortDirection = next.direction;
+		if (browser) localStorage.setItem(SORT_KEY, JSON.stringify(next));
+	}
 
 	function backstoryLabel(key: string): string {
 		return (
@@ -84,10 +109,18 @@
 <!-- Skills -->
 {#if sortedSkills.length > 0}
 	<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-		<h2 class="mb-3 font-semibold" data-heading>Skills</h2>
-		<div class="grid gap-x-[clamp(0.5rem,2vw,1.5rem)] gap-y-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+		<div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+			<h2 class="font-semibold" data-heading>Skills</h2>
+			<SkillSortControls
+				mode={skillSortMode}
+				direction={skillSortDirection}
+				idPrefix="read-skill-sort"
+				onChange={updateSort}
+			/>
+		</div>
+		<div class="columns-1 gap-x-[clamp(0.5rem,2vw,1.5rem)] sm:columns-2 lg:columns-3 2xl:columns-4">
 			{#each sortedSkills as skill (skillRowLabel(skill))}
-				<div class="flex justify-between text-sm">
+				<div class="flex break-inside-avoid justify-between py-0.5 text-sm">
 					<span>
 						{skillDisplayName(skill.skillId)}
 						{#if skill.customName?.trim()}

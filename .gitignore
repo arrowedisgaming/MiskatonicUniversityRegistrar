@@ -31,6 +31,9 @@ vite.config.ts.timestamp-*
 test-results/
 playwright-report/
 playwright/.cache/
+# Playwright MCP browser snapshots + console captures from interactive sessions
+.playwright-mcp/
+play-mode-walkthrough.png
 
 # Rulebooks (copyrighted)
 rulebooks/

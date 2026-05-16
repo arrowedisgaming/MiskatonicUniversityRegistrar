@@ -51,6 +51,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-16
+
+### Added
+- Play Mode now supports Keeper-style skill development marks, manual mark toggles, development phase rolls, the 2D6 SAN reward on first crossing 90%, SAN checks, SAN loss tools with daily one-fifth threshold tracking, manual insanity flags (Temporary / Indefinite / Bout of Madness as toggle buttons), and a tray-style free dice roller that writes to the Play Mode roll log.
+- Skill lists in Play Mode, the wizard review step, and the read-only sheet now have sort controls (alphabetical / rating × ascending / descending) with per-surface localStorage persistence.
+- Persistent last-roll banner in the In-Play Tracking card with a dismiss button; the banner stays visible until the next roll or until the user clears it.
+
+### Changed
+- Play-mode skill list defaults to rating descending instead of alphabetical ascending.
+- Current Luck is now capped at 99 (rulebook cap) rather than at starting Luck. Starting Luck remains stored as provenance only.
+- Development improvements append a dated `experience` allocation per roll rather than collapsing all dev gains into a single entry, preserving per-roll provenance.
+- Free dice roller is now a tray: click polygonal die icons (d3 – d100) to add them, adjust a shared modifier with ±, then roll the whole tray with one button. Mixed-die rolls produce a single roll-log entry such as `2d6 + 1d20+2 · [3,5] + [14] = 24`.
+- Read-only sheet skill grid now flows column-first (top-to-bottom in each column) so sorted order reads naturally.
+- Era-aware corner radius across new components — Classic keeps the 4px soft radius, Modern renders sharp 0px terminal corners — plus thicker Classic ink stroke + drop shadow on dice silhouettes.
+- Daily SAN threshold warning uses the project's left-bar callout pattern (DESIGN.md §7.3) instead of a flat tinted card.
+- Manual SAN loss control replaced its native number spinner with the same ±/value compact widget the dice modifier uses.
+
+### Fixed
+- Saved skill totals can persist development increases above 100 (schema and server validation no longer reject them).
+- The 2D6 SAN reward for crossing 90% via development is now awarded once per skill — a re-cross after a dip below 90 does not re-trigger the reward.
+- Entering edit mode after Play Mode adjustments no longer overwrites those adjustments with the page-load snapshot. The edit form (and the PDF export) now start from the live in-memory state — current HP/MP/SAN/Luck, developed skill totals, marks, milestones, SAN tracking, play roll history.
+- SAN loss formulas reject flat values above 100 and dice formulas whose maximum roll would exceed 100 (e.g. `0/2D100`, `0/20D6`) at parse time, instead of accepting them locally and silently failing on save.
+- Daily SAN loss tracker (one-fifth indefinite-insanity threshold) now sums only positive losses since the day reset; SAN rewards no longer offset cumulative daily loss.
+- The sheet surfaces persist failures as a transient banner so unsavable state is visible instead of leaving the "Save" pill silently stuck.
+- Insanity-flag toggles no longer briefly flash the "Save" pill; persistence is silent on success and only marks the sheet dirty on failure.
+- Allocation cap raised from 20 to 200 entries per skill so per-roll dev provenance does not start failing saves on long-running investigators.
+- In-Play Tracking card no longer reflows height while a dice roll is in progress — the rolling indicator now reserves the same footprint as the resolved banner.
+- Characteristics card spans full width in Play Mode (with 8-up stat strip on `lg` screens) instead of leaving a half-empty gap where the Derived Attributes block used to sit.
+
+### Migration
+- Character `schemaVersion` bumped from 5 → 6. `migrateCharacterData` adds the new Play Mode fields (`skillDevelopmentMarks`, `skillDevelopmentMilestones`, `playTracking` with `dailySanStart` / `dailySanResetAt` / `insanity`) on load with sensible defaults. Existing investigators upgrade transparently on first read.
+
 ## [0.17.2] - 2026-05-12
 
 ### Added

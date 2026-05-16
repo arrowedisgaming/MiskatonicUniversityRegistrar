@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { browser } from '$app/environment';
 	import type { PageProps } from './$types';
 	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
@@ -25,7 +26,11 @@
 		type CoCCharacterData,
 		type CoCSkillAllocation,
 		type EquipmentItem,
+		type PlayRollHistoryGenericDiceEntry,
 		type PlayRollHistoryEntry,
+		type PlayRollHistoryPercentileEntry,
+		type PlayRollHistorySanLossEntry,
+		type SkillDevelopmentMark,
 		type SkillPointAllocation
 	} from '$lib/types/character';
 	import {
@@ -39,9 +44,30 @@
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
 	import ShareDialog from '$lib/components/investigator/ShareDialog.svelte';
 	import SheetReadOnly from '$lib/components/investigator/SheetReadOnly.svelte';
-	import { rollDie } from '$lib/engine/dice';
+	import DevelopmentPhasePanel from '$lib/components/investigator/DevelopmentPhasePanel.svelte';
+	import SanToolsPanel from '$lib/components/investigator/SanToolsPanel.svelte';
+	import FreeDiceRoller from '$lib/components/dice/FreeDiceRoller.svelte';
+	import SkillSortControls from '$lib/components/skills/SkillSortControls.svelte';
+	import { rollDie, rollSum } from '$lib/engine/dice';
 	import { showDiceRoll } from '$lib/stores/dice-rolls';
-	import { makeDiceRollRequest } from '$lib/dice/protocol';
+	import { makeDiceRollRequest, type DiceGroup } from '$lib/dice/protocol';
+	import { sortSkillsForDisplay, type SkillSortDirection, type SkillSortMode } from '$lib/engine/skill-sort';
+	import { clampLuckCurrent } from '$lib/engine/luck';
+	import { composeLiveCharacter } from '$lib/engine/play-state';
+	import {
+		crossed90ViaDevelopment,
+		isMarkEligible,
+		rollDevelopmentImprovement,
+		skillDevelopmentKey
+	} from '$lib/engine/skill-development';
+	import {
+		applySanLoss,
+		dailyLossSoFar,
+		dailySanThreshold,
+		parseSanLossFormula,
+		resetSanDay,
+		rollSanLoss
+	} from '$lib/engine/sanity';
 	import {
 		evaluateCoC7ePercentileCheck,
 		type CoCPercentileCheckResult
@@ -68,9 +94,48 @@
 	);
 	let currentLuck = $state(untrack(() => data.investigator.character.derivedStats.luck.current));
 	let playMode = $state(false);
+	let playSkills = $state<CoCSkillAllocation[]>(
+		untrack(() => structuredClone(data.investigator.character.skills))
+	);
 
 	let playRollHistory = $state<PlayRollHistoryEntry[]>(
 		untrack(() => [...(data.investigator.character.playRollHistory ?? [])])
+	);
+	let skillDevelopmentMarks = $state<SkillDevelopmentMark[]>(
+		untrack(() => [...(data.investigator.character.skillDevelopmentMarks ?? [])])
+	);
+	let skillDevelopmentMilestones = $state<string[]>(
+		untrack(() => [...(data.investigator.character.skillDevelopmentMilestones ?? [])])
+	);
+	let playTracking = $state(
+		untrack(() =>
+			structuredClone(
+				data.investigator.character.playTracking ?? {
+					dailySanStart: null,
+					dailySanResetAt: null,
+					insanity: { temporary: false, indefinite: false, boutOfMadness: false }
+				}
+			)
+		)
+	);
+
+	// `char` mirrors what the page loader returned; it does not see post-load
+	// updates made in Play Mode. `liveChar` splices the live Play-Mode overlay
+	// on top so the read-only sheet, PDF/JSON export, edit-mode source, and
+	// persistence payload all see the same character shape. Merge logic lives
+	// in `composeLiveCharacter` and is unit-tested in `tests/unit/engine/play-state.test.ts`.
+	const liveChar = $derived(
+		composeLiveCharacter(char, {
+			currentHP,
+			currentMP,
+			currentSanity,
+			currentLuck,
+			playSkills,
+			playRollHistory,
+			skillDevelopmentMarks,
+			skillDevelopmentMilestones,
+			playTracking
+		})
 	);
 	let diceRolling = $state(false);
 	let lastRollBanner = $state<{ title: string; detail: string } | null>(null);
@@ -91,6 +156,20 @@
 	// search). This one filters the live skill list shown in Play Mode so the
 	// player can quickly find a skill to roll.
 	let playSkillSearch = $state('');
+	const PLAY_SORT_KEY = 'mur.skillSort.sheet.play';
+	let playSkillSortMode = $state<SkillSortMode>('rating');
+	let playSkillSortDirection = $state<SkillSortDirection>('desc');
+	if (browser) {
+		try {
+			const saved = JSON.parse(localStorage.getItem(PLAY_SORT_KEY) ?? 'null') as
+				| { mode?: SkillSortMode; direction?: SkillSortDirection }
+				| null;
+			if (saved?.mode === 'alphabetical' || saved?.mode === 'rating') playSkillSortMode = saved.mode;
+			if (saved?.direction === 'asc' || saved?.direction === 'desc') playSkillSortDirection = saved.direction;
+		} catch {
+			// Keep defaults.
+		}
+	}
 	let equipWeaponSearchQuery = $state('');
 	let equipItemDraftName = $state('');
 	let assetDraft = $state<AssetItem>({ name: '', value: 0, type: '', description: '' });
@@ -113,11 +192,18 @@
 
 	function showTransientRollBanner(next: { title: string; detail: string }) {
 		lastRollBanner = next;
-		if (lastRollClearTimer) clearTimeout(lastRollClearTimer);
-		lastRollClearTimer = setTimeout(() => {
-			lastRollBanner = null;
+		if (lastRollClearTimer) {
+			clearTimeout(lastRollClearTimer);
 			lastRollClearTimer = null;
-		}, 3500);
+		}
+	}
+
+	function dismissRollBanner() {
+		lastRollBanner = null;
+		if (lastRollClearTimer) {
+			clearTimeout(lastRollClearTimer);
+			lastRollClearTimer = null;
+		}
 	}
 
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
@@ -144,7 +230,12 @@
 		playMode = false;
 		playSkillSearch = '';
 		editError = null;
-		editChar = ensureBackstoryShape(cloneCharacter(char));
+		// Clone from `liveChar`, not `char`. `char` is the page-load snapshot and
+		// is stale relative to any Play Mode change that has been persisted in
+		// memory (SAN/HP/Luck adjustments, developed skills, marks, milestones,
+		// playTracking, playRollHistory). Cloning the loader snapshot here would
+		// then save back the stale derived stats and discard play-mode work.
+		editChar = ensureBackstoryShape(cloneCharacter(liveChar));
 		editMode = true;
 		resetSkillAddUi();
 		resetEquipAddUi();
@@ -218,7 +309,7 @@
 		const mpCurrent = clampInt(next.derivedStats.mp.current, 0, derived.mp);
 		const sanityCurrent = clampInt(next.derivedStats.sanity.current, 0, derived.maxSanity);
 		const luckMax = clampInt(next.derivedStats.luck.max, 0, 99);
-		const luckCurrent = clampInt(next.derivedStats.luck.current, 0, luckMax);
+		const luckCurrent = clampLuckCurrent(next.derivedStats.luck.current);
 
 		return {
 			...next,
@@ -409,9 +500,9 @@
 			return {
 				...skill,
 				baseValue,
-				total: clampInt(total, 0, 99),
-				half: clampInt(half, 0, 99),
-				fifth: clampInt(fifth, 0, 99)
+				total: clampInt(total, 0, 500),
+				half: clampInt(half, 0, 250),
+				fifth: clampInt(fifth, 0, 100)
 			};
 		});
 		return { ...next, skills: updatedSkills };
@@ -449,18 +540,10 @@
 	}
 
 	function buildCharacterPayload(): CoCCharacterData {
-		return {
-			...char,
-			schemaVersion: CHARACTER_SCHEMA_VERSION,
-			derivedStats: {
-				...char.derivedStats,
-				hp: { ...char.derivedStats.hp, current: currentHP },
-				mp: { ...char.derivedStats.mp, current: currentMP },
-				sanity: { ...char.derivedStats.sanity, current: currentSanity },
-				luck: { ...char.derivedStats.luck, current: currentLuck }
-			},
-			playRollHistory
-		};
+		// `liveChar` already encodes the full merge (loader snapshot + Play Mode
+		// overlay + schema-version stamp). Return it directly to keep both
+		// consumers (display + persistence) from drifting apart.
+		return liveChar;
 	}
 
 	async function persistInvestigator(): Promise<boolean> {
@@ -473,6 +556,20 @@
 			isDirty = false;
 			return true;
 		}
+		// Persistence rejected (most commonly Zod validation — e.g. a SAN-loss
+		// flat value out of schema bounds). Surface it so the user knows their
+		// in-memory state will not survive a reload. `isDirty` stays true so the
+		// "Save" pill reappears in the In-Play header.
+		isDirty = true;
+		let detail = `HTTP ${res.status}`;
+		try {
+			const text = await res.text();
+			const parsed = readableApiError(text, res.status);
+			if (parsed) detail = parsed;
+		} catch {
+			// keep default
+		}
+		showTransientRollBanner({ title: 'Save failed', detail });
 		return false;
 	}
 
@@ -484,7 +581,7 @@
 		if (stat === 'hp') currentHP = Math.max(0, Math.min(char.derivedStats.hp.max, currentHP + delta));
 		if (stat === 'mp') currentMP = Math.max(0, Math.min(char.derivedStats.mp.max, currentMP + delta));
 		if (stat === 'sanity') currentSanity = Math.max(0, Math.min(char.derivedStats.sanity.max, currentSanity + delta));
-		if (stat === 'luck') currentLuck = Math.max(0, Math.min(99, currentLuck + delta));
+		if (stat === 'luck') currentLuck = clampLuckCurrent(currentLuck + delta);
 		isDirty = true;
 	}
 
@@ -495,6 +592,59 @@
 	function skillRowLabel(skill: CoCSkillAllocation): string {
 		const base = skillDisplayName(skill.skillId);
 		return skill.customName?.trim() ? `${base} (${skill.customName})` : base;
+	}
+
+	function updatePlaySkillSort(next: { mode: SkillSortMode; direction: SkillSortDirection }) {
+		playSkillSortMode = next.mode;
+		playSkillSortDirection = next.direction;
+		if (browser) localStorage.setItem(PLAY_SORT_KEY, JSON.stringify(next));
+	}
+
+	function markKeyFor(skillId: string, customName: string | null | undefined): string {
+		return skillDevelopmentKey(skillId, customName);
+	}
+
+	function hasDevelopmentMark(skill: CoCSkillAllocation): boolean {
+		const key = markKeyFor(skill.skillId, skill.customName);
+		return skillDevelopmentMarks.some((mark) => markKeyFor(mark.skillId, mark.customName) === key);
+	}
+
+	function addDevelopmentMark(
+		skill: CoCSkillAllocation,
+		source: 'automatic' | 'manual',
+		sourceRollId: string | null = null
+	) {
+		if (hasDevelopmentMark(skill)) return;
+		skillDevelopmentMarks = [
+			...skillDevelopmentMarks,
+			{
+				id: crypto.randomUUID(),
+				skillId: skill.skillId,
+				customName: skill.customName ?? null,
+				skillDisplayLabel: skillRowLabel(skill),
+				source,
+				sourceRollId,
+				at: new Date().toISOString()
+			}
+		];
+		isDirty = true;
+	}
+
+	async function toggleDevelopmentMark(skill: CoCSkillAllocation, checked: boolean) {
+		const key = markKeyFor(skill.skillId, skill.customName);
+		if (checked) {
+			addDevelopmentMark(skill, 'manual');
+		} else {
+			skillDevelopmentMarks = skillDevelopmentMarks.filter(
+				(mark) => markKeyFor(mark.skillId, mark.customName) !== key
+			);
+			isDirty = true;
+		}
+		await persistInvestigator();
+	}
+
+	function appendPlayHistory(entry: PlayRollHistoryEntry) {
+		playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
 	}
 
 	function outcomeDescription(result: CoCPercentileCheckResult): string {
@@ -534,7 +684,7 @@
 				half,
 				fifth
 			});
-			const entry: PlayRollHistoryEntry = {
+			const entry: PlayRollHistoryPercentileEntry = {
 				id: crypto.randomUUID(),
 				at: new Date().toISOString(),
 				targetKind: 'characteristic',
@@ -547,7 +697,7 @@
 				outcome: checked.outcome,
 				isFumble: checked.isFumble
 			};
-			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			appendPlayHistory(entry);
 			showTransientRollBanner({
 				title: `${labelShort}: ${outcomeDescription(checked)}`,
 				detail: `Rolled ${rawRoll}`
@@ -579,7 +729,7 @@
 				half,
 				fifth
 			});
-			const entry: PlayRollHistoryEntry = {
+			const entry: PlayRollHistoryPercentileEntry = {
 				id: crypto.randomUUID(),
 				at: new Date().toISOString(),
 				targetKind: 'skill',
@@ -593,7 +743,10 @@
 				outcome: checked.outcome,
 				isFumble: checked.isFumble
 			};
-			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			appendPlayHistory(entry);
+			if (isMarkEligible(skill.skillId, skill.customName, entry)) {
+				addDevelopmentMark(skill, 'automatic', entry.id);
+			}
 			showTransientRollBanner({
 				title: `${labelShort}: ${outcomeDescription(checked)}`,
 				detail: `Rolled ${rawRoll}`
@@ -634,7 +787,7 @@
 				total: plan.total,
 				detail: plan.breakdownText
 			};
-			playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+			appendPlayHistory(entry);
 			showTransientRollBanner({
 				title: `${labelPieces}: ${plan.total}`,
 				detail: plan.breakdownText
@@ -643,6 +796,298 @@
 		} finally {
 			diceRolling = false;
 		}
+	}
+
+	function findPlaySkill(mark: Pick<SkillDevelopmentMark, 'skillId' | 'customName'>): CoCSkillAllocation | null {
+		return (
+			buildPlayModeSkills({ ...char, skills: playSkills }, data.skills).find(
+				(skill) => markKeyFor(skill.skillId, skill.customName) === markKeyFor(mark.skillId, mark.customName)
+			) ?? null
+		);
+	}
+
+	function applyDevelopedSkillTotal(skill: CoCSkillAllocation, improvement: number, at: string) {
+		const increment = Math.max(0, Math.trunc(improvement));
+		if (increment === 0) return;
+		const existingIndex = playSkills.findIndex(
+			(row) => markKeyFor(row.skillId, row.customName) === markKeyFor(skill.skillId, skill.customName)
+		);
+		const baseRow = existingIndex >= 0 ? playSkills[existingIndex] : skill;
+		const nextTotal = clampInt(baseRow.total + increment, 0, 500);
+		const nextSkill: CoCSkillAllocation = {
+			...baseRow,
+			allocations: [
+				...baseRow.allocations,
+				{
+					source: 'experience',
+					sourceLabel: `Development ${at.slice(0, 10)}`,
+					points: increment
+				}
+			],
+			total: nextTotal,
+			half: halfValue(nextTotal),
+			fifth: fifthValue(nextTotal)
+		};
+		if (existingIndex >= 0) {
+			playSkills = playSkills.map((row, index) => (index === existingIndex ? nextSkill : row));
+		} else {
+			playSkills = [...playSkills, nextSkill];
+		}
+	}
+
+	async function applySanDelta(
+		amount: number,
+		source: string,
+		options: { formula?: string | null; successAmount?: number | null; failureAmount?: number | null } = {}
+	) {
+		const before = currentSanity;
+		const currentDailyLoss = dailyLossSoFar(playRollHistory, playTracking.dailySanResetAt);
+		const result = amount >= 0
+			? applySanLoss(
+					{
+						currentSanity,
+						maxSanity: char.derivedStats.sanity.max,
+						dailySanStart: playTracking.dailySanStart,
+						dailyLossSoFar: currentDailyLoss
+					},
+					amount
+				)
+			: {
+					sanAfter: Math.max(0, Math.min(char.derivedStats.sanity.max, currentSanity - amount)),
+					triggeredTemporary: false,
+					triggeredIndefinite: false
+				};
+		currentSanity = result.sanAfter;
+		const entry: PlayRollHistorySanLossEntry = {
+			id: crypto.randomUUID(),
+			at: new Date().toISOString(),
+			targetKind: 'sanLoss',
+			source,
+			formula: options.formula ?? null,
+			successAmount: options.successAmount ?? null,
+			failureAmount: options.failureAmount ?? null,
+			applied: Math.trunc(amount),
+			triggeredTemporary: result.triggeredTemporary,
+			triggeredIndefinite: result.triggeredIndefinite,
+			sanBefore: before,
+			sanAfter: result.sanAfter
+		};
+		appendPlayHistory(entry);
+		if (result.triggeredTemporary || result.triggeredIndefinite) {
+			showTransientRollBanner({
+				title: result.triggeredTemporary ? 'Temporary insanity check' : 'Indefinite insanity threshold',
+				detail: result.triggeredTemporary
+					? 'This loss is 5 or more SAN from one source. INT roll helper is available under characteristics.'
+					: 'Daily SAN loss has reached the one-fifth threshold.'
+			});
+		}
+		isDirty = true;
+		await persistInvestigator();
+	}
+
+	async function rollDevelopmentForMark(mark: SkillDevelopmentMark) {
+		if (diceRolling) return;
+		const skill = findPlaySkill(mark);
+		if (!skill) return;
+		const beforeTotal = skill.total;
+		const result = rollDevelopmentImprovement(beforeTotal);
+		const at = new Date().toISOString();
+		const milestoneKey = markKeyFor(skill.skillId, skill.customName);
+		let sanityRewardRolls: number[] | null = null;
+		let sanityRewardTotal: number | null = null;
+
+		diceRolling = true;
+		try {
+			const dice: DiceGroup[] = [{ count: 1, sides: 100, results: [result.eligibilityRoll] }];
+			if (result.improvementRoll !== null) {
+				dice.push({ count: 1, sides: 10 as const, results: [result.improvementRoll] });
+			}
+			await showDiceRoll(
+				makeDiceRollRequest(dice, {
+					label: `${mark.skillDisplayLabel} development`,
+					reveal: 'after-settle'
+				})
+			);
+			if (result.eligibilityPassed) {
+				applyDevelopedSkillTotal(skill, result.improvement, at);
+				const alreadyAwarded = skillDevelopmentMilestones.includes(milestoneKey);
+				if (crossed90ViaDevelopment(beforeTotal, result.afterTotal) && !alreadyAwarded) {
+					const reward = rollSum(2, 6);
+					sanityRewardRolls = reward.rolls;
+					sanityRewardTotal = reward.total;
+					skillDevelopmentMilestones = [...skillDevelopmentMilestones, milestoneKey];
+					await showDiceRoll(
+						makeDiceRollRequest([{ count: 2, sides: 6, results: reward.rolls }], {
+							label: 'SAN reward',
+							reveal: 'after-settle'
+						})
+					);
+				}
+			}
+
+			appendPlayHistory({
+				id: crypto.randomUUID(),
+				at,
+				targetKind: 'skillDevelopment',
+				skillId: mark.skillId,
+				customName: mark.customName,
+				skillDisplayLabel: mark.skillDisplayLabel,
+				beforeTotal,
+				improvementRoll: result.improvementRoll,
+				improvement: result.improvement,
+				afterTotal: result.afterTotal,
+				eligibilityRoll: result.eligibilityRoll,
+				eligibilityPassed: result.eligibilityPassed,
+				sanityRewardRolls,
+				sanityRewardTotal
+			});
+			skillDevelopmentMarks = skillDevelopmentMarks.filter((m) => m.id !== mark.id);
+			if (sanityRewardTotal) {
+				await applySanDelta(-sanityRewardTotal, 'Development reward');
+			} else {
+				isDirty = true;
+				await persistInvestigator();
+			}
+			showTransientRollBanner({
+				title: `${mark.skillDisplayLabel}: ${result.eligibilityPassed ? `+${result.improvement}` : 'no increase'}`,
+				detail: `Development roll ${result.eligibilityRoll}`
+			});
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	let rollingAllMarks = $state(false);
+	async function rollAllDevelopmentMarks() {
+		if (rollingAllMarks || diceRolling) return;
+		rollingAllMarks = true;
+		try {
+			for (const mark of [...skillDevelopmentMarks]) {
+				await rollDevelopmentForMark(mark);
+			}
+		} finally {
+			rollingAllMarks = false;
+		}
+	}
+
+	async function clearDevelopmentMark(mark: SkillDevelopmentMark) {
+		skillDevelopmentMarks = skillDevelopmentMarks.filter((m) => m.id !== mark.id);
+		isDirty = true;
+		await persistInvestigator();
+	}
+
+	async function rollSanCheck() {
+		if (diceRolling) return;
+		const target = currentSanity;
+		const rawRoll = rollDie(100);
+		diceRolling = true;
+		try {
+			await showDiceRoll(
+				makeDiceRollRequest([{ count: 1, sides: 100, results: [rawRoll] }], {
+					label: 'SAN',
+					reveal: 'after-settle'
+				})
+			);
+			const checked = evaluateCoC7ePercentileCheck({
+				rawRoll,
+				target,
+				half: halfValue(target),
+				fifth: fifthValue(target)
+			});
+			appendPlayHistory({
+				id: crypto.randomUUID(),
+				at: new Date().toISOString(),
+				targetKind: 'sanCheck',
+				target,
+				rawRoll,
+				effectiveRoll: checked.effectiveRoll,
+				outcome: checked.outcome,
+				isFumble: checked.isFumble,
+				lossApplied: false
+			});
+			showTransientRollBanner({ title: `SAN: ${outcomeDescription(checked)}`, detail: `Rolled ${rawRoll}` });
+			await persistInvestigator();
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	async function rollSanLossFromFormula(formulaInput: string, outcome: 'success' | 'failure') {
+		if (diceRolling) return;
+		try {
+			const formula = parseSanLossFormula(formulaInput);
+			const selected = outcome === 'success' ? formula.success : formula.failure;
+			const rolled = rollSanLoss(formula, outcome);
+			const amount = rolled.amount;
+			diceRolling = true;
+			if (rolled.rolls.length > 0 && selected.kind === 'dice') {
+				await showDiceRoll(
+					makeDiceRollRequest(
+						[{ count: selected.count, sides: selected.sides as DiceGroup['sides'], results: rolled.rolls }],
+						{ label: 'SAN loss', reveal: 'after-settle' }
+					)
+				);
+			}
+			await applySanDelta(amount, 'SAN loss', {
+				formula: formulaInput,
+				successAmount: outcome === 'success' ? amount : null,
+				failureAmount: outcome === 'failure' ? amount : null
+			});
+			showTransientRollBanner({ title: `SAN loss: ${amount}`, detail: `${formulaInput} (${outcome})` });
+		} catch (e) {
+			showTransientRollBanner({
+				title: 'SAN loss formula rejected',
+				detail: e instanceof Error ? e.message : 'Use success/failure, such as 0/1D6.'
+			});
+		} finally {
+			diceRolling = false;
+		}
+	}
+
+	async function applyManualSanLoss(amount: number) {
+		await applySanDelta(Math.max(0, Math.trunc(amount)), 'Manual SAN loss');
+	}
+
+	async function resetSanTrackingDay() {
+		const reset = resetSanDay(currentSanity);
+		playTracking = { ...playTracking, ...reset };
+		isDirty = true;
+		await persistInvestigator();
+	}
+
+	async function toggleInsanityFlag(
+		key: keyof CoCCharacterData['playTracking']['insanity'],
+		value: boolean
+	) {
+		// Auto-persist without flashing the "Save" affordance: only mark the sheet
+		// dirty if persistence fails. The "Save" pill in the In-Play header is
+		// reserved for changes the user still has to commit.
+		playTracking = {
+			...playTracking,
+			insanity: { ...playTracking.insanity, [key]: value }
+		};
+		const ok = await persistInvestigator();
+		if (!ok) isDirty = true;
+	}
+
+	function genericDiceLabel(entry: PlayRollHistoryGenericDiceEntry): string {
+		const groups = entry.groups && entry.groups.length > 0
+			? entry.groups
+			: [{ count: entry.count, sides: entry.sides }];
+		const dicePart = groups.map((g) => `${g.count}d${g.sides}`).join(' + ');
+		const modPart = entry.modifier
+			? `${entry.modifier > 0 ? '+' : ''}${entry.modifier}`
+			: '';
+		return `${dicePart}${modPart}`;
+	}
+
+	async function recordGenericDice(entry: PlayRollHistoryGenericDiceEntry) {
+		appendPlayHistory(entry);
+		showTransientRollBanner({
+			title: entry.label?.trim() || genericDiceLabel(entry),
+			detail: `Total ${entry.total}`
+		});
+		await persistInvestigator();
 	}
 
 	function formatLogTime(iso: string): string {
@@ -659,6 +1104,10 @@
 			const seg = entry.segmentLabel?.trim();
 			return seg ? `${entry.weaponName} (${seg})` : entry.weaponName;
 		}
+		if (entry.targetKind === 'skillDevelopment') return `${entry.skillDisplayLabel} development`;
+		if (entry.targetKind === 'sanCheck') return 'SAN check';
+		if (entry.targetKind === 'sanLoss') return entry.source;
+		if (entry.targetKind === 'genericDice') return entry.label?.trim() || genericDiceLabel(entry);
 		if (entry.targetKind === 'characteristic' && entry.characteristicId) {
 			return CHARACTERISTIC_LABELS[entry.characteristicId];
 		}
@@ -818,8 +1267,11 @@
 	// Play: alphabetical by display name. Read: highest total first. Edit: stable order so rows don't jump.
 	const sortedSkills = $derived.by(() => {
 		if (playMode) {
-			return buildPlayModeSkills(char, data.skills).sort((a, b) =>
-				skillDisplayName(a.skillId).localeCompare(skillDisplayName(b.skillId))
+			return sortSkillsForDisplay(
+				buildPlayModeSkills({ ...char, skills: playSkills }, data.skills),
+				playSkillSortMode,
+				playSkillSortDirection,
+				skillRowLabel
 			);
 		}
 		const skills = editMode && editChar ? editChar.skills : char.skills;
@@ -847,6 +1299,9 @@
 		if (!Number.isFinite(max) || max <= 0) return 0;
 		return Math.max(0, Math.min(100, (current / max) * 100));
 	}
+
+	const currentDailySanLoss = $derived(dailyLossSoFar(playRollHistory, playTracking.dailySanResetAt));
+	const currentDailySanThreshold = $derived(dailySanThreshold(playTracking.dailySanStart));
 </script>
 
 <svelte:head>
@@ -1037,7 +1492,7 @@
 						Markdown
 					</a>
 					<PDFExportButton
-						character={char}
+						character={liveChar}
 						occupationName={occupation?.name ?? 'Unknown'}
 						skills={data.skills}
 						occupations={data.occupations}
@@ -1092,15 +1547,40 @@
 				{/if}
 			</div>
 
-			<div class="min-h-0">
+			<!--
+				The roll-status slot reserves a fixed min-height so swapping between
+				the persisted banner, the "Rolling…" indicator, and the empty initial
+				state never reflows the In-Play Tracking card. The min-height equals
+				the banner's natural two-line + padding height (~3.5rem).
+			-->
+			<div class="min-h-[3.5rem]">
 				{#if diceRolling}
-					<div class="border-b border-[var(--color-border)] pb-3 text-xs text-[var(--color-muted-foreground)]">
-						Rolling…
+					<div
+						class="flex items-stretch gap-2 rounded-[var(--radius)] border border-dashed border-[var(--color-border)] bg-[var(--color-accent)]/15 text-sm"
+						role="status"
+						aria-live="polite"
+					>
+						<div class="min-w-0 flex-1 px-3 py-2">
+							<p class="font-semibold text-[var(--color-muted-foreground)]" data-heading>Rolling…</p>
+							<p class="text-xs text-[var(--color-muted-foreground)]">Resolving dice.</p>
+						</div>
 					</div>
 				{:else if lastRollBanner}
-					<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-accent)]/30 px-3 py-2 text-sm">
-						<p class="font-semibold">{lastRollBanner.title}</p>
-						<p class="text-xs text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</p>
+					<div class="flex items-stretch gap-2 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-accent)]/30 text-sm">
+						<div class="min-w-0 flex-1 px-3 py-2">
+							<p class="font-semibold" data-heading>{lastRollBanner.title}</p>
+							<p class="text-xs text-[var(--color-muted-foreground)]">{lastRollBanner.detail}</p>
+						</div>
+						<button
+							type="button"
+							onclick={dismissRollBanner}
+							aria-label="Dismiss last roll"
+							class="flex shrink-0 items-center justify-center self-stretch rounded-r-[var(--radius)] border-l border-[var(--color-border)] px-4 text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]/50 hover:text-[var(--color-foreground)]"
+						>
+							<svg viewBox="0 0 16 16" class="h-5 w-5" aria-hidden="true">
+								<path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" fill="none" />
+							</svg>
+						</button>
 					</div>
 				{/if}
 			</div>
@@ -1110,7 +1590,7 @@
 					{ label: 'HP', stat: 'hp' as const, current: currentHP, max: char.derivedStats.hp.max, color: 'var(--color-destructive)' },
 					{ label: 'MP', stat: 'mp' as const, current: currentMP, max: char.derivedStats.mp.max, color: 'var(--color-primary)' },
 					{ label: 'Sanity', stat: 'sanity' as const, current: currentSanity, max: char.derivedStats.sanity.max, color: 'var(--color-warning)' },
-					{ label: 'Luck', stat: 'luck' as const, current: currentLuck, max: char.derivedStats.luck.max, color: 'var(--color-foreground)' }
+					{ label: 'Luck', stat: 'luck' as const, current: currentLuck, max: 99, color: 'var(--color-foreground)' }
 				] as tracker}
 					<div class="text-center">
 						<span class="text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">{tracker.label}</span>
@@ -1127,7 +1607,11 @@
 								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-xl font-bold hover:bg-[var(--color-accent)]"
 							>+</button>
 						</div>
-						<span class="text-xs text-[var(--color-muted-foreground)]">/ {tracker.max}</span>
+						{#if tracker.stat !== 'luck'}
+							<span class="text-xs text-[var(--color-muted-foreground)]">/ {tracker.max}</span>
+						{:else}
+							<span class="text-xs text-[var(--color-muted-foreground)]">current</span>
+						{/if}
 						<!-- Progress bar -->
 						<div class="mx-auto mt-1.5 h-2 w-full max-w-[140px] rounded-full bg-[var(--color-muted)]">
 							<div
@@ -1138,6 +1622,30 @@
 					</div>
 				{/each}
 			</div>
+
+			<div class="grid gap-3 lg:grid-cols-2">
+				<SanToolsPanel
+					currentSanity={currentSanity}
+					dailyLoss={currentDailySanLoss}
+					dailyThreshold={currentDailySanThreshold}
+					{playTracking}
+					disabled={diceRolling}
+					onRollSanCheck={rollSanCheck}
+					onRollLoss={rollSanLossFromFormula}
+					onApplyManualLoss={applyManualSanLoss}
+					onResetDay={resetSanTrackingDay}
+					onToggleInsanity={toggleInsanityFlag}
+				/>
+				<FreeDiceRoller disabled={diceRolling} onRoll={recordGenericDice} />
+			</div>
+
+			<DevelopmentPhasePanel
+				marks={skillDevelopmentMarks}
+				disabled={diceRolling}
+				onRoll={rollDevelopmentForMark}
+				onRollAll={rollAllDevelopmentMarks}
+				onClear={clearDevelopmentMark}
+			/>
 
 			<div class="border-t border-[var(--color-border)] pt-3">
 				<h3 class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">Roll log</h3>
@@ -1160,7 +1668,7 @@
 										<span class="font-bold text-[var(--color-foreground)]">{entry.total}</span>
 									</div>
 									<div class="mt-0.5 text-[var(--color-muted-foreground)]">{entry.detail}</div>
-								{:else}
+								{:else if entry.targetKind === 'characteristic' || entry.targetKind === 'skill'}
 									<div class="mt-0.5 flex flex-wrap gap-x-2 text-[var(--color-muted-foreground)]">
 										<span>Target {entry.target}% (½ {entry.half} / ⅕ {entry.fifth})</span>
 									</div>
@@ -1175,6 +1683,36 @@
 												outcome: entry.outcome,
 												isFumble: entry.isFumble
 											})}
+										</span>
+									</div>
+								{:else if entry.targetKind === 'skillDevelopment'}
+									<div class="mt-0.5 text-[var(--color-muted-foreground)]">
+										Rolled {entry.eligibilityRoll}; {entry.eligibilityPassed ? `improved ${entry.beforeTotal}% → ${entry.afterTotal}%` : 'no improvement'}
+										{#if entry.sanityRewardTotal}
+											<span> · SAN +{entry.sanityRewardTotal}</span>
+										{/if}
+									</div>
+								{:else if entry.targetKind === 'sanCheck'}
+									<div class="mt-0.5 text-[var(--color-muted-foreground)]">
+										Rolled {entry.rawRoll} vs {entry.target}: {outcomeDescription({
+											effectiveRoll: entry.effectiveRoll,
+											outcome: entry.outcome,
+											isFumble: entry.isFumble
+										})}
+									</div>
+								{:else if entry.targetKind === 'sanLoss'}
+									<div class="mt-0.5 text-[var(--color-muted-foreground)]">
+										{entry.applied >= 0 ? `Loss ${entry.applied}` : `Reward ${Math.abs(entry.applied)}`}
+										<span> · SAN {entry.sanBefore} → {entry.sanAfter}</span>
+									</div>
+								{:else if entry.targetKind === 'genericDice'}
+									<div class="mt-0.5 text-[var(--color-muted-foreground)]">
+										{genericDiceLabel(entry)}
+										<span>
+											· {entry.groups && entry.groups.length > 0
+												? entry.groups.map((g) => `[${g.rolls.join(', ')}]`).join(' + ')
+												: `[${entry.rolls.join(', ')}]`}
+											= {entry.total}
 										</span>
 									</div>
 								{/if}
@@ -1192,15 +1730,18 @@
 		from a single source of truth. Edit/play modes keep their inline branches.
 	-->
 	{#if !editMode && !playMode}
-		<SheetReadOnly character={char} skills={data.skills} occupations={data.occupations} />
+		<SheetReadOnly character={liveChar} skills={data.skills} occupations={data.occupations} />
 	{/if}
 
 	<!-- Characteristics & Derived (edit/play modes) -->
 	{#if (editMode && editChar) || playMode}
-		<div class="grid gap-6 lg:grid-cols-2">
+		<div class="grid gap-6" class:lg:grid-cols-2={!playMode}>
 			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
 				<h2 class="mb-3 font-semibold" data-heading>Characteristics</h2>
-				<div class="grid grid-cols-4 gap-2 text-center text-sm">
+				<div
+					class="grid grid-cols-4 gap-2 text-center text-sm"
+					class:lg:grid-cols-8={playMode}
+				>
 					{#each ALL_CHARACTERISTICS as statId}
 						{@const v = (editMode && editChar ? editChar.characteristics.values[statId] : char.characteristics.values[statId])}
 						{#if editMode && editChar}
@@ -1257,25 +1798,27 @@
 				</div>
 			</div>
 
-			<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-				<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
-				<div class="grid grid-cols-2 gap-2 text-sm">
-					{#each [
-						['Hit Points', `${char.derivedStats.hp.current}/${char.derivedStats.hp.max}`],
-						['Magic Points', `${char.derivedStats.mp.current}/${char.derivedStats.mp.max}`],
-						['Sanity', `${char.derivedStats.sanity.current}/${char.derivedStats.sanity.max}`],
-						['Luck', `${char.derivedStats.luck.current}`],
-						['Damage Bonus', char.derivedStats.damageBonus],
-						['Build', String(char.derivedStats.build)],
-						['Move Rate', String(char.derivedStats.moveRate)]
-					] as [label, value]}
-						<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
-							<span class="text-[var(--color-muted-foreground)]">{label}</span>
-							<span class="font-bold">{value}</span>
-						</div>
-					{/each}
+			{#if editMode}
+				<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+					<h2 class="mb-3 font-semibold" data-heading>Derived Attributes</h2>
+					<div class="grid grid-cols-2 gap-2 text-sm">
+						{#each [
+							['Hit Points', `${char.derivedStats.hp.current}/${char.derivedStats.hp.max}`],
+							['Magic Points', `${char.derivedStats.mp.current}/${char.derivedStats.mp.max}`],
+							['Sanity', `${char.derivedStats.sanity.current}/${char.derivedStats.sanity.max}`],
+							['Luck', `${char.derivedStats.luck.current}`],
+							['Damage Bonus', char.derivedStats.damageBonus],
+							['Build', String(char.derivedStats.build)],
+							['Move Rate', String(char.derivedStats.moveRate)]
+						] as [label, value]}
+							<div class="flex justify-between border-b border-[var(--color-border)]/30 pb-1">
+								<span class="text-[var(--color-muted-foreground)]">{label}</span>
+								<span class="font-bold">{value}</span>
+							</div>
+						{/each}
+					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	{/if}
 
@@ -1290,13 +1833,21 @@
 					{/if}
 				</h2>
 				{#if playMode}
-					<input
-						type="text"
-						placeholder="Search…"
-						bind:value={playSkillSearch}
-						aria-label="Filter skills"
-						class="w-44 rounded-md border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] sm:w-56"
-					/>
+					<div class="flex flex-wrap items-end justify-end gap-2">
+						<SkillSortControls
+							mode={playSkillSortMode}
+							direction={playSkillSortDirection}
+							idPrefix="play-skill-sort"
+							onChange={updatePlaySkillSort}
+						/>
+						<input
+							type="text"
+							placeholder="Search…"
+							bind:value={playSkillSearch}
+							aria-label="Filter skills"
+							class="w-44 rounded-md border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-1 text-sm placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--color-ring)] sm:w-56"
+						/>
+					</div>
 				{/if}
 			</div>
 			{#if editMode && editChar}
@@ -1457,26 +2008,37 @@
 							</div>
 						</div>
 					{:else if playMode}
-						<button
-							type="button"
-							class="flex w-full justify-between rounded-md border border-transparent px-1 py-0.5 text-left text-sm hover:border-[var(--color-border)] hover:bg-[var(--color-accent)] disabled:opacity-50"
-							disabled={diceRolling}
-							onclick={() => rollSkill(skill)}
-							aria-label="Roll {skillRowLabel(skill)}"
-						>
-							<span>
-								{skillDisplayName(skill.skillId)}
-								{#if skill.customName?.trim()}
-									<span class="text-[var(--color-muted-foreground)]"> ({skill.customName})</span>
-								{/if}
-								{#if skill.isOccupation}
-									<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
-								{/if}
-							</span>
-							<span class="shrink-0 font-bold tabular-nums">{skill.total}%
-								<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
-							</span>
-						</button>
+						<div class="flex items-center gap-2 rounded-md border border-transparent px-1 py-0.5 hover:border-[var(--color-border)] hover:bg-[var(--color-accent)]">
+							<label class="flex items-center" title="Mark for development">
+								<input
+									type="checkbox"
+									checked={hasDevelopmentMark(skill)}
+									onchange={(e) =>
+										toggleDevelopmentMark(skill, (e.currentTarget as HTMLInputElement).checked)}
+									aria-label="Mark {skillRowLabel(skill)} for development"
+								/>
+							</label>
+							<button
+								type="button"
+								class="flex min-w-0 grow justify-between text-left text-sm disabled:opacity-50"
+								disabled={diceRolling}
+								onclick={() => rollSkill(skill)}
+								aria-label="Roll {skillRowLabel(skill)}"
+							>
+								<span class="min-w-0">
+									{skillDisplayName(skill.skillId)}
+									{#if skill.customName?.trim()}
+										<span class="text-[var(--color-muted-foreground)]"> ({skill.customName})</span>
+									{/if}
+									{#if skill.isOccupation}
+										<span class="text-[10px] text-[var(--color-primary)]">&#x2022;</span>
+									{/if}
+								</span>
+								<span class="shrink-0 font-bold tabular-nums">{skill.total}%
+									<span class="text-xs font-normal text-[var(--color-muted-foreground)]">({skill.half}/{skill.fifth})</span>
+								</span>
+							</button>
+						</div>
 					{/if}
 				{/each}
 			</div>

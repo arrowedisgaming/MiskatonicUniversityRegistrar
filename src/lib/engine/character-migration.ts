@@ -54,6 +54,27 @@ export function migrateCharacterData(raw: unknown): CoCCharacterData {
 	}
 
 	character.playRollHistory ??= [];
+	character.skillDevelopmentMarks ??= [];
+	character.skillDevelopmentMilestones ??= [];
+	character.playTracking ??= {
+		dailySanStart: null,
+		dailySanResetAt: null,
+		insanity: {
+			temporary: false,
+			indefinite: false,
+			boutOfMadness: false
+		}
+	};
+	character.playTracking.dailySanStart ??= null;
+	character.playTracking.dailySanResetAt ??= null;
+	character.playTracking.insanity ??= {
+		temporary: false,
+		indefinite: false,
+		boutOfMadness: false
+	};
+	character.playTracking.insanity.temporary ??= false;
+	character.playTracking.insanity.indefinite ??= false;
+	character.playTracking.insanity.boutOfMadness ??= false;
 	character.customSkillDefs ??= [];
 
 	character.schemaVersion = CHARACTER_SCHEMA_VERSION;

@@ -6,7 +6,7 @@
 import { z } from 'zod';
 
 const skillPointAllocation = z.object({
-	points: z.number().int().min(0).max(99),
+	points: z.number().int().min(0).max(500),
 	source: z.enum(['occupation', 'personal-interest', 'experience']),
 	sourceLabel: z.string().max(200)
 });
@@ -15,11 +15,16 @@ const skillAllocation = z.object({
 	skillId: z.string().min(1).max(100),
 	customName: z.string().max(200).nullable(),
 	baseValue: z.number().int().min(0).max(99),
-	allocations: z.array(skillPointAllocation).max(20),
+	// Cap is intentionally generous: per-roll Play Mode development appends a
+	// new `experience` entry per successful dev roll (see `applyDevelopedSkillTotal`
+	// in `src/routes/sheet/[id]/+page.svelte`). A long-running investigator may
+	// develop the same skill many times; 200 entries is roughly an entire
+	// campaign of weekly sessions per skill.
+	allocations: z.array(skillPointAllocation).max(200),
 	isOccupation: z.boolean(),
-	total: z.number().int().min(0).max(99),
-	half: z.number().int().min(0),
-	fifth: z.number().int().min(0)
+	total: z.number().int().min(0).max(500),
+	half: z.number().int().min(0).max(250),
+	fifth: z.number().int().min(0).max(100)
 });
 
 const characteristicId = z.enum(['str', 'con', 'dex', 'int', 'pow', 'app', 'siz', 'edu']);
@@ -95,13 +100,15 @@ const playRollHistoryPercentile = z.object({
 	characteristicId: characteristicId.optional(),
 	skillId: z.string().max(100).optional(),
 	skillDisplayLabel: z.string().max(200).nullable().optional(),
-	target: z.number().int().min(0).max(99),
-	half: z.number().int().min(0).max(99),
-	fifth: z.number().int().min(0).max(99),
+	target: z.number().int().min(0).max(500),
+	half: z.number().int().min(0).max(250),
+	fifth: z.number().int().min(0).max(100),
 	rawRoll: z.number().int().min(1).max(100),
 	effectiveRoll: z.number().int().min(1).max(100),
 	outcome: z.enum(['critical', 'extreme', 'hard', 'regular', 'failure']),
-	isFumble: z.boolean()
+	isFumble: z.boolean(),
+	bonusDieCount: z.number().int().min(0).max(2).optional(),
+	penaltyDieCount: z.number().int().min(0).max(2).optional()
 });
 
 const playRollHistoryWeaponDamage = z.object({
@@ -115,7 +122,112 @@ const playRollHistoryWeaponDamage = z.object({
 	detail: z.string().max(2000)
 });
 
-const playRollHistoryEntry = z.union([playRollHistoryPercentile, playRollHistoryWeaponDamage]);
+const playRollHistorySkillDevelopment = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.literal('skillDevelopment'),
+	skillId: z.string().min(1).max(100),
+	customName: z.string().max(200).nullable(),
+	skillDisplayLabel: z.string().max(200),
+	beforeTotal: z.number().int().min(0).max(500),
+	improvementRoll: z.number().int().min(1).max(10).nullable(),
+	improvement: z.number().int().min(0).max(10),
+	afterTotal: z.number().int().min(0).max(500),
+	eligibilityRoll: z.number().int().min(1).max(100),
+	eligibilityPassed: z.boolean(),
+	sanityRewardRolls: z.array(z.number().int().min(1).max(6)).max(2).nullable().optional(),
+	sanityRewardTotal: z.number().int().min(0).max(12).nullable().optional()
+});
+
+const playRollHistorySanCheck = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.literal('sanCheck'),
+	target: z.number().int().min(0).max(99),
+	rawRoll: z.number().int().min(1).max(100),
+	effectiveRoll: z.number().int().min(1).max(100),
+	outcome: z.enum(['critical', 'extreme', 'hard', 'regular', 'failure']),
+	isFumble: z.boolean(),
+	lossApplied: z.boolean()
+});
+
+const playRollHistorySanLoss = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.literal('sanLoss'),
+	source: z.string().max(200),
+	formula: z.string().max(80).nullable(),
+	successAmount: z.number().int().min(0).max(100).nullable(),
+	failureAmount: z.number().int().min(0).max(100).nullable(),
+	applied: z.number().int().min(-12).max(100),
+	triggeredTemporary: z.boolean(),
+	triggeredIndefinite: z.boolean(),
+	sanBefore: z.number().int().min(0).max(99),
+	sanAfter: z.number().int().min(0).max(99)
+});
+
+const diceSides = z.union([
+	z.literal(3),
+	z.literal(4),
+	z.literal(6),
+	z.literal(8),
+	z.literal(10),
+	z.literal(12),
+	z.literal(20),
+	z.literal(100)
+]);
+
+const playRollHistoryGenericDice = z.object({
+	id: z.string().min(1).max(80),
+	at: z.string().max(40),
+	targetKind: z.literal('genericDice'),
+	sides: diceSides,
+	count: z.number().int().min(1).max(20),
+	modifier: z.number().int().min(-999).max(999),
+	rolls: z.array(z.number().int().min(1).max(100)).min(1).max(20),
+	total: z.number().int().min(-999).max(3000),
+	label: z.string().max(200).nullable().optional(),
+	groups: z
+		.array(
+			z.object({
+				count: z.number().int().min(1).max(20),
+				sides: diceSides,
+				rolls: z.array(z.number().int().min(1).max(100)).min(1).max(20)
+			})
+		)
+		.min(1)
+		.max(8)
+		.optional()
+});
+
+const playRollHistoryEntry = z.union([
+	playRollHistoryPercentile,
+	playRollHistoryWeaponDamage,
+	playRollHistorySkillDevelopment,
+	playRollHistorySanCheck,
+	playRollHistorySanLoss,
+	playRollHistoryGenericDice
+]);
+
+const skillDevelopmentMark = z.object({
+	id: z.string().min(1).max(80),
+	skillId: z.string().min(1).max(100),
+	customName: z.string().max(200).nullable(),
+	skillDisplayLabel: z.string().max(200),
+	source: z.enum(['automatic', 'manual']),
+	sourceRollId: z.string().max(80).nullable().optional(),
+	at: z.string().max(40)
+});
+
+const playTrackingData = z.object({
+	dailySanStart: z.number().int().min(0).max(99).nullable(),
+	dailySanResetAt: z.string().max(40).nullable(),
+	insanity: z.object({
+		temporary: z.boolean(),
+		indefinite: z.boolean(),
+		boutOfMadness: z.boolean()
+	})
+});
 const assetItem = z.object({
 	name: z.string().min(1).max(200),
 	value: z.number().min(0).max(1_000_000_000),
@@ -190,6 +302,13 @@ export const cocCharacterDataSchema = z.object({
 		spendingLevel: z.number().min(0).max(1_000_000)
 	}),
 	playRollHistory: z.array(playRollHistoryEntry).max(PLAY_ROLL_HISTORY_MAX).default([]),
+	skillDevelopmentMarks: z.array(skillDevelopmentMark).max(300).default([]),
+	skillDevelopmentMilestones: z.array(z.string().max(300)).max(1000).default([]),
+	playTracking: playTrackingData.default({
+		dailySanStart: null,
+		dailySanResetAt: null,
+		insanity: { temporary: false, indefinite: false, boutOfMadness: false }
+	}),
 	isDraft: z.boolean(),
 	wizardStep: z.number().int().min(0).max(20)
 });

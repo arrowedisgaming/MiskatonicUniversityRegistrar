@@ -40,6 +40,13 @@ describe('migrateCharacterData', () => {
 		expect(migrated.equipment.livingStandard).toBe('Average');
 		expect(migrated.equipment.assets).toBe(2050);
 		expect(migrated.equipment.assetsList).toEqual([]);
+		expect(migrated.skillDevelopmentMarks).toEqual([]);
+		expect(migrated.skillDevelopmentMilestones).toEqual([]);
+		expect(migrated.playTracking).toEqual({
+			dailySanStart: null,
+			dailySanResetAt: null,
+			insanity: { temporary: false, indefinite: false, boutOfMadness: false }
+		});
 	});
 
 	it.each(['arrange-rolls', 'low-roll-modifier', 'human-potential'])(
@@ -96,5 +103,43 @@ describe('migrateCharacterData', () => {
 			});
 			expect(migrated.characteristics.method).toBe(method);
 		}
+	});
+
+	it('fills v6 play tracking fields without overwriting existing data', () => {
+		const migrated = migrateCharacterData({
+			schemaVersion: 5,
+			backstory: { ideologyBeliefs: '' },
+			characteristics: {
+				method: 'roll',
+				values: {},
+				baseValues: {},
+				rolls: null,
+				ageAdjustments: []
+			},
+			equipment: { items: [], weapons: [], cash: 0, assets: 0, spendingLevel: 0 },
+			skillDevelopmentMarks: [
+				{
+					id: 'mark-1',
+					skillId: 'spot-hidden',
+					customName: null,
+					skillDisplayLabel: 'Spot Hidden',
+					source: 'manual',
+					at: '2026-05-15T00:00:00.000Z'
+				}
+			],
+			playTracking: {
+				dailySanStart: 40,
+				dailySanResetAt: '2026-05-15T00:00:00.000Z',
+				insanity: { temporary: true }
+			}
+		});
+
+		expect(migrated.skillDevelopmentMarks).toHaveLength(1);
+		expect(migrated.playTracking.dailySanStart).toBe(40);
+		expect(migrated.playTracking.insanity).toEqual({
+			temporary: true,
+			indefinite: false,
+			boutOfMadness: false
+		});
 	});
 });

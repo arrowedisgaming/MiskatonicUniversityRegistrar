@@ -108,7 +108,7 @@ export function validateFinalInvestigator(
 		totalPersonalPoints,
 		creditRatingRange,
 		eligible,
-		{ maxSkillTotal: phase === 'creation' ? 90 : 99 }
+		{ maxSkillTotal: phase === 'creation' ? 90 : 500 }
 	);
 
 	if (!skillCheck.valid) errors.push(...skillCheck.errors);

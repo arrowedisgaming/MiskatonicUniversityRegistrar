@@ -3,7 +3,27 @@ import type { StoredCharacteristicMethodId } from './content-pack';
 import type { CoCPercentileOutcome } from '$lib/engine/coc-percentile-check';
 
 /** Schema version for character data migration */
-export const CHARACTER_SCHEMA_VERSION = 5;
+export const CHARACTER_SCHEMA_VERSION = 6;
+
+export interface SkillDevelopmentMark {
+	id: string;
+	skillId: string;
+	customName: string | null;
+	skillDisplayLabel: string;
+	source: 'automatic' | 'manual';
+	sourceRollId?: string | null;
+	at: string;
+}
+
+export interface PlayTrackingData {
+	dailySanStart: number | null;
+	dailySanResetAt: string | null;
+	insanity: {
+		temporary: boolean;
+		indefinite: boolean;
+		boutOfMadness: boolean;
+	};
+}
 
 /** Play-mode percentile d100 checks (Characteristics & skills). */
 export interface PlayRollHistoryPercentileEntry {
@@ -20,6 +40,8 @@ export interface PlayRollHistoryPercentileEntry {
 	effectiveRoll: number;
 	outcome: CoCPercentileOutcome;
 	isFumble: boolean;
+	bonusDieCount?: number;
+	penaltyDieCount?: number;
 }
 
 /** Play-mode weapon damage roll (summed dice + optional flat). */
@@ -34,7 +56,78 @@ export interface PlayRollHistoryWeaponDamageEntry {
 	detail: string;
 }
 
-export type PlayRollHistoryEntry = PlayRollHistoryPercentileEntry | PlayRollHistoryWeaponDamageEntry;
+export interface PlayRollHistorySkillDevelopmentEntry {
+	id: string;
+	at: string;
+	targetKind: 'skillDevelopment';
+	skillId: string;
+	customName: string | null;
+	skillDisplayLabel: string;
+	beforeTotal: number;
+	improvementRoll: number | null;
+	improvement: number;
+	afterTotal: number;
+	eligibilityRoll: number;
+	eligibilityPassed: boolean;
+	sanityRewardRolls?: number[] | null;
+	sanityRewardTotal?: number | null;
+}
+
+export interface PlayRollHistorySanCheckEntry {
+	id: string;
+	at: string;
+	targetKind: 'sanCheck';
+	target: number;
+	rawRoll: number;
+	effectiveRoll: number;
+	outcome: CoCPercentileOutcome;
+	isFumble: boolean;
+	lossApplied: boolean;
+}
+
+export interface PlayRollHistorySanLossEntry {
+	id: string;
+	at: string;
+	targetKind: 'sanLoss';
+	source: string;
+	formula: string | null;
+	successAmount: number | null;
+	failureAmount: number | null;
+	applied: number;
+	triggeredTemporary: boolean;
+	triggeredIndefinite: boolean;
+	sanBefore: number;
+	sanAfter: number;
+}
+
+export type DiceSides = 3 | 4 | 6 | 8 | 10 | 12 | 20 | 100;
+
+export interface PlayRollHistoryGenericDiceEntry {
+	id: string;
+	at: string;
+	targetKind: 'genericDice';
+	sides: DiceSides;
+	count: number;
+	modifier: number;
+	rolls: number[];
+	total: number;
+	label?: string | null;
+	/**
+	 * Authoritative breakdown when the entry represents a mixed-die tray roll.
+	 * Each group contributes its own rolls; the entry-level `total` already
+	 * includes them plus `modifier`. The legacy `sides`/`count`/`rolls` fields
+	 * are populated from the first group for backward-compatible consumers.
+	 */
+	groups?: Array<{ count: number; sides: DiceSides; rolls: number[] }>;
+}
+
+export type PlayRollHistoryEntry =
+	| PlayRollHistoryPercentileEntry
+	| PlayRollHistoryWeaponDamageEntry
+	| PlayRollHistorySkillDevelopmentEntry
+	| PlayRollHistorySanCheckEntry
+	| PlayRollHistorySanLossEntry
+	| PlayRollHistoryGenericDiceEntry;
 
 export type { CoCPercentileOutcome };
 
@@ -79,6 +172,19 @@ export interface CoCCharacterData {
 
 	/** Play mode d100 checks — newest entries appended by the client */
 	playRollHistory: PlayRollHistoryEntry[];
+
+	/** Skills checked for development at the next development phase. */
+	skillDevelopmentMarks: SkillDevelopmentMark[];
+
+	/**
+	 * Skill keys (skillId::customName) that have already triggered the 2d6
+	 * SAN reward for crossing 90% via development. Used to enforce the
+	 * one-time-per-skill rule even if the skill later dips below 90.
+	 */
+	skillDevelopmentMilestones: string[];
+
+	/** Play-only SAN day and insanity tracking. */
+	playTracking: PlayTrackingData;
 
 	// Wizard state
 	isDraft: boolean;
@@ -292,6 +398,17 @@ export function createBlankCharacter(): CoCCharacterData {
 			spendingLevel: 0
 		},
 		playRollHistory: [],
+		skillDevelopmentMarks: [],
+		skillDevelopmentMilestones: [],
+		playTracking: {
+			dailySanStart: null,
+			dailySanResetAt: null,
+			insanity: {
+				temporary: false,
+				indefinite: false,
+				boutOfMadness: false
+			}
+		},
 		isDraft: true,
 		wizardStep: 0
 	};
