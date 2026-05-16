@@ -207,8 +207,13 @@
 	}
 
 	function cloneCharacter(source: CoCCharacterData): CoCCharacterData {
-		// CoCCharacterData is JSON-serializable; structuredClone keeps it fast/safe.
-		return structuredClone(source);
+		// `liveChar` splices Svelte 5 `$state` cells (playSkills, playRollHistory,
+		// etc.) into the returned object. Cloning that directly with
+		// `structuredClone` fails in the browser (Proxy-wrapped reactive arrays
+		// aren't cloneable cross-platform — observed empirically after v0.18.0
+		// shipped). `$state.snapshot` walks the proxy tree and returns a plain,
+		// cloneable value, which is what we want to seed the edit buffer with.
+		return $state.snapshot(source) as CoCCharacterData;
 	}
 
 	function ensureBackstoryShape(next: CoCCharacterData): CoCCharacterData {

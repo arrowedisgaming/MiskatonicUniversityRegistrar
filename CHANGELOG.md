@@ -51,6 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-05-16
+
+### Fixed
+- Restored the sheet **Edit** button. After v0.18.0's Play Mode work, clicking Edit silently no-op'd because `cloneCharacter` ran `structuredClone` over the live overlay — which embeds Svelte 5 `$state` cells whose Proxy-wrapped arrays aren't cloneable in the browser. Seeding the edit buffer now goes through `$state.snapshot`, which unwraps the proxies into plain, cloneable JSON.
+
 ## [0.18.0] - 2026-05-16
 
 ### Added
