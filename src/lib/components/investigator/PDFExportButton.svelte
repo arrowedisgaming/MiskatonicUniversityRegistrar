@@ -28,6 +28,8 @@
 			a.download = `${(character.name || 'investigator').replace(/\s+/g, '-')}.pdf`;
 			a.click();
 			URL.revokeObjectURL(url);
+			// Best-effort analytics ping. Never block the export on this.
+			fetch('/api/events/pdf', { method: 'POST' }).catch(() => {});
 		} catch (e) {
 			pdfError = e instanceof Error ? e.message : 'PDF generation failed';
 			console.error('PDF export error:', e);

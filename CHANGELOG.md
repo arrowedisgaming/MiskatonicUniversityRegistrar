@@ -51,6 +51,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-21
+
+### Added
+- **Admin dashboard at `/admin`.** Single-operator read-only view of all users and investigators with usage analytics: total counts, 30-day login/creation/PDF sparklines, Google vs Discord provider donut, and per-user pagination + search. Admin can also open any user's investigator sheet for support (writes still 404 — read-only). The sheet view hides JSON / Markdown / PDF / Edit / Play Mode / Share buttons when an admin is viewing another user's character, leaving only a Back link to `/admin/investigators`.
+- **Lightweight analytics events.** New `analytics_events` table backs the dashboard. Login events are emitted from the Auth.js jwt callback (where the local users.id is known) with provider info; investigator creation pings on the POST handler; PDF exports fire-and-forget from `PDFExportButton` to a new `/api/events/pdf` endpoint that always returns 204. Analytics writes are best-effort and never block the user flow.
+
+### Security
+- Admin access is gated by an `ADMIN_EMAILS` env allowlist that is re-read on every request, so rotating the var kicks live sessions out immediately. A 15-minute step-up window enforces that the admin's JWT was issued recently — stale or unreadable tokens fail closed and are bounced to `/login?stepUp=1`. The cross-user sheet override on `/sheet/[id]` is gated by the same step-up check, so it can't bypass the freshness requirement that protects `/admin` itself. Every admin-elevated request appends a row to a new `admin_audit_log` table with the actor's email snapshotted (forensic history survives later user deletion via `ON DELETE SET NULL`). `X-Robots-Tag: noindex` + `Cache-Control: no-store` are applied at the hooks layer for all `/admin/*` responses so the headers also cover 403s and redirects. Stricter rate-limit buckets cap `/api/admin/*` at 30/min and `/api/events/pdf` at 5/min. Admin search inputs escape SQLite `LIKE` wildcards (`%`, `_`, `\`) before querying.
+
+### Configuration
+- New env vars: `ADMIN_EMAILS` (comma-separated allowlist; empty disables /admin entirely) and `ADMIN_STEP_UP_WINDOW_SECONDS` (default 900). See `.env.example`. In production set `ADMIN_EMAILS` as a Cloudflare Pages secret — never bake it into `wrangler.toml`.
+
+### Migration
+- Drizzle migration `0002_acoustic_anthem.sql` creates the `analytics_events` and `admin_audit_log` tables. Both use `ON DELETE SET NULL` on the user FK so historical events / audit rows survive account deletion. CI applies it to the remote `miskatonic-db` automatically on deploy.
+
 ## [0.18.1] - 2026-05-16
 
 ### Fixed

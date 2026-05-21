@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
 import { investigators } from '$lib/server/db/schema';
 import { ensureUser } from '$lib/server/auth';
+import { recordEvent } from '$lib/server/analytics';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { createInvestigatorSchema } from '$lib/schemas/character.schema';
@@ -71,6 +72,12 @@ export const POST: RequestHandler = async (event) => {
 		isArchived: false,
 		createdAt: now,
 		updatedAt: now
+	});
+
+	await recordEvent(db, {
+		userId,
+		eventType: 'investigator_created',
+		metadata: { era: char.era, mode: char.mode, isDraft: char.isDraft }
 	});
 
 	return json({ id }, { status: 201 });

@@ -68,3 +68,46 @@ export const investigators = sqliteTable(
 		index('investigators_share_id_idx').on(table.shareId)
 	]
 );
+
+// ─── Analytics & audit ───────────────────────────────────────────
+
+export const analyticsEvents = sqliteTable(
+	'analytics_events',
+	{
+		id: text('id').primaryKey(),
+		// Nullable + set-null on delete so analytics survive user deletion as anonymous events.
+		userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+		/** 'login' | 'investigator_created' | 'pdf_generated' */
+		eventType: text('event_type').notNull(),
+		/** OAuth provider for 'login' events; null otherwise. */
+		provider: text('provider'),
+		/** Optional JSON-encoded metadata. */
+		metadata: text('metadata'),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [
+		index('analytics_events_type_created_idx').on(table.eventType, table.createdAt),
+		index('analytics_events_user_idx').on(table.userId)
+	]
+);
+
+export const adminAuditLog = sqliteTable(
+	'admin_audit_log',
+	{
+		id: text('id').primaryKey(),
+		// SET NULL + nullable so forensic history survives user deletion (account
+		// merges, manual cleanup, future GDPR scoping). The actorEmail snapshot
+		// keeps the row readable after the FK breaks.
+		userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+		actorEmail: text('actor_email'),
+		path: text('path').notNull(),
+		method: text('method').notNull(),
+		ip: text('ip'),
+		userAgent: text('user_agent'),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [
+		index('admin_audit_user_idx').on(table.userId),
+		index('admin_audit_created_idx').on(table.createdAt)
+	]
+);

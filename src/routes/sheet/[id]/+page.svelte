@@ -1314,6 +1314,18 @@
 </svelte:head>
 
 <div class="mx-auto max-w-5xl px-4 py-6 space-y-6">
+	{#if data.adminView}
+		<div
+			class="rounded-md border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-3 py-2 text-xs text-[var(--color-destructive)]"
+			role="status"
+		>
+			<span class="font-semibold uppercase tracking-wider">Admin view</span>
+			<span class="ml-2 opacity-80">
+				You are viewing another user's investigator. Edits cannot be saved (the API still scopes
+				writes to the owner). This access has been logged.
+			</span>
+		</div>
+	{/if}
 	{#if editMode}
 		<div class="sticky top-0 z-30 -mx-4 border-b border-[var(--color-border)] bg-[var(--color-background)]/92 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-background)]/80">
 			<div class="flex flex-wrap items-center justify-between gap-3">
@@ -1480,54 +1492,56 @@
 		</div>
 		<div class="ml-auto flex flex-wrap gap-2">
 			{#if !editMode}
-				<!-- Export buttons -->
-				<div class="flex gap-1">
-					<a
-						href="/api/export/{data.investigator.id}?format=json"
-						download
-						class="cursor-pointer rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]"
+				{#if !data.adminView}
+					<!-- Export buttons -->
+					<div class="flex gap-1">
+						<a
+							href="/api/export/{data.investigator.id}?format=json"
+							download
+							class="cursor-pointer rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]"
+						>
+							JSON
+						</a>
+						<a
+							href="/api/export/{data.investigator.id}?format=md"
+							download
+							class="cursor-pointer rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]"
+						>
+							Markdown
+						</a>
+						<PDFExportButton
+							character={liveChar}
+							occupationName={occupation?.name ?? 'Unknown'}
+							skills={data.skills}
+							occupations={data.occupations}
+							contentPack={data.contentPack}
+						/>
+					</div>
+					<button
+						type="button"
+						onclick={startEdit}
+						class="cursor-pointer rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]"
 					>
-						JSON
-					</a>
-					<a
-						href="/api/export/{data.investigator.id}?format=md"
-						download
-						class="cursor-pointer rounded-md border border-[var(--color-border)] px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]"
+						Edit
+					</button>
+					<button
+						type="button"
+						onclick={() => (playMode = !playMode)}
+						class="cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium transition-colors
+							{playMode
+								? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
+								: 'border-[var(--color-border)] hover:bg-[var(--color-accent)]'}"
 					>
-						Markdown
-					</a>
-					<PDFExportButton
-						character={liveChar}
-						occupationName={occupation?.name ?? 'Unknown'}
-						skills={data.skills}
-						occupations={data.occupations}
-						contentPack={data.contentPack}
+						{playMode ? 'Exit Play Mode' : 'Play Mode'}
+					</button>
+					<ShareDialog
+						investigatorId={data.investigator.id}
+						isDraft={char.isDraft}
+						initialShareId={data.investigator.isPublic ? data.investigator.shareId : null}
 					/>
-				</div>
-				<button
-					type="button"
-					onclick={startEdit}
-					class="cursor-pointer rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]"
-				>
-					Edit
-				</button>
-				<button
-					type="button"
-					onclick={() => (playMode = !playMode)}
-					class="cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium transition-colors
-						{playMode
-							? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
-							: 'border-[var(--color-border)] hover:bg-[var(--color-accent)]'}"
-				>
-					{playMode ? 'Exit Play Mode' : 'Play Mode'}
-				</button>
-				<ShareDialog
-					investigatorId={data.investigator.id}
-					isDraft={char.isDraft}
-					initialShareId={data.investigator.isPublic ? data.investigator.shareId : null}
-				/>
+				{/if}
 				<a
-					href="/investigators"
+					href={data.adminView ? '/admin/investigators' : '/investigators'}
 					class="cursor-pointer rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-accent)]"
 				>
 					Back

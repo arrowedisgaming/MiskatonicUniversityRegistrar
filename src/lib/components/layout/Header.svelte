@@ -5,9 +5,10 @@
 	import { diceRollAnimationsEnabled } from '$lib/stores/dice-rolls';
 	import { era, mode, theme, reduceEffects } from '$lib/stores/theme';
 	import { eras } from '$lib/themes/registry';
-	import { Dices, LogIn, LogOut, Settings, Sparkles } from '@lucide/svelte';
+	import { Dices, LogIn, LogOut, Settings, ShieldAlert, Sparkles } from '@lucide/svelte';
 
 	const session = $derived(page.data.session);
+	const isAdmin = $derived(Boolean(page.data.isAdmin));
 
 	let diceSettingsOpen = $state(false);
 	let mobileSettingsDetailsEl = $state<HTMLDetailsElement | null>(null);
@@ -51,6 +52,16 @@
 			>
 				Investigators
 			</a>
+			{#if isAdmin}
+				<a
+					href="/admin"
+					class="hidden items-center gap-1 rounded-md border border-[var(--color-destructive)]/40 px-2 py-1.5 text-xs text-[var(--color-destructive)] hover:bg-[var(--color-destructive)]/10 sm:inline-flex sm:text-sm"
+					title="Admin dashboard"
+				>
+					<ShieldAlert size={14} aria-hidden="true" />
+					Admin
+				</a>
+			{/if}
 
 			{#if session?.user}
 				<a

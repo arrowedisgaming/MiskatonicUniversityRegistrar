@@ -7,6 +7,7 @@ import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { getDb } from './db';
 import { accounts, users } from './db/schema';
+import { recordEvent } from './analytics';
 
 type EnvPlatform = {
 	env?: Record<string, string | D1Database | undefined>;
@@ -106,29 +107,49 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 				// token id before this callback, but investigator ownership must use the
 				// local users.id value returned by our account-linking logic.
 				if (account) {
+					let resolvedId: string | null = null;
+
 					if (account.provider === 'credentials' && user?.id) {
-						token.id = user.id;
-						return token;
+						resolvedId = user.id;
+						token.id = resolvedId;
+					} else {
+						const db = await getDb(event);
+						const email = (user?.email ?? token.email ?? null) as string | null;
+						const emailVerified = isProfileEmailVerified(account.provider, profile);
+
+						const resolved = await findOrLinkOAuthAccount(db, {
+							provider: account.provider,
+							providerAccountId: account.providerAccountId,
+							email,
+							emailVerified,
+							name: user?.name ?? null,
+							image: user?.image ?? null
+						});
+						if (resolved) {
+							resolvedId = resolved.id;
+							token.id = resolvedId;
+						} else if (user?.id) {
+							token.id = user.id;
+						}
 					}
 
-					const db = await getDb(event);
-					const email = (user?.email ?? token.email ?? null) as string | null;
-					const emailVerified = isProfileEmailVerified(account.provider, profile);
-
-					const resolved = await findOrLinkOAuthAccount(db, {
-						provider: account.provider,
-						providerAccountId: account.providerAccountId,
-						email,
-						emailVerified,
-						name: user?.name ?? null,
-						image: user?.image ?? null
-					});
-					if (resolved) {
-						token.id = resolved.id;
-						return token;
+					// Record the login analytics event here, not in `events.signIn` —
+					// at this point we hold the local users.id. The signIn event
+					// receives the provider's raw user object whose `id` is the OAuth
+					// `sub`, which violates the analytics_events FK and gets silently
+					// dropped by `recordEvent`'s error swallowing.
+					if (resolvedId) {
+						try {
+							const db = await getDb(event);
+							await recordEvent(db, {
+								userId: resolvedId,
+								eventType: 'login',
+								provider: account.provider
+							});
+						} catch {
+							// Never block sign-in on analytics failure.
+						}
 					}
-
-					if (user?.id) token.id = user.id;
 				}
 				return token;
 			},
