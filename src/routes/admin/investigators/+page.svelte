@@ -1,8 +1,14 @@
 <script lang="ts">
 	import Pagination from '$lib/components/admin/Pagination.svelte';
+	import SortableTh from '$lib/components/admin/SortableTh.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	const searchParams = $derived({
+		q: data.search || undefined,
+		userId: data.userId || undefined
+	});
 
 	function formatDate(d: Date): string {
 		return d.toLocaleString(undefined, {
@@ -30,6 +36,8 @@
 		</div>
 		<form class="flex gap-2" method="get" action="/admin/investigators">
 			{#if data.userId}<input type="hidden" name="userId" value={data.userId} />{/if}
+			{#if data.sort}<input type="hidden" name="sort" value={data.sort} />{/if}
+			{#if data.dir}<input type="hidden" name="dir" value={data.dir} />{/if}
 			<input
 				type="search"
 				name="q"
@@ -48,15 +56,64 @@
 
 	<div class="overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-card)]">
 		<table class="w-full text-sm">
-			<thead class="border-b border-[var(--color-border)] text-left text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">
+			<thead class="border-b border-[var(--color-border)] text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">
 				<tr>
-					<th class="px-3 py-2">Name</th>
-					<th class="px-3 py-2">Owner</th>
-					<th class="px-3 py-2">Era</th>
-					<th class="px-3 py-2">Occupation</th>
-					<th class="px-3 py-2">Status</th>
-					<th class="px-3 py-2">Created</th>
-					<th class="px-3 py-2">Updated</th>
+					<SortableTh
+						label="Name"
+						sortKey="name"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Owner"
+						sortKey="owner"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Era"
+						sortKey="era"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Occupation"
+						sortKey="occupation"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Status"
+						sortKey="status"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Created"
+						sortKey="created"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
+					<SortableTh
+						label="Updated"
+						sortKey="updated"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/investigators"
+						searchParams={searchParams}
+					/>
 					<th class="px-3 py-2"></th>
 				</tr>
 			</thead>
@@ -104,6 +161,8 @@
 		pageSize={data.pageSize}
 		total={data.total}
 		basePath="/admin/investigators"
-		searchParams={{ q: data.search || undefined, userId: data.userId || undefined }}
+		searchParams={searchParams}
+		sort={data.sort}
+		dir={data.dir}
 	/>
 </div>

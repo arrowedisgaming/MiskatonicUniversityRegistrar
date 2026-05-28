@@ -7,7 +7,7 @@ import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { getDb } from './db';
 import { accounts, users } from './db/schema';
-import { recordEvent } from './analytics';
+import { recordEvent, recordSessionRefresh } from './analytics';
 
 type EnvPlatform = {
 	env?: Record<string, string | D1Database | undefined>;
@@ -149,6 +149,23 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
 						} catch {
 							// Never block sign-in on analytics failure.
 						}
+					}
+				} else if (token.id) {
+					// Session refresh — record a throttled session_refresh ping so admin
+					// last-activity populates without inflating login metrics.
+					try {
+						const db = await getDb(event);
+						const userId = String(token.id);
+						const existing = await db
+							.select({ id: users.id })
+							.from(users)
+							.where(eq(users.id, userId))
+							.get();
+						if (existing) {
+							await recordSessionRefresh(db, existing.id);
+						}
+					} catch {
+						// Never block session refresh on analytics failure.
 					}
 				}
 				return token;

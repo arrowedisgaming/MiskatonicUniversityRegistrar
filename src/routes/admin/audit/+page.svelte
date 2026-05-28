@@ -1,11 +1,12 @@
 <script lang="ts">
+	import Pagination from '$lib/components/admin/Pagination.svelte';
+	import SortableTh from '$lib/components/admin/SortableTh.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	function shortUa(ua: string | null): string {
 		if (!ua) return '—';
-		// Strip versions to a single tidy label.
 		if (ua.includes('Firefox')) return 'Firefox';
 		if (ua.includes('Edg/')) return 'Edge';
 		if (ua.includes('Chrome')) return 'Chrome';
@@ -33,20 +34,50 @@
 	<div>
 		<h1 class="text-2xl font-bold" data-heading>Audit log</h1>
 		<p class="text-sm text-[var(--color-muted-foreground)]">
-			Last {data.rows.length.toLocaleString()} admin requests. Anything unexpected here means
+			{data.total.toLocaleString()} admin requests logged. Anything unexpected here means
 			someone other than you has admin email access — rotate <code>ADMIN_EMAILS</code> immediately.
 		</p>
 	</div>
 
 	<div class="overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-card)]">
 		<table class="w-full text-sm">
-			<thead class="border-b border-[var(--color-border)] text-left text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">
+			<thead class="border-b border-[var(--color-border)] text-xs uppercase tracking-wider text-[var(--color-muted-foreground)]">
 				<tr>
-					<th class="px-3 py-2">When</th>
-					<th class="px-3 py-2">Who</th>
-					<th class="px-3 py-2">Method</th>
-					<th class="px-3 py-2">Path</th>
-					<th class="px-3 py-2">IP</th>
+					<SortableTh
+						label="When"
+						sortKey="when"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/audit"
+					/>
+					<SortableTh
+						label="Who"
+						sortKey="who"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/audit"
+					/>
+					<SortableTh
+						label="Method"
+						sortKey="method"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/audit"
+					/>
+					<SortableTh
+						label="Path"
+						sortKey="path"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/audit"
+					/>
+					<SortableTh
+						label="IP"
+						sortKey="ip"
+						currentSort={data.sort}
+						currentDir={data.dir}
+						basePath="/admin/audit"
+					/>
 					<th class="px-3 py-2">UA</th>
 				</tr>
 			</thead>
@@ -73,4 +104,13 @@
 			</tbody>
 		</table>
 	</div>
+
+	<Pagination
+		page={data.page}
+		pageSize={data.pageSize}
+		total={data.total}
+		basePath="/admin/audit"
+		sort={data.sort}
+		dir={data.dir}
+	/>
 </div>

@@ -51,6 +51,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-05-28
+
+### Added
+- **Sortable admin tables.** Users, Investigators, and Audit log tables now expose per-column sort with `?sort=…&dir=asc|desc` query params. Drizzle whitelist keeps sort keys server-validated. Active sort column shows ↑/↓ and emits `aria-sort` for screen readers.
+- **Paginated audit log.** Replaces the hard-coded last-200 cap with the standard `Pagination` component; total count surfaces in the page header so anomalies are visible at a glance.
+- **Last-activity column on Users.** Replaces "Last login" with a max() across analytics events *and* investigator `updatedAt`, so a user who hasn't re-signed-in but is actively editing characters still shows recent activity.
+- **Active vs. archived investigator counts.** Users table now shows `active (N archived)` instead of a single number, surfacing accounts whose visible work is hidden behind the archive flag.
+- **Provider fallback for legacy accounts.** Users whose `accounts` row predates the schema split now show the provider via the most recent `login` analytics event instead of a blank cell.
+- **Session-refresh activity pings.** A throttled `session_refresh` analytics event (max once/24h per user) lights up last-activity for signed-in users who never trigger a fresh OAuth callback. Distinct event type so true login metrics stay accurate.
+- **Admin diagnostics scripts.** Read-only `scripts/admin-activity-diagnostics.mjs` (local SQLite) and `scripts/admin-diagnostics.sql` (D1 via `wrangler d1 execute`) for spotting users without OAuth accounts, orphan investigators, archived-only accounts, and analytics gaps.
+- **`SortableTh` component.** Shared header primitive that preserves search/filter query params across sort changes and resets pagination to page 1 on column flip.
+
+### Changed
+- **`listRecentAudit` is now paginated.** Returns `{ rows, total, page, pageSize }` instead of a bare row array — keeps the audit page's API shape consistent with `listUsers` / `listInvestigators`.
+- **`AdminUserRow.lastLoginAt` renamed to `lastActivityAt`.** Reflects the broader signal; consumers (admin Users page) updated.
+
+### Fixed
+- **User-id column qualification in correlated subqueries.** Drizzle expanded `${users.id}` inside scalar subqueries to a bare `"id"`, which SQLite resolved against the inner table — invariant under the old single-subquery layout, but broken under the new `union all` last-activity query. Now uses an explicit `"users"."id"` raw fragment.
+
+### Migration
+- No D1 migrations. The `session_refresh` event type is added by code only — existing `analytics_events` rows are unaffected and the schema accepts any `event_type` string.
+
 ## [0.20.1] - 2026-05-28
 
 ### Fixed

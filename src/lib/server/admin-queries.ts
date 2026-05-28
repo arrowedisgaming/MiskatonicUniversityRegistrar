@@ -1,6 +1,8 @@
-import { and, desc, eq, gte, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, or, sql, type AnyColumn, type SQLWrapper } from 'drizzle-orm';
 import type { AppDb } from './db';
 import { accounts, adminAuditLog, analyticsEvents, investigators, users } from './db/schema';
+
+export type SortDir = 'asc' | 'desc';
 
 export interface OverviewStats {
 	totalUsers: number;
@@ -28,9 +30,12 @@ export interface AdminUserRow {
 	email: string | null;
 	name: string | null;
 	image: string | null;
+	/** Non-archived investigator count. */
 	investigatorCount: number;
+	/** All investigators including archived. */
+	totalInvestigatorCount: number;
 	primaryProvider: string | null;
-	lastLoginAt: Date | null;
+	lastActivityAt: Date | null;
 }
 
 export interface AdminInvestigatorRow {
@@ -64,6 +69,12 @@ function daysAgo(days: number): Date {
 	d.setUTCDate(d.getUTCDate() - days);
 	d.setUTCHours(0, 0, 0, 0);
 	return d;
+}
+
+/** Map raw SQLite unix-second integer to Date (for max() subquery results). */
+function unixSecondsToDate(raw: number | null | undefined): Date | null {
+	if (raw === null || raw === undefined) return null;
+	return new Date(Number(raw) * 1000);
 }
 
 export async function getOverviewStats(db: AppDb): Promise<OverviewStats> {
@@ -163,10 +174,34 @@ export interface ListOptions {
 	search?: string;
 	page?: number;
 	pageSize?: number;
+	sort?: string;
+	dir?: SortDir;
 }
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
+
+const USER_SORT_KEYS = ['email', 'name', 'provider', 'investigators', 'lastActivity'] as const;
+const INVESTIGATOR_SORT_KEYS = [
+	'name',
+	'owner',
+	'era',
+	'occupation',
+	'status',
+	'created',
+	'updated'
+] as const;
+const AUDIT_SORT_KEYS = ['when', 'who', 'method', 'path', 'ip'] as const;
+
+export function parseListSort(
+	sort: string | null | undefined,
+	dir: string | null | undefined,
+	whitelist: readonly string[],
+	defaultSort: string
+): { sort: string; dir: SortDir } {
+	const sortKey = sort && whitelist.includes(sort) ? sort : defaultSort;
+	return { sort: sortKey, dir: dir === 'asc' ? 'asc' : 'desc' };
+}
 
 function clampPagination(opts: ListOptions): { limit: number; offset: number; page: number } {
 	const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, opts.pageSize ?? DEFAULT_PAGE_SIZE));
@@ -183,11 +218,68 @@ function escapeLikePattern(s: string): string {
 	return s.replace(/[\\%_]/g, '\\$&');
 }
 
+function orderByDir(expr: SQLWrapper | AnyColumn, dir: SortDir) {
+	return dir === 'asc' ? asc(expr) : desc(expr);
+}
+
+/** Drizzle expands `${users.id}` inside subqueries to bare `"id"`, which SQLite binds to the inner table — qualify explicitly. */
+const USER_ID_CORR = sql.raw('"users"."id"');
+
+/** Shared subqueries for listUsers select and orderBy. */
+function userListSubqueries() {
+	const activeInvCount = sql<number>`(
+		select count(*) from ${investigators}
+		where ${investigators.userId} = ${USER_ID_CORR}
+		  and ${investigators.isArchived} = 0
+	)`;
+	const totalInvCount = sql<number>`(
+		select count(*) from ${investigators}
+		where ${investigators.userId} = ${USER_ID_CORR}
+	)`;
+	const primaryProvider = sql<string | null>`coalesce(
+		(select ${accounts.provider} from ${accounts}
+		 where ${accounts.userId} = ${USER_ID_CORR} limit 1),
+		(select ${analyticsEvents.provider} from ${analyticsEvents}
+		 where ${analyticsEvents.userId} = ${USER_ID_CORR}
+		   and ${analyticsEvents.eventType} = 'login'
+		   and ${analyticsEvents.provider} is not null
+		 order by ${analyticsEvents.createdAt} desc limit 1)
+	)`;
+	const lastActivityAt = sql<number | null>`(
+		select max(ts) from (
+			select max(${analyticsEvents.createdAt}) as ts from ${analyticsEvents}
+			where ${analyticsEvents.userId} = ${USER_ID_CORR}
+			union all
+			select max(${investigators.updatedAt}) as ts from ${investigators}
+			where ${investigators.userId} = ${USER_ID_CORR}
+		)
+	)`;
+	return { activeInvCount, totalInvCount, primaryProvider, lastActivityAt };
+}
+
+function userOrderBy(sort: string, dir: SortDir) {
+	const { activeInvCount, primaryProvider, lastActivityAt } = userListSubqueries();
+	switch (sort) {
+		case 'email':
+			return orderByDir(users.email, dir);
+		case 'name':
+			return orderByDir(users.name, dir);
+		case 'provider':
+			return orderByDir(primaryProvider, dir);
+		case 'investigators':
+			return orderByDir(activeInvCount, dir);
+		case 'lastActivity':
+		default:
+			return orderByDir(lastActivityAt, dir);
+	}
+}
+
 export async function listUsers(
 	db: AppDb,
 	opts: ListOptions = {}
 ): Promise<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }> {
 	const { limit, offset, page } = clampPagination(opts);
+	const { sort, dir } = parseListSort(opts.sort, opts.dir, USER_SORT_KEYS, 'lastActivity');
 	const search = opts.search?.trim().toLowerCase();
 	const searchPattern = search ? `%${escapeLikePattern(search)}%` : null;
 
@@ -198,31 +290,25 @@ export async function listUsers(
 			)
 		: undefined;
 
+	const { activeInvCount, totalInvCount, primaryProvider, lastActivityAt } = userListSubqueries();
+
 	const baseQuery = db
 		.select({
 			id: users.id,
 			email: users.email,
 			name: users.name,
 			image: users.image,
-			investigatorCount: sql<number>`(
-				select count(*) from ${investigators}
-				where ${investigators.userId} = ${users.id}
-				  and ${investigators.isArchived} = 0
-			)`,
-			primaryProvider: sql<string | null>`(
-				select ${accounts.provider} from ${accounts}
-				where ${accounts.userId} = ${users.id}
-				limit 1
-			)`,
-			lastLoginAt: sql<number | null>`(
-				select max(${analyticsEvents.createdAt}) from ${analyticsEvents}
-				where ${analyticsEvents.userId} = ${users.id}
-				  and ${analyticsEvents.eventType} = 'login'
-			)`
+			investigatorCount: activeInvCount,
+			totalInvestigatorCount: totalInvCount,
+			primaryProvider,
+			lastActivityAt
 		})
 		.from(users);
 
-	const rows = await (where ? baseQuery.where(where) : baseQuery).limit(limit).offset(offset);
+	const rows = await (where ? baseQuery.where(where) : baseQuery)
+		.orderBy(userOrderBy(sort, dir))
+		.limit(limit)
+		.offset(offset);
 
 	const totalQuery = db.select({ c: sql<number>`count(*)` }).from(users);
 	const [{ c: total }] = await (where ? totalQuery.where(where) : totalQuery);
@@ -234,13 +320,9 @@ export async function listUsers(
 			name: r.name,
 			image: r.image,
 			investigatorCount: Number(r.investigatorCount ?? 0),
+			totalInvestigatorCount: Number(r.totalInvestigatorCount ?? 0),
 			primaryProvider: r.primaryProvider,
-			// `max(created_at)` returns the raw SQLite integer (Unix seconds), not
-			// a Drizzle-mapped Date — multiply to ms before constructing.
-			lastLoginAt:
-				r.lastLoginAt === null || r.lastLoginAt === undefined
-					? null
-					: new Date(Number(r.lastLoginAt) * 1000)
+			lastActivityAt: unixSecondsToDate(r.lastActivityAt)
 		})),
 		total: Number(total ?? 0),
 		page,
@@ -250,6 +332,34 @@ export async function listUsers(
 
 export interface ListInvestigatorsOptions extends ListOptions {
 	userId?: string;
+}
+
+const investigatorStatusOrder = sql<number>`(
+	case
+		when ${investigators.isArchived} = 1 then 2
+		when ${investigators.isDraft} = 1 then 1
+		else 0
+	end
+)`;
+
+function investigatorOrderBy(sort: string, dir: SortDir) {
+	switch (sort) {
+		case 'name':
+			return orderByDir(investigators.name, dir);
+		case 'owner':
+			return orderByDir(users.email, dir);
+		case 'era':
+			return orderByDir(investigators.era, dir);
+		case 'occupation':
+			return orderByDir(investigators.occupation, dir);
+		case 'status':
+			return orderByDir(investigatorStatusOrder, dir);
+		case 'created':
+			return orderByDir(investigators.createdAt, dir);
+		case 'updated':
+		default:
+			return orderByDir(investigators.updatedAt, dir);
+	}
 }
 
 export async function listInvestigators(
@@ -262,6 +372,7 @@ export async function listInvestigators(
 	pageSize: number;
 }> {
 	const { limit, offset, page } = clampPagination(opts);
+	const { sort, dir } = parseListSort(opts.sort, opts.dir, INVESTIGATOR_SORT_KEYS, 'updated');
 	const search = opts.search?.trim().toLowerCase();
 	const searchPattern = search ? `%${escapeLikePattern(search)}%` : null;
 
@@ -295,7 +406,7 @@ export async function listInvestigators(
 		.leftJoin(users, eq(users.id, investigators.userId));
 
 	const rows = await (where ? baseSelect.where(where) : baseSelect)
-		.orderBy(desc(investigators.updatedAt))
+		.orderBy(investigatorOrderBy(sort, dir))
 		.limit(limit)
 		.offset(offset);
 
@@ -325,12 +436,32 @@ export async function listInvestigators(
 	};
 }
 
+const auditWhoOrder = sql<string>`coalesce(${users.email}, ${adminAuditLog.actorEmail}, ${adminAuditLog.userId}, '')`;
+
+function auditOrderBy(sort: string, dir: SortDir) {
+	switch (sort) {
+		case 'who':
+			return orderByDir(auditWhoOrder, dir);
+		case 'method':
+			return orderByDir(adminAuditLog.method, dir);
+		case 'path':
+			return orderByDir(adminAuditLog.path, dir);
+		case 'ip':
+			return orderByDir(adminAuditLog.ip, dir);
+		case 'when':
+		default:
+			return orderByDir(adminAuditLog.createdAt, dir);
+	}
+}
+
 export async function listRecentAudit(
 	db: AppDb,
-	opts: { limit?: number } = {}
-): Promise<AdminAuditRow[]> {
-	const limit = Math.min(500, Math.max(1, opts.limit ?? 100));
-	const rows = await db
+	opts: ListOptions = {}
+): Promise<{ rows: AdminAuditRow[]; total: number; page: number; pageSize: number }> {
+	const { limit, offset, page } = clampPagination(opts);
+	const { sort, dir } = parseListSort(opts.sort, opts.dir, AUDIT_SORT_KEYS, 'when');
+
+	const baseSelect = db
 		.select({
 			id: adminAuditLog.id,
 			userId: adminAuditLog.userId,
@@ -343,18 +474,26 @@ export async function listRecentAudit(
 			createdAt: adminAuditLog.createdAt
 		})
 		.from(adminAuditLog)
-		.leftJoin(users, eq(users.id, adminAuditLog.userId))
-		.orderBy(desc(adminAuditLog.createdAt))
-		.limit(limit);
-	return rows.map((r) => ({
-		id: r.id,
-		userId: r.userId,
-		actorEmail: r.actorEmail,
-		userEmail: r.userEmail,
-		path: r.path,
-		method: r.method,
-		ip: r.ip,
-		userAgent: r.userAgent,
-		createdAt: r.createdAt
-	}));
+		.leftJoin(users, eq(users.id, adminAuditLog.userId));
+
+	const rows = await baseSelect.orderBy(auditOrderBy(sort, dir)).limit(limit).offset(offset);
+
+	const [{ c: total }] = await db.select({ c: sql<number>`count(*)` }).from(adminAuditLog);
+
+	return {
+		rows: rows.map((r) => ({
+			id: r.id,
+			userId: r.userId,
+			actorEmail: r.actorEmail,
+			userEmail: r.userEmail,
+			path: r.path,
+			method: r.method,
+			ip: r.ip,
+			userAgent: r.userAgent,
+			createdAt: r.createdAt
+		})),
+		total: Number(total ?? 0),
+		page,
+		pageSize: limit
+	};
 }

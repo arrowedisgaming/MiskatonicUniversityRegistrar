@@ -1,12 +1,16 @@
 <script lang="ts">
+	import type { SortDir } from '$lib/server/admin-queries';
+
 	type Props = {
 		page: number;
 		pageSize: number;
 		total: number;
 		basePath: string;
 		searchParams?: Record<string, string | undefined>;
+		sort?: string;
+		dir?: SortDir;
 	};
-	let { page, pageSize, total, basePath, searchParams = {} }: Props = $props();
+	let { page, pageSize, total, basePath, searchParams = {}, sort, dir }: Props = $props();
 
 	const totalPages = $derived(Math.max(1, Math.ceil(total / pageSize)));
 	const start = $derived(total === 0 ? 0 : (page - 1) * pageSize + 1);
@@ -17,6 +21,8 @@
 		for (const [k, v] of Object.entries(searchParams)) {
 			if (v) params.set(k, v);
 		}
+		if (sort) params.set('sort', sort);
+		if (dir) params.set('dir', dir);
 		params.set('page', String(target));
 		return `${basePath}?${params.toString()}`;
 	}
