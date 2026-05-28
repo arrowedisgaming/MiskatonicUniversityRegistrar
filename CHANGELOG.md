@@ -51,6 +51,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.21.1] - 2026-05-28
+
+### Added
+- **README hero gallery.** Product screenshots (investigators dashboard, wizard, character sheet, play mode light/dark) embedded in the project README for at-a-glance context.
+
+### Fixed
+- **Occupation choice skills can no longer be double-counted.** On the skills wizard, picking a skill in one of the four occupation choice pools (Interpersonal / Combat / Science / Additional) now disables it in the other three, with an `aria-disabled` button + "Already selected in another category" tooltip. A validation error surfaces if duplicates somehow slip through. Engine gains pure `isOccChoiceSkillTakenElsewhere` and `hasDuplicateOccChoices` helpers with unit coverage.
+
 ## [0.21.0] - 2026-05-28
 
 ### Added
@@ -655,7 +663,8 @@ First public release.
 ### Removed
 - Occupations: removed Reporter (alias of Journalist), Clerk/Executive, Middle/Senior Manager (replaced by White-collar Worker)
 
-[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.21.1...HEAD
+[0.21.1]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.21.0...v0.21.1
 [0.14.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/arrowedisgaming/MiskatonicUniversityRegistrar/compare/v0.11.0...v0.12.0

@@ -3,9 +3,12 @@ import {
 	filterOccupationsByEra,
 	getOccupationSkillLists,
 	getSkillsByGroup,
+	hasDuplicateOccChoices,
 	INTERPERSONAL_SKILLS,
-	COMBAT_SKILL_GROUPS
+	COMBAT_SKILL_GROUPS,
+	isOccChoiceSkillTakenElsewhere
 } from '$lib/engine/occupation-filter';
+import type { OccChoiceSelections } from '$lib/engine/occupation-filter';
 import type { CoCOccupationDefinition, CoCSkillDefinition } from '$lib/types/content-pack';
 
 const skill = (overrides: Partial<CoCSkillDefinition>): CoCSkillDefinition => ({
@@ -123,5 +126,54 @@ describe('skill group constants', () => {
 
 	it('expose the combat specialization groups', () => {
 		expect(COMBAT_SKILL_GROUPS).toEqual(['fighting', 'firearms']);
+	});
+});
+
+describe('occupation choice deduplication', () => {
+	const emptySelections = (): OccChoiceSelections => ({
+		interpersonal: [],
+		combat: [],
+		science: [],
+		any: []
+	});
+
+	it('blocks a skill in other pools when selected in interpersonal', () => {
+		const selections: OccChoiceSelections = {
+			...emptySelections(),
+			interpersonal: ['fast-talk']
+		};
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'any', 'fast-talk')).toBe(true);
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'combat', 'fast-talk')).toBe(true);
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'interpersonal', 'fast-talk')).toBe(false);
+	});
+
+	it('blocks a skill in other pools when selected in additional', () => {
+		const selections: OccChoiceSelections = {
+			...emptySelections(),
+			any: ['fast-talk']
+		};
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'interpersonal', 'fast-talk')).toBe(true);
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'science', 'fast-talk')).toBe(true);
+		expect(isOccChoiceSkillTakenElsewhere(selections, 'any', 'fast-talk')).toBe(false);
+	});
+
+	it('detects duplicate selections across pools', () => {
+		expect(hasDuplicateOccChoices(emptySelections())).toBe(false);
+		expect(
+			hasDuplicateOccChoices({
+				interpersonal: ['charm'],
+				combat: [],
+				science: [],
+				any: ['library-use']
+			})
+		).toBe(false);
+		expect(
+			hasDuplicateOccChoices({
+				interpersonal: ['fast-talk'],
+				combat: [],
+				science: [],
+				any: ['fast-talk']
+			})
+		).toBe(true);
 	});
 });

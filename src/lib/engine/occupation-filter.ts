@@ -82,3 +82,37 @@ export function getSkillsByGroup(
 		(s) => s.isSpecialization && s.specializationGroup === group
 	);
 }
+
+/** Occupation choice pool identifiers on the skills wizard step */
+export type OccChoiceKind = 'interpersonal' | 'combat' | 'science' | 'any';
+
+/** Selected skills per occupation choice pool */
+export interface OccChoiceSelections {
+	interpersonal: string[];
+	combat: string[];
+	science: string[];
+	any: string[];
+}
+
+const OCC_CHOICE_KINDS: OccChoiceKind[] = ['interpersonal', 'combat', 'science', 'any'];
+
+/** True when skillId is selected in any occupation choice pool other than kind */
+export function isOccChoiceSkillTakenElsewhere(
+	selections: OccChoiceSelections,
+	kind: OccChoiceKind,
+	skillId: string
+): boolean {
+	return OCC_CHOICE_KINDS.filter((k) => k !== kind).some((k) => selections[k].includes(skillId));
+}
+
+/** True when the same skill id appears in more than one occupation choice pool */
+export function hasDuplicateOccChoices(selections: OccChoiceSelections): boolean {
+	const seen = new Set<string>();
+	for (const kind of OCC_CHOICE_KINDS) {
+		for (const skillId of selections[kind]) {
+			if (seen.has(skillId)) return true;
+			seen.add(skillId);
+		}
+	}
+	return false;
+}

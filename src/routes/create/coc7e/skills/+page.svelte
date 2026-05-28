@@ -12,7 +12,7 @@
 		validateSkillAllocation
 	} from '$lib/engine/skills';
 	import { halfValue, fifthValue } from '$lib/engine/characteristics';
-	import { getSkillsByGroup, INTERPERSONAL_SKILLS, isCustomOccupation } from '$lib/engine/occupation-filter';
+	import { getSkillsByGroup, hasDuplicateOccChoices, INTERPERSONAL_SKILLS, isCustomOccupation, isOccChoiceSkillTakenElsewhere } from '$lib/engine/occupation-filter';
 	import type { CoCContentPack, CoCOccupationDefinition, CoCSkillDefinition } from '$lib/types/content-pack';
 	import type { CoCSkillAllocation, CustomSkillDef, SkillPointAllocation } from '$lib/types/character';
 	import type { CharacteristicId } from '$lib/types/common';
@@ -148,6 +148,13 @@
 	let selectedCombat = $state<string[]>(initialChoiceIds('combat'));
 	let selectedScience = $state<string[]>(initialChoiceIds('science'));
 	let selectedAny = $state<string[]>(initialChoiceIds('any'));
+
+	const occChoiceSelections = $derived({
+		interpersonal: selectedInterpersonal,
+		combat: selectedCombat,
+		science: selectedScience,
+		any: selectedAny
+	});
 
 	let eligibleOccupationSkillIds = $derived.by(() => {
 		if (isCustomOcc) {
@@ -467,6 +474,7 @@
 	}
 
 	function setOccChoice(kind: 'interpersonal' | 'combat' | 'science' | 'any', id: string, limit: number) {
+		if (!occChoiceSelections[kind].includes(id) && isOccChoiceSkillTakenElsewhere(occChoiceSelections, kind, id)) return;
 		if (kind === 'interpersonal') selectedInterpersonal = toggleChoice(selectedInterpersonal, id, limit);
 		if (kind === 'combat') selectedCombat = toggleChoice(selectedCombat, id, limit);
 		if (kind === 'science') selectedScience = toggleChoice(selectedScience, id, limit);
@@ -501,6 +509,9 @@
 		}
 		if ((occupation?.personalChoiceCount ?? 0) !== selectedAny.length) {
 			errors.push(`Choose ${occupation?.personalChoiceCount} additional occupation skill${occupation?.personalChoiceCount === 1 ? '' : 's'}.`);
+		}
+		if (hasDuplicateOccChoices(occChoiceSelections)) {
+			errors.push('Each occupation choice skill can only be selected once across all choice groups.');
 		}
 		return errors;
 	});
@@ -672,8 +683,12 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Interpersonal ({selectedInterpersonal.length}/{occupation.interpersonalChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each allSkills.filter((s) => INTERPERSONAL_SKILLS.includes(s.id)) as skill}
+							{@const blocked = isOccChoiceSkillTakenElsewhere(occChoiceSelections, 'interpersonal', skill.id)}
 							<button type="button" onclick={() => setOccChoice('interpersonal', skill.id, occupation.interpersonalChoiceCount ?? 0)}
-								class="rounded border px-2 py-1 text-xs {selectedInterpersonal.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
+								disabled={blocked}
+								aria-disabled={blocked}
+								title={blocked ? 'Already selected in another category' : undefined}
+								class="rounded border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 {selectedInterpersonal.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
 						{/each}
@@ -685,8 +700,12 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Combat ({selectedCombat.length}/{occupation.combatChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each combatSkills as skill}
+							{@const blocked = isOccChoiceSkillTakenElsewhere(occChoiceSelections, 'combat', skill.id)}
 							<button type="button" onclick={() => setOccChoice('combat', skill.id, occupation.combatChoiceCount ?? 0)}
-								class="rounded border px-2 py-1 text-xs {selectedCombat.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
+								disabled={blocked}
+								aria-disabled={blocked}
+								title={blocked ? 'Already selected in another category' : undefined}
+								class="rounded border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 {selectedCombat.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
 						{/each}
@@ -698,8 +717,12 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Science ({selectedScience.length}/{occupation.scienceChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each scienceSkills as skill}
+							{@const blocked = isOccChoiceSkillTakenElsewhere(occChoiceSelections, 'science', skill.id)}
 							<button type="button" onclick={() => setOccChoice('science', skill.id, occupation.scienceChoiceCount ?? 0)}
-								class="rounded border px-2 py-1 text-xs {selectedScience.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
+								disabled={blocked}
+								aria-disabled={blocked}
+								title={blocked ? 'Already selected in another category' : undefined}
+								class="rounded border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 {selectedScience.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
 						{/each}
@@ -711,8 +734,12 @@
 					<p class="mb-1 text-xs uppercase text-[var(--color-muted-foreground)]">Additional ({selectedAny.length}/{occupation.personalChoiceCount})</p>
 					<div class="flex flex-wrap gap-1">
 						{#each allSkills.filter((s) => !requiredOccSkillIds.has(s.id) && s.id !== 'credit-rating') as skill}
+							{@const blocked = isOccChoiceSkillTakenElsewhere(occChoiceSelections, 'any', skill.id)}
 							<button type="button" onclick={() => setOccChoice('any', skill.id, occupation.personalChoiceCount ?? 0)}
-								class="rounded border px-2 py-1 text-xs {selectedAny.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
+								disabled={blocked}
+								aria-disabled={blocked}
+								title={blocked ? 'Already selected in another category' : undefined}
+								class="rounded border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 {selectedAny.includes(skill.id) ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]' : 'border-[var(--color-border)]'}">
 								{skill.name}
 							</button>
 						{/each}
