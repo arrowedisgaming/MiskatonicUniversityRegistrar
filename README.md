@@ -13,6 +13,19 @@ A Call of Cthulhu 7th Edition investigator creator. Roll up a 1920s occult inves
   <a href="https://ko-fi.com/arrowedisgaming"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
 </p>
 
+<p align="center">
+  <img src="assets/wizard-characteristics.png" width="49%" alt="Characteristics step of the investigator wizard, newspaper theme">
+  &nbsp;
+  <img src="assets/investigators-dashboard.png" width="49%" alt="Your Investigators dashboard with saved character cards, eldritch dark theme">
+</p>
+<p align="center">
+  <img src="assets/character-sheet.png" width="32%" alt="Investigator review sheet showing characteristics, derived attributes, and skills">
+  &nbsp;
+  <img src="assets/play-mode-dark.png" width="32%" alt="Play Mode with HP, MP, Sanity, Luck trackers and dice roller, eldritch dark theme">
+  &nbsp;
+  <img src="assets/play-mode-light.png" width="32%" alt="Same Play Mode UI rendered in the newspaper light theme">
+</p>
+
 ## About
 
 The Registrar is a step-by-step wizard that walks you through the full CoC 7e investigator creation process — characteristics, occupation, skills, backstory, equipment — and produces a clean, printable character sheet. Every skill point allocation records its source (occupation vs. personal interest, or a specific named skill choice) so a keeper can audit any sheet and see *why* the investigator has the scores they do.
