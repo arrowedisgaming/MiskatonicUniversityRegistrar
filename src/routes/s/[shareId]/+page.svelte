@@ -2,6 +2,7 @@
 	import type { PageProps } from './$types';
 	import SheetReadOnly from '$lib/components/investigator/SheetReadOnly.svelte';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
+	import InvestigatorPortrait from '$lib/components/investigator/InvestigatorPortrait.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -29,7 +30,12 @@
 	</aside>
 
 	<div class="flex flex-wrap items-start gap-4">
-		<div class="min-w-[16rem]">
+		<InvestigatorPortrait
+			name={character.name || 'Unnamed Investigator'}
+			portraitUrl={character.portraitUrl}
+			size="lg"
+		/>
+		<div class="min-w-[16rem] flex-1">
 			<h1 class="text-3xl font-bold" data-heading>{character.name || 'Unnamed Investigator'}</h1>
 			<p class="text-sm text-[var(--color-muted-foreground)]">
 				{occupation?.name ?? 'No occupation'} &middot; Age {character.age} &middot; {character.era}

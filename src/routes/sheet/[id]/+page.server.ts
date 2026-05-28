@@ -8,6 +8,7 @@ import { eq, and } from 'drizzle-orm';
 import type { CoCCharacterData } from '$lib/types/character';
 import { getContentPack, getEquipment, getOccupations, getSkills } from '$lib/server/content/loader';
 import { migrateCharacterData } from '$lib/engine/character-migration';
+import { listActiveMembershipsForInvestigator } from '$lib/server/campaign/membership';
 
 export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth();
@@ -54,17 +55,35 @@ export const load: PageServerLoad = async (event) => {
 	const contentPack = getContentPack();
 	const equipment = getEquipment();
 
+	// Active campaigns this investigator is in, so the sheet can mirror rolls
+	// into each campaign log via emitCampaignRoll. Empty for solo play —
+	// emitCampaignRoll iterates 0 times and is effectively a no-op.
+	// Skipped for the admin-view path: a step-up admin shouldn't accidentally
+	// leak rolls into other people's campaign logs by clicking around.
+	const activeCampaigns = adminView
+		? []
+		: await listActiveMembershipsForInvestigator(db, { investigatorId: row.id });
+
 	return {
 		investigator: {
 			id: row.id,
 			character: migrateCharacterData(JSON.parse(row.data)) as CoCCharacterData,
 			shareId: row.shareId,
-			isPublic: row.isPublic
+			isPublic: row.isPublic,
+			/**
+			 * ms-since-epoch — passed back as `expectedUpdatedAt` on PUT so the
+			 * player's auto-save can't silently overwrite a keeper-inventory push
+			 * that landed between this load and the save. On 409 the sheet page
+			 * refetches and retries; the play overlay survives because it lives
+			 * in $state, not in the loader payload.
+			 */
+			updatedAt: row.updatedAt.getTime()
 		},
 		contentPack,
 		occupations,
 		skills,
 		equipment,
-		adminView
+		adminView,
+		activeCampaigns
 	};
 };

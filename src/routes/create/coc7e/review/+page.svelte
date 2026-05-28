@@ -9,6 +9,7 @@
 	import { dossierFiling } from '$lib/transitions/eerie';
 	import { triggerEldritchFlash } from '$lib/stores/atmosphere';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
+	import InvestigatorPortrait from '$lib/components/investigator/InvestigatorPortrait.svelte';
 	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
 	import { browser } from '$app/environment';
 	import { sortSkillsForDisplay, type SkillSortDirection, type SkillSortMode } from '$lib/engine/skill-sort';
@@ -158,24 +159,33 @@
 
 	<!-- Header: Name & Occupation -->
 	<div in:dossierFiling|global={{ delay: 120 }} class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-		<h2 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h2>
-		<p class="text-sm text-[var(--color-muted-foreground)]">
-			{occupationName} &middot;
-			Age {char.age} &middot;
-			{char.era} Era
-		</p>
-		{#if char.gender || char.pronouns}
-			<p class="text-xs text-[var(--color-muted-foreground)]">
-				{[char.gender, char.pronouns].filter(Boolean).join(' &middot; ')}
-			</p>
-		{/if}
-		{#if char.residence || char.birthplace}
-			<p class="text-xs text-[var(--color-muted-foreground)]">
-				{char.residence ? `Lives in ${char.residence}` : ''}
-				{char.residence && char.birthplace ? ' · ' : ''}
-				{char.birthplace ? `Born in ${char.birthplace}` : ''}
-			</p>
-		{/if}
+		<div class="flex items-start gap-4">
+			<InvestigatorPortrait
+				name={char.name || 'Unnamed Investigator'}
+				portraitUrl={char.portraitUrl}
+				size="lg"
+			/>
+			<div class="min-w-0 flex-1">
+				<h2 class="text-2xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h2>
+				<p class="text-sm text-[var(--color-muted-foreground)]">
+					{occupationName} &middot;
+					Age {char.age} &middot;
+					{char.era} Era
+				</p>
+				{#if char.gender || char.pronouns}
+					<p class="text-xs text-[var(--color-muted-foreground)]">
+						{[char.gender, char.pronouns].filter(Boolean).join(' &middot; ')}
+					</p>
+				{/if}
+				{#if char.residence || char.birthplace}
+					<p class="text-xs text-[var(--color-muted-foreground)]">
+						{char.residence ? `Lives in ${char.residence}` : ''}
+						{char.residence && char.birthplace ? ' · ' : ''}
+						{char.birthplace ? `Born in ${char.birthplace}` : ''}
+					</p>
+				{/if}
+			</div>
+		</div>
 	</div>
 
 	<!-- Characteristics & Derived Stats -->

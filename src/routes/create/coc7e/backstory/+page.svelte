@@ -3,6 +3,8 @@
 	import { page } from '$app/state';
 	import { BACKSTORY_KEYS, type BackstoryKey } from '$lib/engine/backstory';
 	import { wizard, WIZARD_STEPS } from '$lib/stores/wizard';
+	import PortraitUrlField from '$lib/components/investigator/PortraitUrlField.svelte';
+	import { normalizePortraitUrl } from '$lib/engine/portrait-url';
 	import type { BackstoryTableEntry, CoCContentPack, NameTableEntry } from '$lib/types/content-pack';
 
 	const data = page.data as {
@@ -19,6 +21,7 @@
 	let pronouns = $state($wizard.character.pronouns);
 	let residence = $state($wizard.character.residence);
 	let birthplace = $state($wizard.character.birthplace);
+	let portraitUrl = $state($wizard.character.portraitUrl);
 
 	// Backstory fields
 	let personalDescription = $state($wizard.character.backstory.personalDescription);
@@ -92,6 +95,7 @@
 			pronouns,
 			residence,
 			birthplace,
+			portraitUrl: normalizePortraitUrl(portraitUrl),
 			backstory: {
 				personalDescription: backstoryValues.personalDescription,
 				ideologyBeliefs: backstoryValues.ideologyBeliefs,
@@ -162,6 +166,12 @@
 						placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]" />
 			</div>
 		</div>
+		<PortraitUrlField
+				id="wizard-portrait-url"
+				name={name || 'Unnamed Investigator'}
+				value={portraitUrl}
+				onchange={(v) => (portraitUrl = v)}
+		/>
 	</div>
 
 	<!-- Backstory -->

@@ -200,6 +200,15 @@ const playRollHistoryGenericDice = z.object({
 		.optional()
 });
 
+/**
+ * Strict, per-kind validators for the player-emittable roll-history entries.
+ * Exported so the campaign roll endpoint can reuse them — letting the campaign
+ * API reject the same oversized / malformed payloads the character-save path
+ * already rejects, without duplicating the per-field caps.
+ *
+ * Note: the keeper-inventory variant is intentionally NOT in this union — it
+ * is server-emitted only and must never be acceptable on a player POST.
+ */
 const playRollHistoryEntry = z.union([
 	playRollHistoryPercentile,
 	playRollHistoryWeaponDamage,
@@ -208,6 +217,8 @@ const playRollHistoryEntry = z.union([
 	playRollHistorySanLoss,
 	playRollHistoryGenericDice
 ]);
+
+export const playerEmittedRollEntrySchema = playRollHistoryEntry;
 
 const skillDevelopmentMark = z.object({
 	id: z.string().min(1).max(80),
@@ -246,7 +257,7 @@ export const cocCharacterDataSchema = z.object({
 	pronouns: z.string().max(100),
 	residence: z.string().max(200),
 	birthplace: z.string().max(200),
-	portraitUrl: z.string().max(2048),
+	portraitUrl: z.string().max(2048).transform((s) => s.trim()),
 	characteristics: characteristicsData,
 	derivedStats: derivedStatsData,
 	occupation: z.object({

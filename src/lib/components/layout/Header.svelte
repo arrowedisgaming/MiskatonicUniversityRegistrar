@@ -52,6 +52,12 @@
 			>
 				Investigators
 			</a>
+			<a
+				href="/campaigns"
+				class="hidden rounded-md px-2 py-1.5 text-xs text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)] hover:text-[var(--color-foreground)] transition-colors sm:inline sm:text-sm"
+			>
+				Campaigns
+			</a>
 			{#if isAdmin}
 				<a
 					href="/admin"

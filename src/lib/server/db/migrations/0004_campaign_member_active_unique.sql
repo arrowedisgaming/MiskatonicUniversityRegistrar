@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `campaign_members_investigator_active_uq` ON `campaign_members` (`campaign_id`,`investigator_id`) WHERE left_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `campaign_members_user_active_uq` ON `campaign_members` (`campaign_id`,`user_id`) WHERE left_at IS NULL;

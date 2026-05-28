@@ -142,4 +142,21 @@ describe('migrateCharacterData', () => {
 			boutOfMadness: false
 		});
 	});
+
+	it('defaults portraitUrl for legacy investigators', () => {
+		const migrated = migrateCharacterData({
+			schemaVersion: 1,
+			backstory: { ideologyBeliefs: '' },
+			characteristics: {
+				method: 'roll',
+				values: {},
+				baseValues: {},
+				rolls: null,
+				ageAdjustments: []
+			},
+			equipment: { items: [], weapons: [], cash: 0, assets: 0, spendingLevel: 0 }
+		});
+
+		expect(migrated.portraitUrl).toBe('');
+	});
 });

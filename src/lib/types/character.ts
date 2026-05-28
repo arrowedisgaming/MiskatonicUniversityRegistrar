@@ -121,13 +121,28 @@ export interface PlayRollHistoryGenericDiceEntry {
 	groups?: Array<{ count: number; sides: DiceSides; rolls: number[] }>;
 }
 
+/**
+ * Synthetic entry emitted into the campaign roll log when a Keeper pushes
+ * inventory into a player's investigator. Never appears in a character's own
+ * `playRollHistory` — only in `campaign_rolls.entry`. Lives in this union so
+ * the existing roll-entry renderer can format it without a parallel codepath.
+ */
+export interface PlayRollHistoryKeeperInventoryEntry {
+	id: string;
+	at: string;
+	targetKind: 'keeperInventory';
+	addedBy: string;
+	itemNames: string[];
+}
+
 export type PlayRollHistoryEntry =
 	| PlayRollHistoryPercentileEntry
 	| PlayRollHistoryWeaponDamageEntry
 	| PlayRollHistorySkillDevelopmentEntry
 	| PlayRollHistorySanCheckEntry
 	| PlayRollHistorySanLossEntry
-	| PlayRollHistoryGenericDiceEntry;
+	| PlayRollHistoryGenericDiceEntry
+	| PlayRollHistoryKeeperInventoryEntry;
 
 export type { CoCPercentileOutcome };
 

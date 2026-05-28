@@ -15,6 +15,7 @@ export function migrateCharacterData(raw: unknown): CoCCharacterData {
 
 	if (!character.backstory) character.backstory = {} as CoCCharacterData['backstory'];
 	character.backstory.personalDescription ??= '';
+	character.portraitUrl ??= '';
 
 	if (character.characteristics) {
 		// Preserve legacy method ids (arrange-rolls, low-roll-modifier,

@@ -51,6 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-05-28
+
+### Fixed
+- **Ship the v0.20.0 source.** The v0.20.0 tag was made with only the version bump + CHANGELOG staged; every campaigns, portraits, and hardening source file (59 files, ~7.4k inserted lines) sat in the working tree and never made it into the commit. The remote site advertised v0.20.0 but ran the v0.19.0 codebase, and CI applied zero migrations because none were tracked. This release contains the actual source changes documented under v0.20.0 below — treat that section as the substantive release notes; v0.20.1 is the same content shipped correctly. Two new D1 migrations (`0003_campaigns.sql`, `0004_campaign_member_active_unique.sql`) will be applied to `miskatonic-db` by CI on this deploy.
+
 ## [0.20.0] - 2026-05-28
 
 ### Added

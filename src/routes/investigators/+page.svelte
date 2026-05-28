@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import InvestigatorPortrait from '$lib/components/investigator/InvestigatorPortrait.svelte';
 
 	const data = page.data as {
 		investigators: {
@@ -9,6 +10,7 @@
 			era: string;
 			occupation: string;
 			isDraft: boolean;
+			portraitUrl: string;
 			createdAt: Date;
 			updatedAt: Date;
 		}[];
@@ -55,16 +57,19 @@
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.investigators as inv}
 				<div class="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-4 transition-colors hover:border-[var(--color-primary)]/50">
-					<a href="/sheet/{inv.id}" class="block no-underline">
-						<h3 class="font-semibold" data-heading>
-							{inv.name || 'Unnamed'}
-							{#if inv.isDraft}
-								<span class="ml-1 rounded bg-[var(--color-warning)]/20 px-1.5 py-0.5 text-[10px] font-normal text-[var(--color-warning)]">DRAFT</span>
-							{/if}
-						</h3>
-						<p class="text-sm text-[var(--color-muted-foreground)]">
-							{inv.occupation || 'No occupation'} &middot; {inv.era}
-						</p>
+					<a href="/sheet/{inv.id}" class="flex items-start gap-3 no-underline">
+						<InvestigatorPortrait name={inv.name || 'Unnamed'} portraitUrl={inv.portraitUrl} size="sm" />
+						<div class="min-w-0 flex-1">
+							<h3 class="font-semibold" data-heading>
+								{inv.name || 'Unnamed'}
+								{#if inv.isDraft}
+									<span class="ml-1 rounded bg-[var(--color-warning)]/20 px-1.5 py-0.5 text-[10px] font-normal text-[var(--color-warning)]">DRAFT</span>
+								{/if}
+							</h3>
+							<p class="text-sm text-[var(--color-muted-foreground)]">
+								{inv.occupation || 'No occupation'} &middot; {inv.era}
+							</p>
+						</div>
 					</a>
 
 					<div class="mt-3 flex gap-2 text-xs">

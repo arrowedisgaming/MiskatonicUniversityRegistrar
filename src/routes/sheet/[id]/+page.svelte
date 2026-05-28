@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
+	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { preventNumberWheel } from '$lib/actions/number-input';
 	import { ALL_CHARACTERISTICS, CHARACTERISTIC_LABELS } from '$lib/types/common';
@@ -41,9 +42,13 @@
 	} from '$lib/engine/weapon-damage-roll';
 	import { BACKSTORY_KEYS, BACKSTORY_LABEL_BY_KEY, type BackstoryKey } from '$lib/engine/backstory';
 	import { resolveSkillDisplayName } from '$lib/engine/occupation-filter';
+	import { emitCampaignRoll } from '$lib/play/emit-campaign-roll';
 	import PDFExportButton from '$lib/components/investigator/PDFExportButton.svelte';
 	import ShareDialog from '$lib/components/investigator/ShareDialog.svelte';
 	import SheetReadOnly from '$lib/components/investigator/SheetReadOnly.svelte';
+	import InvestigatorPortrait from '$lib/components/investigator/InvestigatorPortrait.svelte';
+	import PortraitEditDialog from '$lib/components/investigator/PortraitEditDialog.svelte';
+	import PortraitUrlField from '$lib/components/investigator/PortraitUrlField.svelte';
 	import DevelopmentPhasePanel from '$lib/components/investigator/DevelopmentPhasePanel.svelte';
 	import SanToolsPanel from '$lib/components/investigator/SanToolsPanel.svelte';
 	import FreeDiceRoller from '$lib/components/dice/FreeDiceRoller.svelte';
@@ -551,30 +556,80 @@
 		return liveChar;
 	}
 
+	/**
+	 * Tracks the server-side updatedAt for optimistic concurrency. Initialised
+	 * from the loader and advanced on every successful PUT; refreshed from the
+	 * 409 conflict body when a keeper-inventory push or other write landed
+	 * between our last save and this one. Surviving the conflict without
+	 * losing the play overlay is the whole point — the overlay $state cells
+	 * are unaffected by invalidateAll(), so re-saving with the fresh
+	 * expectedUpdatedAt picks up the keeper's equipment additions AND keeps
+	 * the player's in-flight HP/SAN/roll changes.
+	 */
+	// svelte-ignore state_referenced_locally
+	let expectedUpdatedAt = $state<number>(data.investigator.updatedAt);
+
 	async function persistInvestigator(): Promise<boolean> {
-		const res = await fetch(`/api/investigators/${data.investigator.id}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ character: buildCharacterPayload() })
-		});
-		if (res.ok) {
-			isDirty = false;
-			return true;
+		// Up to two attempts: a single conflict means a keeper pushed inventory
+		// during our save window; we refresh the base character (loader runs
+		// again) and retry once. A second 409 in a row implies thrashing —
+		// surface it rather than loop.
+		for (let attempt = 0; attempt < 2; attempt++) {
+			const res = await fetch(`/api/investigators/${data.investigator.id}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					character: buildCharacterPayload(),
+					expectedUpdatedAt
+				})
+			});
+			if (res.ok) {
+				try {
+					const body = (await res.json()) as { updatedAt?: number };
+					if (typeof body.updatedAt === 'number') expectedUpdatedAt = body.updatedAt;
+				} catch {
+					/* response shape didn't carry an updatedAt — leave the local copy alone */
+				}
+				isDirty = false;
+				return true;
+			}
+			if (res.status === 409 && attempt === 0) {
+				try {
+					const body = (await res.json()) as { currentUpdatedAt?: number };
+					if (typeof body.currentUpdatedAt === 'number') {
+						expectedUpdatedAt = body.currentUpdatedAt;
+					}
+				} catch {
+					/* no body / not JSON — fall through to invalidateAll */
+				}
+				// Refreshes data.investigator.character (base) without disturbing
+				// the overlay $state cells. liveChar recomputes from the merged
+				// new base + same overlay on the next render.
+				await invalidateAll();
+				continue;
+			}
+			// Persistence rejected (most commonly Zod validation — e.g. a SAN-loss
+			// flat value out of schema bounds). Surface it so the user knows their
+			// in-memory state will not survive a reload. `isDirty` stays true so the
+			// "Save" pill reappears in the In-Play header.
+			isDirty = true;
+			let detail = `HTTP ${res.status}`;
+			try {
+				const text = await res.text();
+				const parsed = readableApiError(text, res.status);
+				if (parsed) detail = parsed;
+			} catch {
+				// keep default
+			}
+			showTransientRollBanner({ title: 'Save failed', detail });
+			return false;
 		}
-		// Persistence rejected (most commonly Zod validation — e.g. a SAN-loss
-		// flat value out of schema bounds). Surface it so the user knows their
-		// in-memory state will not survive a reload. `isDirty` stays true so the
-		// "Save" pill reappears in the In-Play header.
+		// Two consecutive 409s — give up rather than loop forever.
 		isDirty = true;
-		let detail = `HTTP ${res.status}`;
-		try {
-			const text = await res.text();
-			const parsed = readableApiError(text, res.status);
-			if (parsed) detail = parsed;
-		} catch {
-			// keep default
-		}
-		showTransientRollBanner({ title: 'Save failed', detail });
+		showTransientRollBanner({
+			title: 'Save failed',
+			detail: 'Conflict — refresh the page and try again'
+		});
 		return false;
 	}
 
@@ -650,6 +705,16 @@
 
 	function appendPlayHistory(entry: PlayRollHistoryEntry) {
 		playRollHistory = [entry, ...playRollHistory].slice(0, PLAY_ROLL_HISTORY_KEEP);
+		// Mirror into every active campaign the investigator belongs to. One
+		// hook here covers all 9+ call sites for every roll category — the
+		// single integration point keeps new roll kinds from accidentally
+		// missing the campaign log.
+		if (data.activeCampaigns.length > 0) {
+			emitCampaignRoll(
+				data.activeCampaigns.map((c) => c.campaignId),
+				entry
+			);
+		}
 	}
 
 	function outcomeDescription(result: CoCPercentileCheckResult): string {
@@ -1116,6 +1181,9 @@
 		if (entry.targetKind === 'characteristic' && entry.characteristicId) {
 			return CHARACTERISTIC_LABELS[entry.characteristicId];
 		}
+		if (entry.targetKind === 'keeperInventory') {
+			return `Keeper added ${entry.itemNames.join(', ')}`;
+		}
 		return entry.skillDisplayLabel ?? entry.skillId ?? 'Skill';
 	}
 
@@ -1364,7 +1432,22 @@
 
 	<!-- Header -->
 	<div class="flex flex-wrap items-start gap-4">
-		<div class="min-w-[16rem]">
+		<div class="relative flex-none">
+			<InvestigatorPortrait
+				name={(editMode && editChar ? editChar.name : liveChar.name) || 'Unnamed Investigator'}
+				portraitUrl={editMode && editChar ? editChar.portraitUrl : liveChar.portraitUrl}
+				size="lg"
+			/>
+			{#if !editMode && !data.adminView}
+				<PortraitEditDialog
+					investigatorName={liveChar.name || 'Unnamed Investigator'}
+					initialPortraitUrl={liveChar.portraitUrl}
+					buildPayload={(portraitUrl) => ({ ...liveChar, portraitUrl })}
+					persist={persistCharacter}
+				/>
+			{/if}
+		</div>
+		<div class="min-w-[16rem] flex-1">
 			{#if editMode && editChar}
 				<div class="space-y-3">
 					<div class="grid gap-2 md:grid-cols-2">
@@ -1466,27 +1549,22 @@
 							/>
 						</div>
 						<div class="md:col-span-2">
-							<label for="edit-portrait-url" class="mb-1 block text-xs font-semibold uppercase text-[var(--color-muted-foreground)]">Portrait URL</label>
-							<input
+							<PortraitUrlField
 								id="edit-portrait-url"
-								type="url"
+								name={editChar.name || 'Unnamed Investigator'}
 								value={editChar.portraitUrl}
-								oninput={(e) => {
-									const v = (e.currentTarget as HTMLInputElement).value;
-									mutateEditChar((c) => ({ ...c, portraitUrl: v }));
-								}}
-								class="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+								onchange={(v) => mutateEditChar((c) => ({ ...c, portraitUrl: v }))}
 							/>
 						</div>
 					</div>
 				</div>
 			{:else}
-				<h1 class="text-3xl font-bold" data-heading>{char.name || 'Unnamed Investigator'}</h1>
+				<h1 class="text-3xl font-bold" data-heading>{liveChar.name || 'Unnamed Investigator'}</h1>
 				<p class="text-sm text-[var(--color-muted-foreground)]">
-					{occupation?.name ?? 'No occupation'} &middot; Age {char.age} &middot; {char.era}
+					{occupation?.name ?? 'No occupation'} &middot; Age {liveChar.age} &middot; {liveChar.era}
 				</p>
-				{#if char.residence}
-					<p class="text-xs text-[var(--color-muted-foreground)]">Residence: {char.residence}</p>
+				{#if liveChar.residence}
+					<p class="text-xs text-[var(--color-muted-foreground)]">Residence: {liveChar.residence}</p>
 				{/if}
 			{/if}
 		</div>
